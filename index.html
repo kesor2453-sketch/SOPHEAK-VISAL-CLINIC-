@@ -163,11 +163,20 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{eDep=eStf=false;rEdi
 function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.value||'all';x.innerHTML='<option value="all">ព្រីនទាំងអស់</option>'+S.depts.map(D=>'<option value="'+D.id+'">'+esc(D.icon+' '+D.name)+'</option>').join('');x.value=S.depts.some(D=>D.id===v)?v:'all'})}
 function doPrint(v){
   if($('p-month').classList.contains('on')){
-    if(mview==='staff'&&pName&&dept(pDept)){openDlg({mode:'print',v:pDept+'|'+pName,dp:pDept});return}
-    toast('សូមជ្រើសឈ្មោះគ្រូពេទ្យ ក្នុង «បំពេញវេន (តាមបុគ្គលិក)» មុនព្រីន');mview='staff';pName=null;renderMonth();return}
+    if(mview!=='staff')return printMonthView();
+    if(pName&&dept(pDept)){openDlg({mode:'print',v:pDept+'|'+pName,dp:pDept});return}
+    toast('សូមជ្រើសឈ្មោះគ្រូពេទ្យ មុនព្រីន');return}
   const els=[...document.querySelectorAll('.pn.on .dr')];
   if(v!=='all')els.forEach(e=>{if(e.dataset.id!==v)e.classList.add('nop')});
   const clean=()=>{els.forEach(e=>e.classList.remove('nop'));removeEventListener('afterprint',clean)};
+  addEventListener('afterprint',clean);print()}
+function printMonthView(){
+  const W=$('mWrap');document.body.classList.add('fitp');W.style.width='max-content';
+  const w=W.offsetWidth,h=W.offsetHeight,dim={landscape:[1020,700],portrait:[700,1020]};let best='landscape',bs=0;
+  for(const o in dim){const sc=Math.min(1,dim[o][0]/w,dim[o][1]/h);if(sc>bs){bs=sc;best=o}}
+  W.style.zoom=Math.max(bs,.3);
+  const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+best+';margin:8mm}}';document.head.appendChild(st);
+  const clean=()=>{document.body.classList.remove('fitp');W.style.zoom='';W.style.width='';st.remove();removeEventListener('afterprint',clean)};
   addEventListener('afterprint',clean);print()}
 function printSheet(v,wc){
   const k=v.indexOf('|');if(k<0){toast('⚠ សូមជ្រើសឈ្មោះគ្រូពេទ្យ');return}
