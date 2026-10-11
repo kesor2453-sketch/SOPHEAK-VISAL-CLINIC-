@@ -62,6 +62,12 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .nb2{cursor:pointer;opacity:.4;font-size:12px}.nb2.has{opacity:1;background:#fff3b0;border-radius:6px;padding:1px 6px;font-weight:700;font-size:11.5px}.nb2:hover{opacity:1}.pp[data-pk]{cursor:pointer}
 .xg{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}.xf{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:4px;min-width:160px;margin-bottom:6px}
 .xf select,.xf input,.xf textarea{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
+#psheet{display:none}body.psp #app,body.psp .toast,body.psp .dlg{display:none!important}body.psp #psheet{display:block}
+.psd{width:700px;margin:0 auto;color:#000;background:#fff}.psd h2{font-size:15px;margin:0 0 8px;text-align:center}
+.pst{width:100%;border-collapse:collapse;font-size:11px}.pst th,.pst td{border:1px solid #333;padding:3px 4px;height:22px}
+.pst th{background:#eee}.pst td.pd{text-align:center;font-weight:700;white-space:nowrap}.pst td.pd.we{background:#ffeaea;color:#d32f2f}
+.pst td.pd small{display:block;font-weight:400;font-size:9px}.pst td.pn1 small{color:#555;margin-left:3px;font-size:9.5px}.pst td.po{font-size:10px}.pf{margin-top:8px;font-size:12px;text-align:right}
+@media print{.psd{break-after:page}.psd:last-child{break-after:auto}.pst thead{display:table-header-group}.pst tr{break-inside:avoid}}
 .gc{min-height:26px;min-width:44px;padding:2px 5px;border-radius:6px;font-weight:700;font-size:11.5px;white-space:nowrap;display:flex;align-items:center;justify-content:center}
 .mc:focus{outline:2px solid var(--brand);outline-offset:1px}.mc{scroll-margin-left:150px}
 .pp{border-radius:9px;padding:5px 11px;box-shadow:0 1px 2px rgba(20,25,40,.12)}.pp small{color:inherit;opacity:.8}
@@ -88,7 +94,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 
 <div class="pn" id="p-month"><div class="card">
 <div class="nav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
-<button class="btn" id="mToday">ខែនេះ</button><select class="btn no-p psel" title="ជ្រើសផ្នែកដែលត្រូវព្រីន"></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
+<button class="btn" id="mToday">ខែនេះ</button><select class="btn no-p psel2" id="pSel" title="ជ្រើសឈ្មោះគ្រូពេទ្យដែលត្រូវព្រីន"></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
 <span id="mViews" class="mvs"><button class="btn" id="mv1" data-v="day" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">មើលតាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2" data-v="staff" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">បំពេញវេន (តាមបុគ្គលិក)</button><button class="btn" id="mv3" data-v="grid" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">កាឡោនដើម (ទាំងអស់)</button><span id="mvArrows" class="no-p"><button class="btn" data-vmove="-1" title="រំកិលទៅមុខ">◀</button><button class="btn" data-vmove="1" title="រំកិលទៅក្រោយ">▶</button></span></span>
 <span style="color:var(--sub);font-size:12px">«បំពេញវេន» → ជ្រើសឈ្មោះ → ចុចលើវេនដែលធ្វើការ</span></div>
 <div id="mWrap"></div></div></div>
@@ -104,7 +110,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 
 
 <div class="pn" id="p-count"><div class="card"><div class="nav"><button class="btn" id="cPrev">‹</button><div class="lbl" id="cLbl"></div><button class="btn" id="cNext">›</button></div><div id="cWrap"></div></div></div>
-<div class="pn" id="p-edit"><div class="card" id="eCard"></div></div></div><div class="dlg" id="dlg" style="display:none"><div class="dbox" id="dbox"></div></div><div class="toast" id="toast"></div>
+<div class="pn" id="p-edit"><div class="card" id="eCard"></div></div></div><div id="psheet"></div><div class="dlg" id="dlg" style="display:none"><div class="dbox" id="dbox"></div></div><div class="toast" id="toast"></div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -157,20 +163,29 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{eDep=eStf=false;rEdi
   t.classList.add('on');$('p-'+t.dataset.p).classList.add('on');renderAll()});
 function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.value||'all';x.innerHTML='<option value="all">ព្រីនទាំងអស់</option>'+S.depts.map(D=>'<option value="'+D.id+'">'+esc(D.icon+' '+D.name)+'</option>').join('');x.value=S.depts.some(D=>D.id===v)?v:'all'})}
 function doPrint(v){
-  const month=$('p-month').classList.contains('on'),keep=dayDept;let rr=false,st=null;
-  if(month&&(mview==='day'||mview==='grid')&&dayDept!=='all'){dayDept='all';renderMonth();rr=true}
-  const els=[...document.querySelectorAll('.pn.on .dr,.pn.on .mdept')];
+  if($('p-month').classList.contains('on'))return printSheet(v);
+  const els=[...document.querySelectorAll('.pn.on .dr')];
   if(v!=='all')els.forEach(e=>{if(e.dataset.id!==v)e.classList.add('nop')});
-  const W=$('mWrap');
-  if(month){document.body.classList.add('fitp');W.style.width='max-content';
-    const w=W.offsetWidth,h=W.offsetHeight,dim={landscape:[1020,700],portrait:[700,1020]};let best='landscape',bs=0;
-    for(const o in dim){const sc=Math.min(1,dim[o][0]/w,dim[o][1]/h);if(sc>bs){bs=sc;best=o}}
-    W.style.zoom=Math.max(bs,.3);
-    st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+best+';margin:8mm}}';document.head.appendChild(st)}
-  const clean=()=>{els.forEach(e=>e.classList.remove('nop'));document.body.classList.remove('fitp');W.style.zoom='';W.style.width='';if(st)st.remove();
-    if(rr){dayDept=keep;renderMonth()}removeEventListener('afterprint',clean)};
+  const clean=()=>{els.forEach(e=>e.classList.remove('nop'));removeEventListener('afterprint',clean)};
   addEventListener('afterprint',clean);print()}
-function renderAll(){fillSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit()}
+function printSheet(v){
+  const k=v.indexOf('|');if(k<0){toast('⚠ សូមជ្រើសឈ្មោះគ្រូពេទ្យ');return}
+  const D=dept(v.slice(0,k)),nm=v.slice(k+1);if(!D)return;
+  const nd=new Date(my,mm,0).getDate(),ps=$('psheet'),r=role(D.id,nm);let tot=0,body='';
+  for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();
+    D.cols.forEach(c=>{if(!get(d,D.id,c.id).includes(nm))return;tot++;
+      body+='<tr><td class="pd'+(w==0||w==6?' we':'')+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td><td class="pn1">'+esc(c.label)+'</td><td></td><td></td><td></td><td></td><td class="po">'+esc(getN(d,D.id,c.id).map(x=>x.x).join(' ; '))+'</td></tr>'})}
+  if(!tot)body='<tr><td colspan="7" style="text-align:center;color:#666">មិនមានវេនក្នុងខែនេះ</td></tr>';
+  ps.innerHTML='<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:9%">ថ្ងៃ</th><th style="width:10%">វេន</th><th style="width:12%">ម៉ោងចេញ</th><th style="width:12%">ម៉ោងចូល</th><th style="width:11%">ចំនួនម៉ោង</th><th style="width:20%">ហត្ថាលេខា</th><th style="width:26%">ផ្សេងៗ</th></tr></thead><tbody>'+body+'</tbody></table><div class="pf">សរុប '+tot+' វេន</div></div>';
+  const st=document.createElement('style');st.textContent='@media print{@page{size:A4 portrait;margin:8mm}}';document.head.appendChild(st);
+  document.body.classList.add('psp');
+  ps.querySelectorAll('.psd').forEach(b=>{const h=b.offsetHeight;if(h>0)b.style.zoom=Math.max(Math.min(1,1000/h),.45)});
+  const clean=()=>{document.body.classList.remove('psp');ps.innerHTML='';st.remove();removeEventListener('afterprint',clean)};
+  addEventListener('afterprint',clean);print()}
+function fillPSel(){const x=$('pSel');if(!x)return;const v=x.value;
+  x.innerHTML=S.depts.filter(D=>(S.staff[D.id]||[]).length).map(D=>'<optgroup label="'+esc(D.icon+' '+D.name)+'">'+S.staff[D.id].map(s=>'<option value="'+esc(D.id+'|'+s.n)+'">'+esc(s.n)+'</option>').join('')+'</optgroup>').join('')||'<option value="">— គ្មានបុគ្គលិក —</option>';
+  if([...x.options].some(o=>o.value===v))x.value=v}
+function renderAll(){fillSel();fillPSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit()}
 
 /* ---------- shift column toggle (afternoon) ---------- */
 const noonBtn=D=>'<button class="nb no-p" data-noon="'+D.id+'">'+(D.cols.some(c=>c.id==='c2')?'− រសៀល':'+ រសៀល')+'</button>';
@@ -246,19 +261,21 @@ function renderDlg(){
   const nd=new Date(my,mm,0).getDate(),days=[];for(let i=1;i<=nd;i++){const k=my+'-'+p2(mm)+'-'+p2(i);days.push([k,DW[new Date(my,mm-1,i).getDay()]+' '+i+'/'+p2(mm)])}
   const l2=get(M.d2,D.id,M.c2);if(!l2.includes(M.n2))M.n2=l2[0]||'';
   const lb=(t,h)=>'<label class="fl">'+t+h+'</label>';
-  let h='<div class="dt1">'+esc(M.n)+' · '+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div><div class="chips" style="margin-bottom:6px">'+[['rep','🔁 ជំនួសគ្រូពេទ្យ'],['swap','⇄ ដូរវេន'],['self','🙋 វេនយាមខ្លួនឯង']].map(x=>'<div class="chip" data-dact="'+x[0]+'" style="'+(M.act===x[0]?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">'+x[1]+'</div>').join('')+'</div>';
+  let h='<div class="dt1">'+esc(M.n)+' · '+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div><div class="chips" style="margin-bottom:6px">'+[['rep','🔁 ជំនួសគ្រូពេទ្យ'],['swap','⇄ ដូរវេន'],['self','🙋 វេនយាមខ្លួនឯង'],['misc','📝 ផ្សេងៗ']].map(x=>'<div class="chip" data-dact="'+x[0]+'" style="'+(M.act===x[0]?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">'+x[1]+'</div>').join('')+'</div>';
   if(M.act==='rep')h+=lb('ជំនួសដោយ','<select data-m="r">'+(av.length?mopt(av.map(x=>[x,x]),M.r):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select>');
   else if(M.act==='self')h+=lb('គ្រូពេទ្យដែលយាមខ្លួនឯង','<select data-m="r">'+(av.length?mopt(av.map(x=>[x,x]),M.r):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select>');
+  else if(M.act==='misc')h+='';
   else h+=lb('ដូរជាមួយ — ថ្ងៃ','<select data-m="d2">'+mopt(days,M.d2)+'</select>')+lb('វេន','<select data-m="c2">'+mopt(D.cols.map(c=>[c.id,c.label]),M.c2)+'</select>')+lb('ឈ្មោះ','<select data-m="n2">'+(l2.length?mopt(l2.map(x=>[x,x]),M.n2):'<option value="">— គ្មានអ្នកប្រចាំការ —</option>')+'</select>');
-  B.innerHTML=h+lb('សំគាល់ (ស្រេចចិត្ត)','<textarea id="dNote" rows="2" placeholder="ឧ. មូលហេតុនៃការដូរ..."></textarea>')+foot('✓ អនុវត្ត');
+  B.innerHTML=h+lb(M.act==='misc'?'ផ្សេងៗ (សរសេរ)':'សំគាល់ (ស្រេចចិត្ត)','<textarea id="dNote" rows="2" placeholder="ឧ. មូលហេតុនៃការដូរ..."></textarea>')+foot('✓ អនុវត្ត');
   const t=$('dNote');if(t)t.value=M.note||'';
 }
 function applyDlg(){
   const D=dept(M.dp);if(!D)return;const nt=$('dNote'),note=nt?nt.value.trim():'';
-  if(M.mode==='note'){if(!note){toast('សូមសរសេរសំគាល់');return}addN(M.d,M.dp,M.c,note);save();renderAll();renderDlg();toast('បន្ថែមសំគាល់ ✓');return}
+  if(M.mode==='note'){if(doChange('misc',D,{d:M.d,c:M.c,note})){renderAll();renderDlg();toast('បន្ថែមសំគាល់ ✓')}return}
   const base={d:M.d,c:M.c,note:note};let ok=false;
   if(M.act==='rep')ok=doChange('rep',D,{...base,n1:M.n,n2:M.r});
   else if(M.act==='self')ok=doChange('self',D,{...base,n1:M.r});
+  else if(M.act==='misc')ok=doChange('misc',D,{...base,n1:M.n});
   else ok=doChange('swap',D,{...base,n1:M.n,d2:M.d2,c2:M.c2,n2:M.n2});
   if(ok){closeDlg();renderAll();toast('រក្សាទុករួចរាល់ ✓')}}
 $('dlg').addEventListener('change',e=>{const k=e.target.dataset.m;if(!k||!M)return;const t=$('dNote');M.note=t?t.value:'';M[k]=e.target.value;if(k==='d2'||k==='c2')M.n2='';renderDlg()});
@@ -274,11 +291,11 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(mview=
 function renderMonthDay(){
   const n=new Date(my,mm,0).getDate(),t=ds(new Date()),nw=new Date(),started=my*12+mm<=nw.getFullYear()*12+nw.getMonth()+1,canEdit=!started||bEdit;
   if(dayDept!=='all'&&!dept(dayDept))dayDept='all';
-  $('mWrap').innerHTML=dChips()+'<div class="no-p" style="color:var(--sub);font-size:12px;margin:-4px 0 8px">'+(started?'ចុចលើឈ្មោះគ្រូពេទ្យ ដើម្បីជំនួស / ដូរវេន · ':'')+'📝 ដើម្បីសរសេរសំគាល់</div>'+S.depts.filter(D=>dayDept==='all'||D.id===dayDept).map(D=>{
+  $('mWrap').innerHTML=dChips()+(started?'<div class="no-p" style="color:var(--sub);font-size:12px;margin:-4px 0 8px">'+(bEdit?'ចុចលើឈ្មោះគ្រូពេទ្យ ដើម្បីជំនួស / ដូរវេន / វេនយាមខ្លួនឯង / ផ្សេងៗ':'ចុច ✏️ កែប្រែ ដើម្បីជំនួស / ដូរវេន')+'</div>':'')+S.depts.filter(D=>dayDept==='all'||D.id===dayDept).map(D=>{
     let h='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span><span>'+(canEdit?noonBtn(D):'')+(started?' <button class="nb no-p" data-bedit="1">'+(bEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button>':'')+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
     for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
       h+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
-        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',started?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+(getN(d,D.id,c.id).length?noteBadge(d,D.id,c.id):'<span class="nb2 no-p" data-note="1" title="សំគាល់" '+a+'>📝</span>')+'</div></td>'}).join('')+'</tr>'}
+        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',(started&&bEdit)?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+(getN(d,D.id,c.id).length?noteBadge(d,D.id,c.id):((started&&bEdit)?'<span class="nb2 no-p" data-note="1" title="ផ្សេងៗ" '+a+'>📝</span>':''))+'</div></td>'}).join('')+'</tr>'}
     return h+'</tbody></table></div></div>'}).join('');
   eqPills();
 }
@@ -309,9 +326,9 @@ function renderMonthStaff(){
   const D=dept(pDept),n=new Date(my,mm,0).getDate(),t=ds(new Date()),r=role(D.id,pName),pc=col(D.id,pName)||D.color;let tot=0,rows='';
   for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
     const on=D.cols.filter(c=>get(d,D.id,c.id).includes(pName));tot+=on.length;
-    rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td><td>'+(on.length&&r?esc(r):'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
+    rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
       return '<td><div class="tg'+(pEdit?'':' lk')+'"'+(pEdit?' data-tg="'+c.id+'" data-d="'+d+'" data-dp="'+D.id+'"':'')+(a?' style="background:'+pc+';color:'+ink(pc)+';border:1px solid '+pc+'">✓':'>')+'</div></td>'}).join('')+'</tr>'}
-  $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+' · '+esc(pName)+(r?' ('+esc(r)+')':'')+' · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+' <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button>'+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th><th>តួនាទី</th>'+
+  $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+' · '+esc(pName)+' · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+' <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button>'+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
     D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function closePop(){if(pop){pop.remove();pop=null}}
@@ -345,7 +362,7 @@ document.addEventListener('click',e=>{const t=e.target;
   const dd=t.closest('[data-dd]');if(dd){dayDept=dd.dataset.dd;renderMonth();return}
   if(t.dataset.pedit){pEdit=!pEdit;renderMonth();return}
   if(t.dataset.bedit){bEdit=!bEdit;renderMonth();return}
-  if(t.dataset.print){doPrint(t.closest('.nav').querySelector('.psel').value);return}
+  if(t.dataset.print){const sl=t.closest('.nav').querySelector('.psel,.psel2');doPrint(sl?sl.value:'all');return}
   if(t.dataset.up||t.dataset.dn){moveDept(t.dataset.up||t.dataset.dn,t.dataset.up?-1:1);return}
   if(t.dataset.pback){pName=null;pEdit=false;renderMonth();return}
   if(t.dataset.grid){mview='grid';renderMonth();return}
@@ -427,48 +444,16 @@ function doChange(type,D,p){
     msg='⇄ ដូរវេន · '+p.n1+' ('+sl(p.d,p.c)+') ⇄ '+p.n2+' ('+sl(p.d2,p.c2)+')';
     slots=[[p.d,p.c,'ដូរវេនជាមួយ '+p.n2+' ('+sl(p.d2,p.c2)+')'],[p.d2,p.c2,'ដូរវេនជាមួយ '+p.n1+' ('+sl(p.d,p.c)+')']];
     if(!ask())return false;setL(p.d,D.id,p.c,l1.map(x=>x===p.n1?p.n2:x));setL(p.d2,D.id,p.c2,l2.map(x=>x===p.n2?p.n1:x))}
+  else if(type==='misc'){if(!p.note){toast('⚠ សូមសរសេរអត្ថបទ');return false}msg='📝 ផ្សេងៗ · '+sl(p.d,p.c);slots=[[p.d,p.c,'']];if(!ask())return false}
   else{if(!p.n1||l1.includes(p.n1)){toast('⚠ ទិន្នន័យមិនត្រឹមត្រូវ');return false}
     msg='🙋 វេនយាមខ្លួនឯង · '+sl(p.d,p.c)+' · '+p.n1;slots=[[p.d,p.c,'វេនយាមខ្លួនឯង '+p.n1]];
     if(!ask())return false;setL(p.d,D.id,p.c,l1.concat(p.n1))}
-  slots.forEach(x=>addN(x[0],D.id,x[1],x[2]+(p.note?' · '+p.note:'')));
+  slots.forEach(x=>addN(x[0],D.id,x[1],x[2]?x[2]+(p.note?' · '+p.note:''):p.note));
   S.log=[{t:Date.now(),x:D.icon+' '+D.name+' · '+msg+(p.note?' · សំគាល់៖ '+p.note:'')}].concat(S.log||[]).slice(0,100);
   save();return true}
-let ED=null;
-function renderEdit(){
-  const box=$('eCard');if(!box)return;
-  if(!ED)ED={type:'rep',dp:null,d:ds(new Date()),c:'',n1:'',d2:ds(new Date()),c2:'',n2:'',note:''};
-  if(!dept(ED.dp))ED.dp=(S.depts[0]||{}).id;
-  const D=dept(ED.dp);if(!D){box.innerHTML='<div style="color:var(--sub)">មិនទាន់មានផ្នែក</div>';return}
-  const cols=D.cols.map(c=>[c.id,c.label]),stf=(S.staff[D.id]||[]).map(s=>s.n);
-  if(!D.cols.some(c=>c.id===ED.c))ED.c=D.cols[0].id;if(!D.cols.some(c=>c.id===ED.c2))ED.c2=D.cols[0].id;
-  const l1=get(ED.d,D.id,ED.c),l2=get(ED.d2,D.id,ED.c2),av=stf.filter(x=>!l1.includes(x));
-  if(ED.type==='self'){if(!av.includes(ED.n1))ED.n1=av[0]||''}else if(!l1.includes(ED.n1))ED.n1=l1[0]||'';
-  if(ED.type==='rep'&&!av.includes(ED.n2))ED.n2=av[0]||'';
-  if(ED.type==='swap'&&!l2.includes(ED.n2))ED.n2=l2[0]||'';
-  const nw=new Date(),mx=ds(new Date(nw.getFullYear(),nw.getMonth()+1,0));
-  const di=(k,v)=>'<input type="date" data-e="'+k+'" value="'+v+'" max="'+mx+'">',sh=(k,v)=>'<select data-e="'+k+'">'+xopt(cols,v)+'</select>',ns=(k,a,v)=>'<select data-e="'+k+'">'+xnopt(a,v)+'</select>';
-  const T=[['rep','🔁 ជំនួសគ្រូពេទ្យ'],['swap','⇄ ដូរវេន'],['self','🙋 វេនយាមខ្លួនឯង']];
-  const dates=ED.type==='swap'?[ED.d,ED.d2]:[ED.d],bad=!dates.every(okD);
-  const valid=ED.type==='rep'?(ED.n1&&ED.n2):ED.type==='swap'?(ED.n1&&ED.n2&&!(ED.d===ED.d2&&ED.c===ED.c2)):!!ED.n1;
-  let body='';
-  if(ED.type==='rep')body='<div class="xg">'+xfld('ថ្ងៃ',di('d',ED.d))+xfld('វេន',sh('c',ED.c))+xfld('គ្រូពេទ្យដើម (ត្រូវជំនួស)',ns('n1',l1,ED.n1))+xfld('អ្នកជំនួស',ns('n2',av,ED.n2))+'</div>';
-  else if(ED.type==='swap')body='<b>ម្នាក់ទី ១</b><div class="xg">'+xfld('ថ្ងៃ',di('d',ED.d))+xfld('វេន',sh('c',ED.c))+xfld('ឈ្មោះ',ns('n1',l1,ED.n1))+'</div><b>ម្នាក់ទី ២ (ដូរជាមួយ)</b><div class="xg">'+xfld('ថ្ងៃ',di('d2',ED.d2))+xfld('វេន',sh('c2',ED.c2))+xfld('ឈ្មោះ',ns('n2',l2,ED.n2))+'</div>';
-  else body='<div class="xg">'+xfld('ថ្ងៃ',di('d',ED.d))+xfld('វេន',sh('c',ED.c))+xfld('គ្រូពេទ្យដែលយាមខ្លួនឯង',ns('n1',av,ED.n1))+'</div>';
-  const lg=(S.log||[]).slice(0,20).map(x=>'<div style="padding:5px 0;border-top:1px solid var(--line);font-size:12.5px"><span style="color:var(--sub)">'+fmtT(x.t)+'</span> '+esc(x.x)+'</div>').join('')||'<div style="color:var(--sub)">មិនទាន់មាន</div>';
-  box.innerHTML='<div style="font-weight:700;margin-bottom:4px">កែប្រែ / ជំនួស / ដូរវេន</div><div style="color:var(--sub);font-size:12px;margin-bottom:10px">ដំណើរការបានតែពេលដល់ខែ (ខែនេះ ឬខែកន្លងផុត)។ ការដូរក្នុង «មើលតាមថ្ងៃ» ក៏កត់ត្រានៅទីនេះដែរ។</div>'+
-    '<div class="chips" style="margin-bottom:12px">'+T.map(t=>'<div class="chip" data-et="'+t[0]+'" style="'+(ED.type===t[0]?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">'+t[1]+'</div>').join('')+'</div>'+
-    '<div class="xg">'+xfld('ផ្នែក','<select data-e="dp">'+xopt(S.depts.map(x=>[x.id,x.icon+' '+x.name]),ED.dp)+'</select>')+'</div>'+body+
-    xfld('សំគាល់ (ស្រេចចិត្ត)','<textarea data-e="note" rows="2" placeholder="ឧ. មូលហេតុនៃការដូរ...">'+esc(ED.note||'')+'</textarea>')+
-    (bad?'<div style="color:#e53935;margin-top:10px;font-weight:600">⚠ ថ្ងៃដែលជ្រើសមិនទាន់ដល់ខែ — មិនអាចកែប្រែបានទេ</div>':'')+
-    '<div style="margin-top:12px"><button class="btn p" data-eapply="1"'+(bad||!valid?' disabled':'')+'>✓ អនុវត្ត</button></div>'+
-    '<div style="font-weight:700;margin:18px 0 6px">កំណត់ត្រាកែប្រែ</div>'+lg;
-}
-$('eCard').onchange=e=>{const k=e.target.dataset.e;if(!k)return;ED[k]=e.target.value;if(k==='note')return;if(k==='dp'){ED.n1=ED.n2=''}renderEdit()};
-$('eCard').onclick=e=>{const et=e.target.closest('[data-et]');if(et){const t=$('eCard').querySelector('textarea');if(t)ED.note=t.value;ED.type=et.dataset.et;ED.n1=ED.n2='';renderEdit();return}if(e.target.dataset.eapply)applyEdit()};
-function applyEdit(){
-  const D=dept(ED.dp);if(!D)return;const t=$('eCard').querySelector('textarea');ED.note=t?t.value.trim():'';
-  if(!(ED.type==='swap'?[ED.d,ED.d2]:[ED.d]).every(okD)){toast('⚠ មិនទាន់ដល់ខែ');return}
-  if(doChange(ED.type,D,{d:ED.d,c:ED.c,n1:ED.n1,d2:ED.d2,c2:ED.c2,n2:ED.n2,note:ED.note})){ED.note='';renderAll();toast('រក្សាទុករួចរាល់ ✓')}}
+function renderEdit(){const box=$('eCard');if(!box)return;
+  const lg=(S.log||[]).map(x=>'<div style="padding:7px 0;border-top:1px solid var(--line);font-size:13px"><span style="color:var(--sub)">'+fmtT(x.t)+'</span> '+esc(x.x)+'</div>').join('')||'<div style="color:var(--sub)">មិនទាន់មានកំណត់ត្រា</div>';
+  box.innerHTML='<div style="font-weight:700;margin-bottom:4px">កំណត់ត្រាកែប្រែ</div><div style="color:var(--sub);font-size:12px;margin-bottom:8px">ការជំនួស / ដូរវេន / វេនយាមខ្លួនឯង / ផ្សេងៗ ដែលធ្វើក្នុង «មើលតាមថ្ងៃ (រាយឈ្មោះ)» ត្រូវកត់ត្រានៅទីនេះ។</div>'+lg}
 
 $('cPrev').onclick=()=>{cm--;if(cm<1){cm=12;cy--}renderCount()};$('cNext').onclick=()=>{cm++;if(cm>12){cm=1;cy++}renderCount()};
 function renderCount(){
