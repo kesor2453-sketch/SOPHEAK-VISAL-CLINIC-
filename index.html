@@ -381,7 +381,7 @@ document.addEventListener('click',e=>{const t=e.target;
   if(t.dataset.rm!==undefined){setL(t.dataset.d,t.dataset.dp,t.dataset.c,get(t.dataset.d,t.dataset.dp,t.dataset.c).filter(x=>x!==t.dataset.rm));save();renderAll();return}
   const nb=t.closest('[data-note]');if(nb){openDlg({mode:'note',d:nb.dataset.d,dp:nb.dataset.dp,c:nb.dataset.c});return}
   const pk=t.closest('[data-pk]');if(pk){openDlg({mode:'pill',act:'rep',d:pk.dataset.d,dp:pk.dataset.dp,c:pk.dataset.c,n:pk.dataset.n});return}
-  const a=t.closest('.addp');if(a){openDlg({mode:'fill',d:a.dataset.d,dp:a.dataset.dp,c:a.dataset.c});return}
+  const a=t.closest('.addp');if(a&&!editing){closePop();addEdit(a);return}
   const m=t.closest('.mc');if(m){showPop(m);return}
   if(!t.closest('.pop'))closePop()});
 
