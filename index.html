@@ -41,6 +41,13 @@ table{border-collapse:collapse;font-size:12.5px}
 @media(max-width:640px){.dr{flex-direction:column}.dr .dh{width:auto}.dcol{border-left:0;border-top:1px solid var(--line)}}
 .tg{min-height:30px;min-width:70px;border-radius:8px;border:1px dashed #c3c9d3;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}.tg:hover{background:#f0f2f6}
 .fitp .nop,.fitp .no-p{display:none!important}.mvs{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center}.mvs [data-v]{cursor:grab}.tg.lk{cursor:default;border-style:dotted}
+.mt tr.we td,.mt td.we{background:#ffeaea}
+.mt tr.td td,.mt td.td{background:#ffe066}
+.mt th.td{background:#ffb703;color:#1c2430}
+.mt th.we{background:#e53935;color:#fff}
+.mt td.nmc.td{background:#ffc928;font-weight:800;box-shadow:inset 5px 0 0 #ff7a00}
+.mt td.nmc.we{background:#e53935;color:#fff}.mt td.nmc.we small{color:#fff;opacity:.85}
+.tb{background:#ff7a00;color:#fff;border-radius:6px;padding:1px 6px;font-size:10px;margin-left:5px;font-weight:700}
 .gc{min-height:26px;min-width:44px;padding:2px 5px;border-radius:6px;font-weight:700;font-size:11.5px;white-space:nowrap;display:flex;align-items:center;justify-content:center}
 .mc:focus{outline:2px solid var(--brand);outline-offset:1px}.mc{scroll-margin-left:150px}
 .pp{border-radius:9px;padding:5px 11px;box-shadow:0 1px 2px rgba(20,25,40,.12)}.pp small{color:inherit;opacity:.8}
@@ -97,7 +104,7 @@ const MIDW={id:'midwife',name:'ឆ្មប',icon:'🤰',color:'#d6336c'};
 const DEF=()=>[{id:'doctor',name:'គ្រូពេទ្យ',icon:'🩺',color:'#2f6fed'},{id:'nurse',name:'Nurse',icon:'💉',color:'#0f9d7a'},MIDW,{id:'eye',name:'ភ្នែក',icon:'👁️',color:'#8a4fd6'},{id:'dental',name:'ធ្មេញ',icon:'🦷',color:'#e07b00'}].map(d=>({...d,cols:cols2()}));
 const ord=c=>({c1:1,c2:2,c3:3}[c.id]||9);
 let S={v:2,depts:DEF(),staff:{},sched:{}};S.depts.forEach(d=>S.staff[d.id]=[]);
-let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day',pDept=null,pName=null,pEdit=false,dayDept='all';
+let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day',pDept=null,pName=null,pEdit=false,dayDept='all',bEdit=false;
 const $=id=>document.getElementById(id),p2=n=>(n<10?'0':'')+n,ds=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const key=(d,c)=>d+'__'+c;
@@ -134,7 +141,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.value||'all';x.innerHTML='<option value="all">ព្រីនទាំងអស់</option>'+S.depts.map(D=>'<option value="'+D.id+'">'+esc(D.icon+' '+D.name)+'</option>').join('');x.value=S.depts.some(D=>D.id===v)?v:'all'})}
 function doPrint(v){
   const month=$('p-month').classList.contains('on'),keep=dayDept;let rr=false,st=null;
-  if(month&&mview==='day'&&dayDept!=='all'){dayDept='all';renderMonth();rr=true}
+  if(month&&(mview==='day'||mview==='grid')&&dayDept!=='all'){dayDept='all';renderMonth();rr=true}
   const els=[...document.querySelectorAll('.pn.on .dr,.pn.on .mdept')];
   if(v!=='all')els.forEach(e=>{if(e.dataset.id!==v)e.classList.add('nop')});
   const W=$('mWrap');
@@ -160,7 +167,7 @@ function shiftDay(n){day=new Date(day.getFullYear(),day.getMonth(),day.getDate()
 $('dPrev').onclick=()=>shiftDay(-1);$('dNext').onclick=()=>shiftDay(1);$('dToday').onclick=()=>{day=new Date();renderDay()};
 $('dPick').onchange=e=>{if(e.target.value){const p=e.target.value.split('-');day=new Date(+p[0],+p[1]-1,+p[2]);renderDay()}};
 function renderDay(){
-  const d=ds(day);$('dLbl').textContent=DW[day.getDay()]+' '+day.getDate()+' '+MN[day.getMonth()]+' '+day.getFullYear();$('dPick').value=d;
+  const d=ds(day);$('dLbl').textContent=DW[day.getDay()]+' '+day.getDate()+' '+MN[day.getMonth()]+' '+day.getFullYear()+(d===ds(new Date())?' · ថ្ងៃនេះ':'');$('dLbl').style.color=day.getDay()%6===0?'#e53935':'';$('dPick').value=d;
   $('dGrid').innerHTML=S.depts.map(D=>'<div class="dept dr" draggable="true" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span class="grip no-p" title="ទាញដើម្បីផ្លាស់ទី">⋮⋮</span><span style="flex:1">'+D.icon+' '+esc(D.name)+'</span><span class="mv no-p"><b data-up="'+D.id+'">▲</b><b data-dn="'+D.id+'">▼</b></span></div><div class="dcols">'+
     D.cols.map(c=>'<div class="dcol"><div class="sl">'+esc(c.label)+'</div><div class="ppl">'+(get(d,D.id,c.id).map(n=>pill(D,n)).join('')||'<span style="color:#c3c9d3">—</span>')+'</div></div>').join('')+'</div></div>').join('');
 }
@@ -189,8 +196,8 @@ function addEdit(el){
 }
 
 /* ---------- MONTH (staff as rows, departments stacked) ---------- */
-$('mPrev').onclick=()=>{mm--;if(mm<1){mm=12;my--}renderMonth()};$('mNext').onclick=()=>{mm++;if(mm>12){mm=1;my++}renderMonth()};
-$('mToday').onclick=()=>{const n=new Date();my=n.getFullYear();mm=n.getMonth()+1;renderMonth()};
+$('mPrev').onclick=()=>{bEdit=false;mm--;if(mm<1){mm=12;my--}renderMonth()};$('mNext').onclick=()=>{bEdit=false;mm++;if(mm>12){mm=1;my++}renderMonth()};
+$('mToday').onclick=()=>{bEdit=false;const n=new Date();my=n.getFullYear();mm=n.getMonth()+1;renderMonth()};
 const sh=c=>({c1:'ព',c2:'រ',c3:'យ'}[c.id]||c.label.charAt(0));
 $('mv1').onclick=()=>{mview='day';renderMonth()};$('mv2').onclick=()=>{mview='staff';pName=null;pEdit=false;renderMonth()};$('mv3').onclick=()=>{mview='grid';renderMonth()};
 let vOrd=['day','staff','grid'];try{const o=JSON.parse(localStorage.getItem('deptViewOrder'));if(Array.isArray(o)&&o.length===3&&['day','staff','grid'].every(x=>o.includes(x)))vOrd=o}catch(e){}
@@ -204,23 +211,24 @@ $('mViews').addEventListener('drop',e=>{e.preventDefault();const b=e.target.clos
 applyVOrd();
 const dChips=()=>'<div class="chips no-p" style="margin-bottom:12px;position:sticky;top:0;z-index:5;background:#fff;padding:6px 0"><div class="chip" data-dd="all" style="'+(dayDept==='all'?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">ទាំងអស់</div>'+S.depts.map(D=>'<div class="chip" data-dd="'+D.id+'" style="'+(dayDept===D.id?'background:'+D.color+';color:#fff;border-color:'+D.color:'')+'">'+D.icon+' '+esc(D.name)+'</div>').join('')+'</div>';
 function renderMonthDay(){
-  const n=new Date(my,mm,0).getDate(),t=ds(new Date());
+  const n=new Date(my,mm,0).getDate(),t=ds(new Date()),nw=new Date(),started=my*12+mm<=nw.getFullYear()*12+nw.getMonth()+1,canEdit=!started||bEdit;
   if(dayDept!=='all'&&!dept(dayDept))dayDept='all';
   $('mWrap').innerHTML=dChips()+S.depts.filter(D=>dayDept==='all'||D.id===dayDept).map(D=>{
-    let h='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+noonBtn(D)+'</div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
+    let h='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span><span>'+(canEdit?noonBtn(D):'')+(started?' <button class="nb no-p" data-bedit="1">'+(bEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button>':'')+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
     for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
-      h+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td>'+D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
-        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>')).join('')+'<span class="addp no-p" '+a+'>+</span></div></td>'}).join('')+'</tr>'}
+      h+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
+        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+'</div></td>'}).join('')+'</tr>'}
     return h+'</tbody></table></div></div>'}).join('');
 }
 function renderMonth(){
   $('mLbl').textContent=MN[mm-1]+' '+my;$('mv1').className='btn'+(mview==='day'?' p':'');$('mv2').className='btn'+(mview==='staff'?' p':'');$('mv3').className='btn'+(mview==='grid'?' p':'');
+  if(dayDept!=='all'&&!dept(dayDept))dayDept='all';
   return mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
 }
 function renderMonthGrid(){
   const n=new Date(my,mm,0).getDate(),t=ds(new Date()),days=[];
   for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();days.push({i,d,c:(w==0||w==6?'we ':'')+(d===t?'td':'')})}
-  $('mWrap').innerHTML='<div class="no-p" style="color:var(--sub);font-size:12px;margin-bottom:8px">សម្រាប់មើលប៉ុណ្ណោះ — បំពេញវេននៅ «មើលតាមថ្ងៃ (រាយឈ្មោះ)»</div>'+S.depts.map(D=>{
+  $('mWrap').innerHTML=dChips()+'<div class="no-p" style="color:var(--sub);font-size:12px;margin-bottom:8px">សម្រាប់មើលប៉ុណ្ណោះ — បំពេញវេននៅ «មើលតាមថ្ងៃ (រាយឈ្មោះ)»</div>'+S.depts.filter(D=>dayDept==='all'||D.id===dayDept).map(D=>{
     const names=(S.staff[D.id]||[]).map(s=>s.n);
     days.forEach(x=>D.cols.forEach(c=>get(x.d,D.id,c.id).forEach(nm=>{if(!names.includes(nm))names.push(nm)})));
     let h='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+'</div><div style="overflow-x:auto"><table class="mt"><thead><tr><th class="nmc">ឈ្មោះ</th>'+days.map(x=>'<th class="'+x.c+'">'+x.i+'</th>').join('')+'</tr></thead><tbody>';
@@ -239,7 +247,7 @@ function renderMonthStaff(){
   const D=dept(pDept),n=new Date(my,mm,0).getDate(),t=ds(new Date()),r=role(D.id,pName),pc=col(D.id,pName)||D.color;let tot=0,rows='';
   for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
     const on=D.cols.filter(c=>get(d,D.id,c.id).includes(pName));tot+=on.length;
-    rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td><td>'+(on.length&&r?esc(r):'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
+    rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td><td>'+(on.length&&r?esc(r):'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
       return '<td><div class="tg'+(pEdit?'':' lk')+'"'+(pEdit?' data-tg="'+c.id+'" data-d="'+d+'" data-dp="'+D.id+'"':'')+(a?' style="background:'+pc+';color:'+ink(pc)+';border:1px solid '+pc+'">✓':'>')+'</div></td>'}).join('')+'</tr>'}
   $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+' · '+esc(pName)+(r?' ('+esc(r)+')':'')+' · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+' <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button>'+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th><th>តួនាទី</th>'+
     D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
@@ -274,6 +282,7 @@ document.addEventListener('click',e=>{const t=e.target;
   if(t.dataset.vmove){const i=vOrd.indexOf(mview),j=i+(+t.dataset.vmove);if(i>=0&&j>=0&&j<3){const x=vOrd[i];vOrd[i]=vOrd[j];vOrd[j]=x;saveV();applyVOrd()}return}
   const dd=t.closest('[data-dd]');if(dd){dayDept=dd.dataset.dd;renderMonth();return}
   if(t.dataset.pedit){pEdit=!pEdit;renderMonth();return}
+  if(t.dataset.bedit){bEdit=!bEdit;renderMonth();return}
   if(t.dataset.print){doPrint(t.closest('.nav').querySelector('.psel').value);return}
   if(t.dataset.up||t.dataset.dn){moveDept(t.dataset.up||t.dataset.dn,t.dataset.up?-1:1);return}
   if(t.dataset.pback){pName=null;pEdit=false;renderMonth();return}
