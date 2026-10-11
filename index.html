@@ -59,7 +59,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .dbox select,.dbox textarea{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;width:100%;background:#fff;color:var(--ink)}
 .dt1{font-weight:700;margin-bottom:10px}.nt2{background:#fff8e1;border-radius:8px;padding:5px 9px;margin:4px 0;font-size:13px}
 .nt{font-size:11.5px;color:#6b4e00;background:#fff8e1;border-radius:6px;padding:2px 7px;margin-top:4px}
-.nb2{cursor:pointer;opacity:.4;font-size:12px}.nb2:hover{opacity:1}.pp[data-pk]{cursor:pointer}
+.nb2{cursor:pointer;opacity:.4;font-size:12px}.nb2.has{opacity:1;background:#fff3b0;border-radius:6px;padding:1px 6px;font-weight:700;font-size:11.5px}.nb2:hover{opacity:1}.pp[data-pk]{cursor:pointer}
 .xg{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}.xf{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:4px;min-width:160px;margin-bottom:6px}
 .xf select,.xf input,.xf textarea{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
 .gc{min-height:26px;min-width:44px;padding:2px 5px;border-radius:6px;font-weight:700;font-size:11.5px;white-space:nowrap;display:flex;align-items:center;justify-content:center}
@@ -186,7 +186,7 @@ $('dPick').onchange=e=>{if(e.target.value){const p=e.target.value.split('-');day
 function renderDay(){
   const d=ds(day);$('dLbl').textContent=DW[day.getDay()]+' '+day.getDate()+' '+MN[day.getMonth()]+' '+day.getFullYear()+(d===ds(new Date())?' · ថ្ងៃនេះ':'');$('dLbl').style.color=day.getDay()%6===0?'#e53935':'';$('dPick').value=d;
   $('dGrid').innerHTML=S.depts.map(D=>'<div class="dept dr" draggable="true" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span class="grip no-p" title="ទាញដើម្បីផ្លាស់ទី">⋮⋮</span><span style="flex:1">'+D.icon+' '+esc(D.name)+'</span><span class="mv no-p"><b data-up="'+D.id+'">▲</b><b data-dn="'+D.id+'">▼</b></span></div><div class="dcols">'+
-    D.cols.map(c=>'<div class="dcol"><div class="sl">'+esc(c.label)+'</div><div class="ppl">'+(get(d,D.id,c.id).map(n=>pill(D,n)).join('')||'<span style="color:#c3c9d3">—</span>')+'</div>'+noteHtml(d,D.id,c.id)+'</div>').join('')+'</div></div>').join('');
+    D.cols.map(c=>'<div class="dcol"><div class="sl">'+esc(c.label)+'</div><div class="ppl">'+(get(d,D.id,c.id).map(n=>pill(D,n)).join('')||'<span style="color:#c3c9d3">—</span>')+'</div>'+noteBadge(d,D.id,c.id)+'</div>').join('')+'</div></div>').join('');
 }
 let dragId=null;const dg=$('dGrid');
 dg.addEventListener('dragstart',e=>{const b=e.target.closest('.dr');if(!b)return;dragId=b.dataset.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragId)});
@@ -229,7 +229,7 @@ applyVOrd();
 const dChips=()=>'<div class="chips no-p" style="margin-bottom:12px;position:sticky;top:0;z-index:5;background:#fff;padding:6px 0"><div class="chip" data-dd="all" style="'+(dayDept==='all'?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">ទាំងអស់</div>'+S.depts.map(D=>'<div class="chip" data-dd="'+D.id+'" style="'+(dayDept===D.id?'background:'+D.color+';color:#fff;border-color:'+D.color:'')+'">'+D.icon+' '+esc(D.name)+'</div>').join('')+'</div>';
 const getN=(d,dp,c)=>((S.notes||{})[d]||{})[key(dp,c)]||[];
 const addN=(d,dp,c,x)=>{S.notes=S.notes||{};const o=S.notes[d]=S.notes[d]||{},k=key(dp,c);(o[k]=o[k]||[]).push({t:Date.now(),x})};
-const noteHtml=(d,dp,c)=>getN(d,dp,c).map(x=>'<div class="nt">📝 '+esc(x.x)+'</div>').join('');
+const noteBadge=(d,dp,c)=>{const L=getN(d,dp,c);return L.length?'<span class="nb2 has no-p" data-note="1" data-d="'+d+'" data-dp="'+dp+'" data-c="'+c+'" title="'+esc(L.map(x=>x.x).join('\n'))+'">📝'+L.length+'</span>':''};
 const fmD=(d,c,D)=>d.slice(8)+'/'+d.slice(5,7)+' '+((D.cols.find(x=>x.id===c)||{}).label||'');
 const mopt=(a,v)=>a.map(x=>'<option value="'+esc(x[0])+'"'+(x[0]===v?' selected':'')+'>'+esc(x[1])+'</option>').join('');
 let M=null;
@@ -278,7 +278,7 @@ function renderMonthDay(){
     let h='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span><span>'+(canEdit?noonBtn(D):'')+(started?' <button class="nb no-p" data-bedit="1">'+(bEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button>':'')+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
     for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
       h+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
-        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',started?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+'<span class="nb2 no-p" data-note="1" title="សំគាល់" '+a+'>📝</span></div>'+noteHtml(d,D.id,c.id)+'</td>'}).join('')+'</tr>'}
+        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',started?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+(getN(d,D.id,c.id).length?noteBadge(d,D.id,c.id):'<span class="nb2 no-p" data-note="1" title="សំគាល់" '+a+'>📝</span>')+'</div></td>'}).join('')+'</tr>'}
     return h+'</tbody></table></div></div>'}).join('');
   eqPills();
 }
