@@ -40,6 +40,7 @@ table{border-collapse:collapse;font-size:12.5px}
 .dcol .sl{color:var(--sub);font-size:12px;font-weight:600;padding-bottom:6px}
 @media(max-width:640px){.dr{flex-direction:column}.dr .dh{width:auto}.dcol{border-left:0;border-top:1px solid var(--line)}}
 .tg{min-height:30px;min-width:70px;border-radius:8px;border:1px dashed #c3c9d3;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}.tg:hover{background:#f0f2f6}
+.gc{min-height:26px;min-width:44px;padding:2px 5px;border-radius:6px;font-weight:700;font-size:11.5px;white-space:nowrap;display:flex;align-items:center;justify-content:center}
 .mc:focus{outline:2px solid var(--brand);outline-offset:1px}.mc{scroll-margin-left:150px}
 .pp{border-radius:9px;padding:5px 11px;box-shadow:0 1px 2px rgba(20,25,40,.12)}.pp small{color:inherit;opacity:.8}
 .nm{border-radius:10px;padding:6px 12px;font-weight:600;box-shadow:0 1px 2px rgba(20,25,40,.08)}.nm small{color:inherit;opacity:.8}
@@ -53,19 +54,19 @@ table{border-collapse:collapse;font-size:12.5px}
 .add{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.add input{flex:1;min-width:120px;padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1c2430;color:#fff;padding:9px 16px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none}.toast.s{opacity:1}
 .pn{display:none}.pn.on{display:block}
-@media print{@page{size:landscape;margin:8mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.top,.nav,.toast,.chips,.no-p,.pop{display:none!important}.card{box-shadow:none}}
+@media print{.nop{display:none!important}.dr,.mdept{break-inside:avoid}@page{size:landscape;margin:8mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.top,.nav,.toast,.chips,.no-p,.pop{display:none!important}.card{box-shadow:none}}
 </style></head><body><div id="app">
 <div class="top"><h1>កាលវិភាគតាមផ្នែក</h1>
 <div class="tabs"><div class="tab on" data-p="day">ប្រចាំថ្ងៃ</div><div class="tab" data-p="month">ប្រចាំខែ</div><div class="tab" data-p="staff">បុគ្គលិក</div><div class="tab" data-p="count">ចំនួនវេន</div></div></div>
 
 <div class="pn on" id="p-day"><div class="card">
 <div class="nav"><button class="btn" id="dPrev">‹</button><div class="lbl" id="dLbl"></div><button class="btn" id="dNext">›</button>
-<input type="date" class="btn" id="dPick"><button class="btn" id="dToday">ថ្ងៃនេះ</button><button class="btn no-p" onclick="print()">🖨️ ព្រីន</button></div>
+<input type="date" class="btn" id="dPick"><button class="btn" id="dToday">ថ្ងៃនេះ</button><select class="btn no-p psel" title="ជ្រើសផ្នែកដែលត្រូវព្រីន"></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button></div>
 <div class="dlist" id="dGrid"></div></div></div>
 
 <div class="pn" id="p-month"><div class="card">
 <div class="nav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
-<button class="btn" id="mToday">ខែនេះ</button><button class="btn no-p" onclick="print()">🖨️ ព្រីន</button>
+<button class="btn" id="mToday">ខែនេះ</button><select class="btn no-p psel" title="ជ្រើសផ្នែកដែលត្រូវព្រីន"></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
 <button class="btn" id="mv1">មើលតាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2">បំពេញវេន (តាមបុគ្គលិក)</button><button class="btn" id="mv3">កាឡោនដើម (ទាំងអស់)</button>
 <span style="color:var(--sub);font-size:12px">«បំពេញវេន» → ជ្រើសឈ្មោះ → ចុចលើវេនដែលធ្វើការ</span></div>
 <div id="mWrap"></div></div></div>
@@ -95,7 +96,7 @@ const MIDW={id:'midwife',name:'ឆ្មប',icon:'🤰',color:'#d6336c'};
 const DEF=()=>[{id:'doctor',name:'គ្រូពេទ្យ',icon:'🩺',color:'#2f6fed'},{id:'nurse',name:'Nurse',icon:'💉',color:'#0f9d7a'},MIDW,{id:'eye',name:'ភ្នែក',icon:'👁️',color:'#8a4fd6'},{id:'dental',name:'ធ្មេញ',icon:'🦷',color:'#e07b00'}].map(d=>({...d,cols:cols2()}));
 const ord=c=>({c1:1,c2:2,c3:3}[c.id]||9);
 let S={v:2,depts:DEF(),staff:{},sched:{}};S.depts.forEach(d=>S.staff[d.id]=[]);
-let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='staff',pDept=null,pName=null;
+let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day',pDept=null,pName=null;
 const $=id=>document.getElementById(id),p2=n=>(n<10?'0':'')+n,ds=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const key=(d,c)=>d+'__'+c;
@@ -107,7 +108,7 @@ const dept=id=>S.depts.find(d=>d.id===id);
 const col=(dp,n)=>{const s=(S.staff[dp]||[]).find(x=>x.n===n);return (s&&s.c)||''};
 const ink=h=>{const m=/^#(..)(..)(..)$/.exec(h);if(!m)return '#1c2430';return (.299*parseInt(m[1],16)+.587*parseInt(m[2],16)+.114*parseInt(m[3],16))>150?'#1c2430':'#fff'};
 const nmSt=(dp,n)=>{const c=col(dp,n);return c?'background:'+c+';color:'+ink(c)+';border-color:'+c:''};
-const pill=(D,n)=>{const c=col(D.id,n);return '<span class="pp" style="'+(c?'background:'+c+';color:'+ink(c):'background:'+D.color+'1f')+'">'+lab(D.id,n)+'</span>'};
+const pill=(D,n,x)=>{const c=col(D.id,n);return '<span class="pp" style="'+(c?'background:'+c+';color:'+ink(c):'background:'+D.color+'1f')+'">'+lab(D.id,n)+(x||'')+'</span>'};
 function save(){if(USE_FB)setDoc(ref,S).catch(e=>toast('⚠ '+e.message));else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
@@ -129,7 +130,12 @@ if(USE_FB){
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.pn').forEach(x=>x.classList.remove('on'));
   t.classList.add('on');$('p-'+t.dataset.p).classList.add('on');renderAll()});
-function renderAll(){renderDay();renderMonth();renderStaff();renderCount()}
+function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.value||'all';x.innerHTML='<option value="all">ព្រីនទាំងអស់</option>'+S.depts.map(D=>'<option value="'+D.id+'">'+esc(D.icon+' '+D.name)+'</option>').join('');x.value=S.depts.some(D=>D.id===v)?v:'all'})}
+function doPrint(v){const els=[...document.querySelectorAll('.pn.on .dr,.pn.on .mdept')];
+  if(v!=='all')els.forEach(e=>{if(e.dataset.id!==v)e.classList.add('nop')});
+  const clean=()=>{els.forEach(e=>e.classList.remove('nop'));removeEventListener('afterprint',clean)};
+  addEventListener('afterprint',clean);print()}
+function renderAll(){fillSel();renderDay();renderMonth();renderStaff();renderCount()}
 
 /* ---------- shift column toggle (afternoon) ---------- */
 const noonBtn=D=>'<button class="nb no-p" data-noon="'+D.id+'">'+(D.cols.some(c=>c.id==='c2')?'− រសៀល':'+ រសៀល')+'</button>';
@@ -179,26 +185,26 @@ $('mv1').onclick=()=>{mview='day';renderMonth()};$('mv2').onclick=()=>{mview='st
 function renderMonthDay(){
   const n=new Date(my,mm,0).getDate(),t=ds(new Date());
   $('mWrap').innerHTML=S.depts.map(D=>{
-    let h='<div class="mdept"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+noonBtn(D)+'</div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
+    let h='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+noonBtn(D)+'</div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
     for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
       h+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td>'+D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
-        return '<td><div class="ppl">'+(get(d,D.id,c.id).map(nm=>pill(D,nm)).join('')||'<span style="color:#c3c9d3">—</span>')+'</div></td>'}).join('')+'</tr>'}
+        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>')).join('')+'<span class="addp no-p" '+a+'>+</span></div></td>'}).join('')+'</tr>'}
     return h+'</tbody></table></div></div>'}).join('');
 }
 function renderMonth(){
   $('mLbl').textContent=MN[mm-1]+' '+my;$('mv1').className='btn'+(mview==='day'?' p':'');$('mv2').className='btn'+(mview==='staff'?' p':'');$('mv3').className='btn'+(mview==='grid'?' p':'');
-  return mview==='day'?renderMonthDay():mview==='grid'?renderMonthGrid():renderMonthStaff();
+  return mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
 }
 function renderMonthGrid(){
   const n=new Date(my,mm,0).getDate(),t=ds(new Date()),days=[];
   for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();days.push({i,d,c:(w==0||w==6?'we ':'')+(d===t?'td':'')})}
-  $('mWrap').innerHTML='<div class="no-p" style="color:var(--sub);font-size:12px;margin-bottom:8px">ព = ព្រឹក · រ = រសៀល · យ = យប់ — ចុចលើប្រអប់ណាក៏បាន (ឆ្វេង ស្ដាំ ឡើង ចុះ) ហើយជ្រើសវេន<br>⌨️ ព្រួញ ← → ↑ ↓ = រំកិលប្រអប់ · លេខ 1 / 2 / 3 = ដាក់/ដកវេនទី ១ / ២ / ៣ (តាមលំដាប់ក្នុងតារាង) · Enter = បើកជម្រើស · Esc = បិទ</div>'+S.depts.map(D=>{
+  $('mWrap').innerHTML='<div class="no-p" style="color:var(--sub);font-size:12px;margin-bottom:8px">សម្រាប់មើលប៉ុណ្ណោះ — បំពេញវេននៅ «មើលតាមថ្ងៃ (រាយឈ្មោះ)»</div>'+S.depts.map(D=>{
     const names=(S.staff[D.id]||[]).map(s=>s.n);
     days.forEach(x=>D.cols.forEach(c=>get(x.d,D.id,c.id).forEach(nm=>{if(!names.includes(nm))names.push(nm)})));
-    let h='<div class="mdept"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+noonBtn(D)+'</div><div style="overflow-x:auto"><table class="mt"><thead><tr><th class="nmc">ឈ្មោះ</th>'+days.map(x=>'<th class="'+x.c+'">'+x.i+'</th>').join('')+'</tr></thead><tbody>';
+    let h='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+'</div><div style="overflow-x:auto"><table class="mt"><thead><tr><th class="nmc">ឈ្មោះ</th>'+days.map(x=>'<th class="'+x.c+'">'+x.i+'</th>').join('')+'</tr></thead><tbody>';
     names.forEach(nm=>{const pc=col(D.id,nm)||D.color;h+='<tr><td class="nmc" style="'+nmSt(D.id,nm)+'">'+lab(D.id,nm)+'</td>'+days.map(x=>{
       const cs=D.cols.filter(c=>get(x.d,D.id,c.id).includes(nm));
-      return '<td class="'+x.c+'"><div class="mc" tabindex="0" data-d="'+x.d+'" data-dp="'+D.id+'" data-n="'+esc(nm)+'"'+(cs.length?' style="background:'+pc+';color:'+ink(pc)+'"':'')+'>'+cs.map(sh).join('')+'</div></td>'}).join('')+'</tr>'});
+      return '<td class="'+x.c+'"><div class="gc"'+(cs.length?' style="background:'+pc+';color:'+ink(pc)+'"':'')+'>'+cs.map(c=>esc(c.label)).join('/')+'</div></td>'}).join('')+'</tr>'});
     if(!names.length)h+='<tr><td class="nmc" colspan="'+(n+1)+'" style="color:var(--sub)">មិនទាន់មានឈ្មោះ — បន្ថែមនៅផ្ទាំង «បុគ្គលិក»</td></tr>';
     return h+'</tbody></table></div></div>'}).join('');
 }
@@ -213,7 +219,7 @@ function renderMonthStaff(){
     const on=D.cols.filter(c=>get(d,D.id,c.id).includes(pName));tot+=on.length;
     rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td><td>'+(on.length&&r?esc(r):'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
       return '<td><div class="tg" data-tg="'+c.id+'" data-d="'+d+'" data-dp="'+D.id+'"'+(a?' style="background:'+pc+';color:'+ink(pc)+';border:1px solid '+pc+'">✓':'>')+'</div></td>'}).join('')+'</tr>'}
-  $('mWrap').innerHTML='<div class="mdept"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+' · '+esc(pName)+(r?' ('+esc(r)+')':'')+' · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th><th>តួនាទី</th>'+
+  $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+' · '+esc(pName)+(r?' ('+esc(r)+')':'')+' · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th><th>តួនាទី</th>'+
     D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function closePop(){if(pop){pop.remove();pop=null}}
@@ -243,6 +249,7 @@ document.addEventListener('keydown',e=>{const c=e.target.closest&&e.target.close
 
 /* ---------- GLOBAL CLICKS ---------- */
 document.addEventListener('click',e=>{const t=e.target;
+  if(t.dataset.print){doPrint(t.closest('.nav').querySelector('.psel').value);return}
   if(t.dataset.up||t.dataset.dn){moveDept(t.dataset.up||t.dataset.dn,t.dataset.up?-1:1);return}
   if(t.dataset.pback){pName=null;renderMonth();return}
   if(t.dataset.grid){mview='grid';renderMonth();return}
