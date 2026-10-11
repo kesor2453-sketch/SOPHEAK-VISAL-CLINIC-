@@ -94,7 +94,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 
 <div class="pn" id="p-month"><div class="card">
 <div class="nav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
-<button class="btn" id="mToday">ខែនេះ</button><select class="btn no-p psel2" id="pSel" title="ជ្រើសឈ្មោះគ្រូពេទ្យដែលត្រូវព្រីន"></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
+<button class="btn" id="mToday">ខែនេះ</button><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
 <span id="mViews" class="mvs"><button class="btn" id="mv1" data-v="day" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">មើលតាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2" data-v="staff" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">បំពេញវេន (តាមបុគ្គលិក)</button><button class="btn" id="mv3" data-v="grid" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">កាឡោនដើម (ទាំងអស់)</button><span id="mvArrows" class="no-p"><button class="btn" data-vmove="-1" title="រំកិលទៅមុខ">◀</button><button class="btn" data-vmove="1" title="រំកិលទៅក្រោយ">▶</button></span></span>
 <span style="color:var(--sub);font-size:12px">«បំពេញវេន» → ជ្រើសឈ្មោះ → ចុចលើវេនដែលធ្វើការ</span></div>
 <div id="mWrap"></div></div></div>
@@ -163,7 +163,9 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{eDep=eStf=false;rEdi
   t.classList.add('on');$('p-'+t.dataset.p).classList.add('on');renderAll()});
 function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.value||'all';x.innerHTML='<option value="all">ព្រីនទាំងអស់</option>'+S.depts.map(D=>'<option value="'+D.id+'">'+esc(D.icon+' '+D.name)+'</option>').join('');x.value=S.depts.some(D=>D.id===v)?v:'all'})}
 function doPrint(v){
-  if($('p-month').classList.contains('on')){const k=v.indexOf('|');if(k<0){toast('⚠ សូមជ្រើសឈ្មោះគ្រូពេទ្យ');return}openDlg({mode:'print',v,dp:v.slice(0,k)});return}
+  if($('p-month').classList.contains('on')){
+    if(mview==='staff'&&pName&&dept(pDept)){openDlg({mode:'print',v:pDept+'|'+pName,dp:pDept});return}
+    toast('សូមជ្រើសឈ្មោះគ្រូពេទ្យ ក្នុង «បំពេញវេន (តាមបុគ្គលិក)» មុនព្រីន');mview='staff';pName=null;renderMonth();return}
   const els=[...document.querySelectorAll('.pn.on .dr')];
   if(v!=='all')els.forEach(e=>{if(e.dataset.id!==v)e.classList.add('nop')});
   const clean=()=>{els.forEach(e=>e.classList.remove('nop'));removeEventListener('afterprint',clean)};
@@ -181,10 +183,7 @@ function printSheet(v,wc){
   ps.querySelectorAll('.psd').forEach(b=>{const h=b.offsetHeight;if(h>0)b.style.zoom=Math.max(Math.min(1,1000/h),.45)});
   const clean=()=>{document.body.classList.remove('psp');ps.innerHTML='';st.remove();removeEventListener('afterprint',clean)};
   addEventListener('afterprint',clean);print()}
-function fillPSel(){const x=$('pSel');if(!x)return;const v=x.value;
-  x.innerHTML=S.depts.filter(D=>(S.staff[D.id]||[]).length).map(D=>'<optgroup label="'+esc(D.icon+' '+D.name)+'">'+S.staff[D.id].map(s=>'<option value="'+esc(D.id+'|'+s.n)+'">'+esc(s.n)+'</option>').join('')+'</optgroup>').join('')||'<option value="">— គ្មានបុគ្គលិក —</option>';
-  if([...x.options].some(o=>o.value===v))x.value=v}
-function renderAll(){fillSel();fillPSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit()}
+function renderAll(){fillSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit()}
 
 /* ---------- shift column toggle (afternoon) ---------- */
 const noonBtn=D=>'<button class="nb no-p" data-noon="'+D.id+'">'+(D.cols.some(c=>c.id==='c2')?'− រសៀល':'+ រសៀល')+'</button>';
