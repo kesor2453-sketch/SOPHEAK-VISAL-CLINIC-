@@ -66,7 +66,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .psd{width:700px;margin:0 auto;color:#000;background:#fff}.psd h2{font-size:15px;margin:0 0 8px;text-align:center}
 .pst{width:100%;border-collapse:collapse;font-size:11px}.pst th,.pst td{border:1px solid #333;padding:3px 4px;height:22px}
 .pst th{background:#eee}.pst td.pd{text-align:center;font-weight:700;white-space:nowrap}.pst td.pd.we{background:#ffeaea;color:#d32f2f}
-.pst td.pd small{display:block;font-weight:400;font-size:9px}.pst td.pn1 small{color:#555;margin-left:3px;font-size:9.5px}.pst td.po{font-size:10px}.pst tr.pon td{background:#e3ecfb}.pf{margin-top:8px;font-size:12px;text-align:right}
+.pst td.pd small{display:block;font-weight:400;font-size:9px}.pst td.pn1 small{color:#555;margin-left:3px;font-size:9.5px}.pst td.po{font-size:10px}.pst tr.pon td{background:#e3ecfb}.pf{margin-top:8px;font-size:12px;text-align:right}.pst td.pc{text-align:center;font-weight:700}
 @media print{.psd{break-after:page}.psd:last-child{break-after:auto}.pst thead{display:table-header-group}.pst tr{break-inside:avoid}}
 .gc{min-height:26px;min-width:44px;padding:2px 5px;border-radius:6px;font-weight:700;font-size:11.5px;white-space:nowrap;display:flex;align-items:center;justify-content:center}
 .mc:focus{outline:2px solid var(--brand);outline-offset:1px}.mc{scroll-margin-left:150px}
@@ -163,18 +163,19 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{eDep=eStf=false;rEdi
   t.classList.add('on');$('p-'+t.dataset.p).classList.add('on');renderAll()});
 function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.value||'all';x.innerHTML='<option value="all">ព្រីនទាំងអស់</option>'+S.depts.map(D=>'<option value="'+D.id+'">'+esc(D.icon+' '+D.name)+'</option>').join('');x.value=S.depts.some(D=>D.id===v)?v:'all'})}
 function doPrint(v){
-  if($('p-month').classList.contains('on'))return printSheet(v);
+  if($('p-month').classList.contains('on')){const k=v.indexOf('|');if(k<0){toast('⚠ សូមជ្រើសឈ្មោះគ្រូពេទ្យ');return}openDlg({mode:'print',v,dp:v.slice(0,k)});return}
   const els=[...document.querySelectorAll('.pn.on .dr')];
   if(v!=='all')els.forEach(e=>{if(e.dataset.id!==v)e.classList.add('nop')});
   const clean=()=>{els.forEach(e=>e.classList.remove('nop'));removeEventListener('afterprint',clean)};
   addEventListener('afterprint',clean);print()}
-function printSheet(v){
+function printSheet(v,wc){
   const k=v.indexOf('|');if(k<0){toast('⚠ សូមជ្រើសឈ្មោះគ្រូពេទ្យ');return}
   const D=dept(v.slice(0,k)),nm=v.slice(k+1);if(!D)return;
-  const nd=new Date(my,mm,0).getDate(),ps=$('psheet'),r=role(D.id,nm);let tot=0,body='';
-  for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),sl=D.cols.filter(c=>get(d,D.id,c.id).includes(nm));tot+=sl.length;
-    body+='<tr><td class="pd'+(w==0||w==6?' we':'')+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td><td></td><td></td><td></td><td></td><td class="po">'+esc(sl.map(c=>getN(d,D.id,c.id).map(x=>x.x).join(' ; ')).filter(Boolean).join(' ; '))+'</td></tr>'}
-  ps.innerHTML='<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th><th style="width:14%">ម៉ោងចេញ</th><th style="width:14%">ម៉ោងចូល</th><th style="width:13%">ចំនួនម៉ោង</th><th style="width:21%">ហត្ថាលេខា</th><th style="width:27%">ផ្សេងៗ</th></tr></thead><tbody>'+body+'</tbody></table></div>';
+  const nd=new Date(my,mm,0).getDate(),ps=$('psheet'),r=role(D.id,nm);let body='';
+  const nc=wc?D.cols.length:0,rest=100-11-nc*6,f=[14,14,13,21,27],W=i=>(f[i]/89*rest).toFixed(1)+'%';
+  for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),sl=D.cols.filter(c=>get(d,D.id,c.id).includes(nm));
+    body+='<tr><td class="pd'+(w==0||w==6?' we':'')+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td>'+(wc?D.cols.map(c=>'<td class="pc">'+(sl.some(x=>x.id===c.id)?'✓':'')+'</td>').join(''):'')+'<td></td><td></td><td></td><td></td><td class="po">'+esc(sl.map(c=>getN(d,D.id,c.id).map(x=>x.x).join(' ; ')).filter(Boolean).join(' ; '))+'</td></tr>'}
+  ps.innerHTML='<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th>'+(wc?D.cols.map(c=>'<th style="width:6%">'+esc(c.label)+'</th>').join(''):'')+'<th style="width:'+W(0)+'">ម៉ោងចេញ</th><th style="width:'+W(1)+'">ម៉ោងចូល</th><th style="width:'+W(2)+'">ចំនួនម៉ោង</th><th style="width:'+W(3)+'">ហត្ថាលេខា</th><th style="width:'+W(4)+'">ផ្សេងៗ</th></tr></thead><tbody>'+body+'</tbody></table></div>';
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 portrait;margin:8mm}}';document.head.appendChild(st);
   document.body.classList.add('psp');
   ps.querySelectorAll('.psd').forEach(b=>{const h=b.offsetHeight;if(h>0)b.style.zoom=Math.max(Math.min(1,1000/h),.45)});
@@ -251,6 +252,8 @@ function closeDlg(){M=null;$('dlg').style.display='none'}
 function renderDlg(){
   if(!M)return;const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
   const foot=ok=>'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn" data-dclose="1">បិទ</button><button class="btn p" data-dok="1">'+ok+'</button></div>';
+  if(M.mode==='print'){const nm=M.v.slice(M.v.indexOf('|')+1),sh=D.cols.map(c=>c.label).join(' / ');
+    B.innerHTML='<div class="dt1">🖨️ ព្រីនប្រចាំខែ · '+esc(nm)+' · '+MN[mm-1]+' '+my+'</div><div style="margin:4px 0 14px;line-height:1.7">ចង់ព្រីនបន្ថែមជួរកាឡោន <b>'+esc(sh)+'</b> (ដាក់ ✓ ត្រង់វេនដែលគាត់យាម) ដែរឬទេ?</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" data-dclose="1">បោះបង់</button><button class="btn" data-dprint="plain">ព្រីនធម្មតា</button><button class="btn p" data-dprint="cols">ព្រីន + ជួរ '+esc(sh)+'</button></div>';return}
   if(M.mode==='fill'){const l=get(M.d,D.id,M.c),av=(S.staff[D.id]||[]).map(x=>x.n).filter(x=>!l.includes(x));
     B.innerHTML='<div class="dt1">'+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div><label class="fl">គ្រូពេទ្យ<select id="dSel">'+(av.length?mopt(av.map(x=>[x,x]),''):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select></label><label class="fl">ឬវាយឈ្មោះថ្មី<input id="dNm" type="text" placeholder="ឈ្មោះ..."></label>'+foot('✓ បំពេញ');return}
   if(M.mode==='note'){const L=getN(M.d,M.dp,M.c);
@@ -285,6 +288,7 @@ function applyDlg(){
 $('dlg').addEventListener('change',e=>{const k=e.target.dataset.m;if(!k||!M)return;const t=$('dNote');M.note=t?t.value:'';M[k]=e.target.value;if(k==='d2'||k==='c2')M.n2='';renderDlg()});
 $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   if(t===$('dlg')||t.dataset.dclose){closeDlg();return}
+  if(t.dataset.dprint){const v=M.v,wc=t.dataset.dprint==='cols';closeDlg();printSheet(v,wc);return}
   if(t.dataset.dok){applyDlg();return}
   const a=t.closest('[data-dact]');if(a){const n=$('dNote');M.note=n?n.value:'';M.act=a.dataset.dact;renderDlg();return}
   if(t.dataset.ndel!==undefined){getN(M.d,M.dp,M.c).splice(+t.dataset.ndel,1);save();renderAll();renderDlg()}});
