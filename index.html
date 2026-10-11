@@ -32,6 +32,7 @@ table{border-collapse:collapse;font-size:12.5px}
 .mt td{padding:2px;border-bottom:1px solid var(--line);text-align:center}
 .mt .nmc{text-align:left;white-space:nowrap;position:sticky;left:0;background:#fff;padding:5px 8px;font-weight:600;min-width:130px;z-index:1;border-right:1px solid var(--line)}
 .mt th.nmc{background:#f7f8fb}.mt .we{background:#fdf0f0;color:#e05252}.mt .td{background:#fff3b0}
+.pp{color:var(--ink)}.dt td{text-align:left;vertical-align:top;padding:5px 8px}.dt td.nmc{vertical-align:top}
 .mc{min-height:26px;min-width:28px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:1px}.mc:hover{outline:1px solid var(--line)}
 .pop{position:fixed;z-index:50;background:#fff;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.22);padding:6px;display:flex;gap:5px}
 .cnt{width:100%}.cnt th{background:#f7f8fb;color:var(--sub);padding:8px 4px;border-bottom:1px solid var(--line)}.cnt td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:center}
@@ -54,6 +55,7 @@ table{border-collapse:collapse;font-size:12.5px}
 <div class="pn" id="p-month"><div class="card">
 <div class="nav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
 <button class="btn" id="mToday">ខែនេះ</button><button class="btn no-p" onclick="print()">🖨️ ព្រីន</button>
+<button class="btn" id="mv1">តាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2">តាមបុគ្គលិក</button>
 <span style="color:var(--sub);font-size:12px">ព = ព្រឹក · រ = រសៀល · យ = យប់ — ចុចលើប្រអប់ដើម្បីជ្រើសវេន</span></div>
 <div id="mWrap"></div></div></div>
 
@@ -82,7 +84,7 @@ const MIDW={id:'midwife',name:'ឆ្មប',icon:'🤰',color:'#d6336c'};
 const DEF=()=>[{id:'doctor',name:'គ្រូពេទ្យ',icon:'🩺',color:'#2f6fed'},{id:'nurse',name:'Nurse',icon:'💉',color:'#0f9d7a'},MIDW,{id:'eye',name:'ភ្នែក',icon:'👁️',color:'#8a4fd6'},{id:'dental',name:'ធ្មេញ',icon:'🦷',color:'#e07b00'}].map(d=>({...d,cols:cols2()}));
 const ord=c=>({c1:1,c2:2,c3:3}[c.id]||9);
 let S={v:2,depts:DEF(),staff:{},sched:{}};S.depts.forEach(d=>S.staff[d.id]=[]);
-let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null;
+let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day';
 const $=id=>document.getElementById(id),p2=n=>(n<10?'0':'')+n,ds=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const key=(d,c)=>d+'__'+c;
@@ -154,8 +156,19 @@ function addEdit(el){
 $('mPrev').onclick=()=>{mm--;if(mm<1){mm=12;my--}renderMonth()};$('mNext').onclick=()=>{mm++;if(mm>12){mm=1;my++}renderMonth()};
 $('mToday').onclick=()=>{const n=new Date();my=n.getFullYear();mm=n.getMonth()+1;renderMonth()};
 const sh=c=>({c1:'ព',c2:'រ',c3:'យ'}[c.id]||c.label.charAt(0));
+$('mv1').onclick=()=>{mview='day';renderMonth()};$('mv2').onclick=()=>{mview='staff';renderMonth()};
+function renderMonthDay(){
+  const n=new Date(my,mm,0).getDate(),t=ds(new Date());
+  $('mWrap').innerHTML=S.depts.map(D=>{
+    let h='<div class="mdept"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+noonBtn(D)+'</div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
+    for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
+      h+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td>'+D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
+        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>'<span class="pp" style="background:'+D.color+'1f">'+lab(D.id,nm)+'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span></span>').join('')+'<span class="addp no-p" '+a+'>+</span></div></td>'}).join('')+'</tr>'}
+    return h+'</tbody></table></div></div>'}).join('');
+}
 function renderMonth(){
-  $('mLbl').textContent=MN[mm-1]+' '+my;
+  $('mLbl').textContent=MN[mm-1]+' '+my;$('mv1').className='btn'+(mview==='day'?' p':'');$('mv2').className='btn'+(mview==='staff'?' p':'');
+  if(mview==='day')return renderMonthDay();
   const n=new Date(my,mm,0).getDate(),t=ds(new Date()),days=[];
   for(let i=1;i<=n;i++){const w=new Date(my,mm-1,i).getDay();days.push({i,d:my+'-'+p2(mm)+'-'+p2(i),c:(w==0||w==6?'we ':'')+(my+'-'+p2(mm)+'-'+p2(i)===t?'td':'')})}
   $('mWrap').innerHTML=S.depts.map(D=>{
