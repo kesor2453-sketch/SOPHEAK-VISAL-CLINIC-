@@ -299,7 +299,7 @@ function renderMonthDay(){
     let h='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span><span>'+(canEdit?noonBtn(D):'')+(started?' <button class="nb no-p" data-bedit="1">'+(bEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button>':'')+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
     for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
       h+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
-        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',(started&&bEdit)?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+((canEdit&&(!started||!get(d,D.id,c.id).length))?'<span class="addp no-p" '+a+'>+</span>':'')+(getN(d,D.id,c.id).length?noteBadge(d,D.id,c.id):((started&&bEdit)?'<span class="nb2 no-p" data-note="1" title="ផ្សេងៗ" '+a+'>📝</span>':''))+'</div></td>'}).join('')+'</tr>'}
+        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',(started&&bEdit)?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+noteBadge(d,D.id,c.id)+'</div></td>'}).join('')+'</tr>'}
     return h+'</tbody></table></div></div>'}).join('');
   eqPills();
 }
