@@ -56,7 +56,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .dlg{position:fixed;inset:0;background:rgba(20,25,40,.45);z-index:100;align-items:center;justify-content:center;padding:14px}
 .dbox{background:#fff;border-radius:14px;max-width:460px;width:100%;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.3);max-height:90vh;overflow:auto}
 .dbox label.fl{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:4px;margin-top:8px}
-.dbox select,.dbox textarea{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;width:100%;background:#fff;color:var(--ink)}
+.dbox select,.dbox textarea,.dbox input[type=text]{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;width:100%;background:#fff;color:var(--ink)}
 .dt1{font-weight:700;margin-bottom:10px}.nt2{background:#fff8e1;border-radius:8px;padding:5px 9px;margin:4px 0;font-size:13px}
 .nt{font-size:11.5px;color:#6b4e00;background:#fff8e1;border-radius:6px;padding:2px 7px;margin-top:4px}
 .nb2{cursor:pointer;opacity:.4;font-size:12px}.nb2.has{opacity:1;background:#fff3b0;border-radius:6px;padding:1px 6px;font-weight:700;font-size:11.5px}.nb2:hover{opacity:1}.pp[data-pk]{cursor:pointer}
@@ -66,7 +66,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .psd{width:700px;margin:0 auto;color:#000;background:#fff}.psd h2{font-size:15px;margin:0 0 8px;text-align:center}
 .pst{width:100%;border-collapse:collapse;font-size:11px}.pst th,.pst td{border:1px solid #333;padding:3px 4px;height:22px}
 .pst th{background:#eee}.pst td.pd{text-align:center;font-weight:700;white-space:nowrap}.pst td.pd.we{background:#ffeaea;color:#d32f2f}
-.pst td.pd small{display:block;font-weight:400;font-size:9px}.pst td.pn1 small{color:#555;margin-left:3px;font-size:9.5px}.pst td.po{font-size:10px}.pf{margin-top:8px;font-size:12px;text-align:right}
+.pst td.pd small{display:block;font-weight:400;font-size:9px}.pst td.pn1 small{color:#555;margin-left:3px;font-size:9.5px}.pst td.po{font-size:10px}.pst tr.pon td{background:#e3ecfb}.pf{margin-top:8px;font-size:12px;text-align:right}
 @media print{.psd{break-after:page}.psd:last-child{break-after:auto}.pst thead{display:table-header-group}.pst tr{break-inside:avoid}}
 .gc{min-height:26px;min-width:44px;padding:2px 5px;border-radius:6px;font-weight:700;font-size:11.5px;white-space:nowrap;display:flex;align-items:center;justify-content:center}
 .mc:focus{outline:2px solid var(--brand);outline-offset:1px}.mc{scroll-margin-left:150px}
@@ -172,11 +172,9 @@ function printSheet(v){
   const k=v.indexOf('|');if(k<0){toast('⚠ សូមជ្រើសឈ្មោះគ្រូពេទ្យ');return}
   const D=dept(v.slice(0,k)),nm=v.slice(k+1);if(!D)return;
   const nd=new Date(my,mm,0).getDate(),ps=$('psheet'),r=role(D.id,nm);let tot=0,body='';
-  for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();
-    D.cols.forEach(c=>{if(!get(d,D.id,c.id).includes(nm))return;tot++;
-      body+='<tr><td class="pd'+(w==0||w==6?' we':'')+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td><td class="pn1">'+esc(c.label)+'</td><td></td><td></td><td></td><td></td><td class="po">'+esc(getN(d,D.id,c.id).map(x=>x.x).join(' ; '))+'</td></tr>'})}
-  if(!tot)body='<tr><td colspan="7" style="text-align:center;color:#666">មិនមានវេនក្នុងខែនេះ</td></tr>';
-  ps.innerHTML='<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:9%">ថ្ងៃ</th><th style="width:10%">វេន</th><th style="width:12%">ម៉ោងចេញ</th><th style="width:12%">ម៉ោងចូល</th><th style="width:11%">ចំនួនម៉ោង</th><th style="width:20%">ហត្ថាលេខា</th><th style="width:26%">ផ្សេងៗ</th></tr></thead><tbody>'+body+'</tbody></table><div class="pf">សរុប '+tot+' វេន</div></div>';
+  for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),sl=D.cols.filter(c=>get(d,D.id,c.id).includes(nm));tot+=sl.length;
+    body+='<tr><td class="pd'+(w==0||w==6?' we':'')+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td><td></td><td></td><td></td><td></td><td class="po">'+esc(sl.map(c=>getN(d,D.id,c.id).map(x=>x.x).join(' ; ')).filter(Boolean).join(' ; '))+'</td></tr>'}
+  ps.innerHTML='<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th><th style="width:14%">ម៉ោងចេញ</th><th style="width:14%">ម៉ោងចូល</th><th style="width:13%">ចំនួនម៉ោង</th><th style="width:21%">ហត្ថាលេខា</th><th style="width:27%">ផ្សេងៗ</th></tr></thead><tbody>'+body+'</tbody></table></div>';
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 portrait;margin:8mm}}';document.head.appendChild(st);
   document.body.classList.add('psp');
   ps.querySelectorAll('.psd').forEach(b=>{const h=b.offsetHeight;if(h>0)b.style.zoom=Math.max(Math.min(1,1000/h),.45)});
@@ -253,6 +251,8 @@ function closeDlg(){M=null;$('dlg').style.display='none'}
 function renderDlg(){
   if(!M)return;const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
   const foot=ok=>'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn" data-dclose="1">បិទ</button><button class="btn p" data-dok="1">'+ok+'</button></div>';
+  if(M.mode==='fill'){const l=get(M.d,D.id,M.c),av=(S.staff[D.id]||[]).map(x=>x.n).filter(x=>!l.includes(x));
+    B.innerHTML='<div class="dt1">'+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div><label class="fl">គ្រូពេទ្យ<select id="dSel">'+(av.length?mopt(av.map(x=>[x,x]),''):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select></label><label class="fl">ឬវាយឈ្មោះថ្មី<input id="dNm" type="text" placeholder="ឈ្មោះ..."></label>'+foot('✓ បំពេញ');return}
   if(M.mode==='note'){const L=getN(M.d,M.dp,M.c);
     B.innerHTML='<div class="dt1">📝 សំគាល់ · '+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div>'+(L.map((x,i)=>'<div class="nt2">'+esc(x.x)+' <span class="x" data-ndel="'+i+'">×</span></div>').join('')||'<div style="color:var(--sub);margin:6px 0">មិនទាន់មានសំគាល់</div>')+'<textarea id="dNote" rows="3" placeholder="សរសេរសំគាល់..."></textarea>'+foot('+ បន្ថែមសំគាល់');return}
   const l1=get(M.d,D.id,M.c),av=(S.staff[D.id]||[]).map(x=>x.n).filter(x=>!l1.includes(x));M.act=M.act||'rep';
@@ -271,6 +271,10 @@ function renderDlg(){
 }
 function applyDlg(){
   const D=dept(M.dp);if(!D)return;const nt=$('dNote'),note=nt?nt.value.trim():'';
+  if(M.mode==='fill'){const sl=$('dSel'),ip=$('dNm'),v=(ip&&ip.value.trim())||(sl&&sl.value)||'';if(!v){toast('⚠ សូមជ្រើសឈ្មោះ');return}
+    const l=get(M.d,D.id,M.c);if(l.includes(v)){toast('⚠ '+v+' មានរួចហើយ');return}
+    S.staff[D.id]=S.staff[D.id]||[];if(!S.staff[D.id].some(x=>x.n===v))S.staff[D.id].push({n:v,r:'',c:''});
+    setL(M.d,D.id,M.c,l.concat(v));save();closeDlg();renderAll();toast('រក្សាទុករួចរាល់ ✓');return}
   if(M.mode==='note'){if(doChange('misc',D,{d:M.d,c:M.c,note})){renderAll();renderDlg();toast('បន្ថែមសំគាល់ ✓')}return}
   const base={d:M.d,c:M.c,note:note};let ok=false;
   if(M.act==='rep')ok=doChange('rep',D,{...base,n1:M.n,n2:M.r});
@@ -295,7 +299,7 @@ function renderMonthDay(){
     let h='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span><span>'+(canEdit?noonBtn(D):'')+(started?' <button class="nb no-p" data-bedit="1">'+(bEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button>':'')+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
     for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
       h+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
-        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',(started&&bEdit)?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+(getN(d,D.id,c.id).length?noteBadge(d,D.id,c.id):((started&&bEdit)?'<span class="nb2 no-p" data-note="1" title="ផ្សេងៗ" '+a+'>📝</span>':''))+'</div></td>'}).join('')+'</tr>'}
+        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',(started&&bEdit)?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+((canEdit&&(!started||!get(d,D.id,c.id).length))?'<span class="addp no-p" '+a+'>+</span>':'')+(getN(d,D.id,c.id).length?noteBadge(d,D.id,c.id):((started&&bEdit)?'<span class="nb2 no-p" data-note="1" title="ផ្សេងៗ" '+a+'>📝</span>':''))+'</div></td>'}).join('')+'</tr>'}
     return h+'</tbody></table></div></div>'}).join('');
   eqPills();
 }
@@ -373,7 +377,7 @@ document.addEventListener('click',e=>{const t=e.target;
   if(t.dataset.rm!==undefined){setL(t.dataset.d,t.dataset.dp,t.dataset.c,get(t.dataset.d,t.dataset.dp,t.dataset.c).filter(x=>x!==t.dataset.rm));save();renderAll();return}
   const nb=t.closest('[data-note]');if(nb){openDlg({mode:'note',d:nb.dataset.d,dp:nb.dataset.dp,c:nb.dataset.c});return}
   const pk=t.closest('[data-pk]');if(pk){openDlg({mode:'pill',act:'rep',d:pk.dataset.d,dp:pk.dataset.dp,c:pk.dataset.c,n:pk.dataset.n});return}
-  const a=t.closest('.addp');if(a&&!editing){closePop();addEdit(a);return}
+  const a=t.closest('.addp');if(a){openDlg({mode:'fill',d:a.dataset.d,dp:a.dataset.dp,c:a.dataset.c});return}
   const m=t.closest('.mc');if(m){showPop(m);return}
   if(!t.closest('.pop'))closePop()});
 
