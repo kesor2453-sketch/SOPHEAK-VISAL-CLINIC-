@@ -32,7 +32,14 @@ table{border-collapse:collapse;font-size:12.5px}
 .mt td{padding:2px;border-bottom:1px solid var(--line);text-align:center}
 .mt .nmc{text-align:left;white-space:nowrap;position:sticky;left:0;background:#fff;padding:5px 8px;font-weight:600;min-width:130px;z-index:1;border-right:1px solid var(--line)}
 .mt th.nmc{background:#f7f8fb}.mt .we{background:#fdf0f0;color:#e05252}.mt .td{background:#fff3b0}
-.pp{color:var(--ink)}.dt td{text-align:left;vertical-align:top;padding:5px 8px}.dt td.nmc{vertical-align:top}
+.pp{color:var(--ink)}
+.dlist{display:flex;flex-direction:column;gap:12px}.dr{display:flex;align-items:stretch}
+.dr .dh{width:190px;flex-shrink:0;justify-content:flex-start;gap:8px}.grip{cursor:grab;opacity:.85}
+.mv b{cursor:pointer;margin-left:4px;font-size:11px;padding:2px 5px;background:rgba(255,255,255,.25);border-radius:5px}
+.dcols{flex:1;display:flex;flex-wrap:wrap}.dcol{flex:1;min-width:200px;padding:10px 12px;border-left:1px solid var(--line)}
+.dcol .sl{color:var(--sub);font-size:12px;font-weight:600;padding-bottom:6px}
+@media(max-width:640px){.dr{flex-direction:column}.dr .dh{width:auto}.dcol{border-left:0;border-top:1px solid var(--line)}}
+.tg{min-height:30px;min-width:70px;border-radius:8px;border:1px dashed #c3c9d3;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}.tg:hover{background:#f0f2f6}.dt td{text-align:left;vertical-align:top;padding:5px 8px}.dt td.nmc{vertical-align:top}
 .mc{min-height:26px;min-width:28px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:1px}.mc:hover{outline:1px solid var(--line)}
 .pop{position:fixed;z-index:50;background:#fff;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.22);padding:6px;display:flex;gap:5px}
 .cnt{width:100%}.cnt th{background:#f7f8fb;color:var(--sub);padding:8px 4px;border-bottom:1px solid var(--line)}.cnt td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:center}
@@ -50,13 +57,13 @@ table{border-collapse:collapse;font-size:12.5px}
 <div class="pn on" id="p-day"><div class="card">
 <div class="nav"><button class="btn" id="dPrev">‹</button><div class="lbl" id="dLbl"></div><button class="btn" id="dNext">›</button>
 <input type="date" class="btn" id="dPick"><button class="btn" id="dToday">ថ្ងៃនេះ</button><button class="btn no-p" onclick="print()">🖨️ ព្រីន</button></div>
-<div class="grid" id="dGrid"></div></div></div>
+<div class="dlist" id="dGrid"></div></div></div>
 
 <div class="pn" id="p-month"><div class="card">
 <div class="nav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
 <button class="btn" id="mToday">ខែនេះ</button><button class="btn no-p" onclick="print()">🖨️ ព្រីន</button>
-<button class="btn" id="mv1">តាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2">តាមបុគ្គលិក</button>
-<span style="color:var(--sub);font-size:12px">ព = ព្រឹក · រ = រសៀល · យ = យប់ — ចុចលើប្រអប់ដើម្បីជ្រើសវេន</span></div>
+<button class="btn" id="mv1">មើលតាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2">បំពេញវេន (តាមបុគ្គលិក)</button>
+<span style="color:var(--sub);font-size:12px">«បំពេញវេន» → ជ្រើសឈ្មោះ → ចុចលើវេនដែលធ្វើការ</span></div>
 <div id="mWrap"></div></div></div>
 
 <div class="pn" id="p-staff"><div class="card"><div style="font-weight:700;margin-bottom:8px">គ្រប់គ្រងផ្នែក</div>
@@ -84,7 +91,7 @@ const MIDW={id:'midwife',name:'ឆ្មប',icon:'🤰',color:'#d6336c'};
 const DEF=()=>[{id:'doctor',name:'គ្រូពេទ្យ',icon:'🩺',color:'#2f6fed'},{id:'nurse',name:'Nurse',icon:'💉',color:'#0f9d7a'},MIDW,{id:'eye',name:'ភ្នែក',icon:'👁️',color:'#8a4fd6'},{id:'dental',name:'ធ្មេញ',icon:'🦷',color:'#e07b00'}].map(d=>({...d,cols:cols2()}));
 const ord=c=>({c1:1,c2:2,c3:3}[c.id]||9);
 let S={v:2,depts:DEF(),staff:{},sched:{}};S.depts.forEach(d=>S.staff[d.id]=[]);
-let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day';
+let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='staff',pDept=null,pName=null;
 const $=id=>document.getElementById(id),p2=n=>(n<10?'0':'')+n,ds=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const key=(d,c)=>d+'__'+c;
@@ -129,12 +136,16 @@ $('dPrev').onclick=()=>shiftDay(-1);$('dNext').onclick=()=>shiftDay(1);$('dToday
 $('dPick').onchange=e=>{if(e.target.value){const p=e.target.value.split('-');day=new Date(+p[0],+p[1]-1,+p[2]);renderDay()}};
 function renderDay(){
   const d=ds(day);$('dLbl').textContent=DW[day.getDay()]+' '+day.getDate()+' '+MN[day.getMonth()]+' '+day.getFullYear();$('dPick').value=d;
-  $('dGrid').innerHTML=S.depts.map(D=>'<div class="dept"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+noonBtn(D)+'</div>'+
-    D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
-      return '<div class="row"><span class="sl">'+esc(c.label)+'</span><div class="ppl">'+
-        get(d,D.id,c.id).map(n=>'<span class="pp" style="background:'+D.color+'1f">'+lab(D.id,n)+'<span class="x no-p" data-rm="'+esc(n)+'" '+a+'>×</span></span>').join('')+
-        '<span class="addp no-p" '+a+'>+</span></div></div>'}).join('')+'</div>').join('');
+  $('dGrid').innerHTML=S.depts.map(D=>'<div class="dept dr" draggable="true" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span class="grip no-p" title="ទាញដើម្បីផ្លាស់ទី">⋮⋮</span><span style="flex:1">'+D.icon+' '+esc(D.name)+'</span><span class="mv no-p"><b data-up="'+D.id+'">▲</b><b data-dn="'+D.id+'">▼</b></span></div><div class="dcols">'+
+    D.cols.map(c=>'<div class="dcol"><div class="sl">'+esc(c.label)+'</div><div class="ppl">'+(get(d,D.id,c.id).map(n=>'<span class="pp" style="background:'+D.color+'1f">'+lab(D.id,n)+'</span>').join('')||'<span style="color:#c3c9d3">—</span>')+'</div></div>').join('')+'</div></div>').join('');
 }
+let dragId=null;const dg=$('dGrid');
+dg.addEventListener('dragstart',e=>{const b=e.target.closest('.dr');if(!b)return;dragId=b.dataset.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragId)});
+dg.addEventListener('dragover',e=>{if(dragId)e.preventDefault()});
+dg.addEventListener('drop',e=>{e.preventDefault();const b=e.target.closest('.dr');if(!b||!dragId||b.dataset.id===dragId){dragId=null;return}
+  const f=S.depts.findIndex(x=>x.id===dragId),t=S.depts.findIndex(x=>x.id===b.dataset.id);dragId=null;
+  const m=S.depts.splice(f,1)[0];S.depts.splice(t,0,m);save();renderAll()});
+function moveDept(id,k){const i=S.depts.findIndex(x=>x.id===id),j=i+k;if(j<0||j>=S.depts.length)return;const m=S.depts.splice(i,1)[0];S.depts.splice(j,0,m);save();renderAll()}
 function addEdit(el){
   editing=true;const d=el.dataset.d,dp=el.dataset.dp,col=el.dataset.c,cur=get(d,dp,col);
   const opts=(S.staff[dp]||[]).filter(s=>!cur.includes(s.n)),id='dl'+Date.now();
@@ -156,31 +167,33 @@ function addEdit(el){
 $('mPrev').onclick=()=>{mm--;if(mm<1){mm=12;my--}renderMonth()};$('mNext').onclick=()=>{mm++;if(mm>12){mm=1;my++}renderMonth()};
 $('mToday').onclick=()=>{const n=new Date();my=n.getFullYear();mm=n.getMonth()+1;renderMonth()};
 const sh=c=>({c1:'ព',c2:'រ',c3:'យ'}[c.id]||c.label.charAt(0));
-$('mv1').onclick=()=>{mview='day';renderMonth()};$('mv2').onclick=()=>{mview='staff';renderMonth()};
+$('mv1').onclick=()=>{mview='day';renderMonth()};$('mv2').onclick=()=>{mview='staff';pName=null;renderMonth()};
 function renderMonthDay(){
   const n=new Date(my,mm,0).getDate(),t=ds(new Date());
   $('mWrap').innerHTML=S.depts.map(D=>{
     let h='<div class="mdept"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+noonBtn(D)+'</div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
     for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
       h+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td>'+D.cols.map(c=>{const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
-        return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>'<span class="pp" style="background:'+D.color+'1f">'+lab(D.id,nm)+'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span></span>').join('')+'<span class="addp no-p" '+a+'>+</span></div></td>'}).join('')+'</tr>'}
+        return '<td><div class="ppl">'+(get(d,D.id,c.id).map(nm=>'<span class="pp" style="background:'+D.color+'1f">'+lab(D.id,nm)+'</span>').join('')||'<span style="color:#c3c9d3">—</span>')+'</div></td>'}).join('')+'</tr>'}
     return h+'</tbody></table></div></div>'}).join('');
 }
 function renderMonth(){
   $('mLbl').textContent=MN[mm-1]+' '+my;$('mv1').className='btn'+(mview==='day'?' p':'');$('mv2').className='btn'+(mview==='staff'?' p':'');
-  if(mview==='day')return renderMonthDay();
-  const n=new Date(my,mm,0).getDate(),t=ds(new Date()),days=[];
-  for(let i=1;i<=n;i++){const w=new Date(my,mm-1,i).getDay();days.push({i,d:my+'-'+p2(mm)+'-'+p2(i),c:(w==0||w==6?'we ':'')+(my+'-'+p2(mm)+'-'+p2(i)===t?'td':'')})}
-  $('mWrap').innerHTML=S.depts.map(D=>{
-    const names=(S.staff[D.id]||[]).map(s=>s.n);
-    days.forEach(x=>D.cols.forEach(c=>get(x.d,D.id,c.id).forEach(nm=>{if(!names.includes(nm))names.push(nm)})));
-    let h='<div class="mdept"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+'</span>'+noonBtn(D)+'</div><div style="overflow-x:auto"><table class="mt"><thead><tr><th class="nmc">ឈ្មោះ</th>'+
-      days.map(x=>'<th class="'+x.c+'">'+x.i+'</th>').join('')+'</tr></thead><tbody>';
-    names.forEach(nm=>{h+='<tr><td class="nmc">'+lab(D.id,nm)+'</td>'+days.map(x=>{
-      const cs=D.cols.filter(c=>get(x.d,D.id,c.id).includes(nm));
-      return '<td class="'+x.c+'"><div class="mc" data-d="'+x.d+'" data-dp="'+D.id+'" data-n="'+esc(nm)+'"'+(cs.length?' style="background:'+D.color+'33;color:'+D.color+'"':'')+'>'+cs.map(sh).join('')+'</div></td>'}).join('')+'</tr>'});
-    if(!names.length)h+='<tr><td class="nmc" colspan="'+(n+1)+'" style="color:var(--sub)">មិនទាន់មានឈ្មោះ — បន្ថែមនៅផ្ទាំង «បុគ្គលិក»</td></tr>';
-    return h+'</tbody></table></div></div>'}).join('');
+  return mview==='day'?renderMonthDay():renderMonthStaff();
+}
+function renderMonthStaff(){
+  if(!dept(pDept))pDept=(S.depts[0]||{}).id;
+  if(!pName||!dept(pDept)){
+    $('mWrap').innerHTML='<div class="mdept" style="padding:14px"><div style="font-weight:700;margin-bottom:8px">ជ្រើសរើសឈ្មោះបុគ្គលិក</div><div class="chips" id="pChips" style="margin-bottom:10px">'+chips(pDept)+'</div><div class="names">'+
+      ((S.staff[pDept]||[]).map(s=>'<span class="nm" data-pn="'+esc(s.n)+'">'+lab(pDept,s.n)+'</span>').join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ — បន្ថែមនៅផ្ទាំង «បុគ្គលិក»</span>')+'</div></div>';
+    return}
+  const D=dept(pDept),n=new Date(my,mm,0).getDate(),t=ds(new Date()),r=role(D.id,pName);let tot=0,rows='';
+  for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
+    const on=D.cols.filter(c=>get(d,D.id,c.id).includes(pName));tot+=on.length;
+    rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td><td>'+(on.length&&r?esc(r):'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
+      return '<td><div class="tg" data-tg="'+c.id+'" data-d="'+d+'" data-dp="'+D.id+'"'+(a?' style="background:'+D.color+'33;color:'+D.color+';border:1px solid '+D.color+'">✓':'>')+'</div></td>'}).join('')+'</tr>'}
+  $('mWrap').innerHTML='<div class="mdept"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+' · '+esc(pName)+(r?' ('+esc(r)+')':'')+' · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> '+noonBtn(D)+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th><th>តួនាទី</th>'+
+    D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function closePop(){if(pop){pop.remove();pop=null}}
 function showPop(cell){
@@ -197,6 +210,11 @@ addEventListener('scroll',closePop,true);
 
 /* ---------- GLOBAL CLICKS ---------- */
 document.addEventListener('click',e=>{const t=e.target;
+  if(t.dataset.up||t.dataset.dn){moveDept(t.dataset.up||t.dataset.dn,t.dataset.up?-1:1);return}
+  if(t.dataset.pback){pName=null;renderMonth();return}
+  const ch=t.closest('#pChips .chip');if(ch){pDept=ch.dataset.dp;renderMonth();return}
+  const pn=t.closest('[data-pn]');if(pn){pName=pn.dataset.pn;renderMonth();return}
+  const tg=t.closest('[data-tg]');if(tg){const l=get(tg.dataset.d,tg.dataset.dp,tg.dataset.tg);setL(tg.dataset.d,tg.dataset.dp,tg.dataset.tg,l.includes(pName)?l.filter(x=>x!==pName):l.concat(pName));save();renderAll();return}
   if(t.dataset.noon){noon(t.dataset.noon);return}
   if(t.dataset.rm!==undefined){setL(t.dataset.d,t.dataset.dp,t.dataset.c,get(t.dataset.d,t.dataset.dp,t.dataset.c).filter(x=>x!==t.dataset.rm));save();renderAll();return}
   const a=t.closest('.addp');if(a&&!editing){closePop();addEdit(a);return}
