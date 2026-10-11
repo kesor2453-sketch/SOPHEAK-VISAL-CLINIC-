@@ -69,6 +69,8 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .pst td.pd small{display:block;font-weight:400;font-size:9px}.pst td.pn1 small{color:#555;margin-left:3px;font-size:9.5px}.pst td.po{font-size:10px}.pst tr.pon td{background:#e3ecfb}.pf{margin-top:8px;font-size:12px;text-align:right}.pst td.pc{text-align:center;font-weight:700}.pst tr.pt td{background:#eee;font-weight:700;font-size:10px}
 @media print{.psd{break-after:page}.psd:last-child{break-after:auto}.pst thead{display:table-header-group}.pst tr{break-inside:avoid}}
 .ppl .pp{padding:8px 15px;font-size:14px}
+.mt.dt th,.mt.dt td{border-left:1px solid #cfd6e2}.mt.dt .nmc{border-left:0}.mt.dt tr.dend td{border-bottom:2px solid #9aa7bd}
+.mt.dt thead th{border-bottom:2px solid #9aa7bd}
 .dsubs{flex:1;display:flex;flex-direction:column}.dsub{display:flex;align-items:stretch;border-top:1px solid var(--line)}.dsub:first-child{border-top:0}
 .dsn{width:150px;flex-shrink:0;padding:10px 12px;font-weight:700;font-size:13px;display:flex;align-items:center;background:#fafbfd}.dsub .dcols{flex:1}
 @media(max-width:640px){.dsub{flex-direction:column}.dsn{width:auto}}
@@ -231,9 +233,9 @@ const ucols=b=>{const m={};b.ds.forEach(D=>D.cols.forEach(c=>{if(!m[c.id])m[c.id
 function renderDay(){
   const d=ds(day);$('dLbl').textContent=DW[day.getDay()]+' '+day.getDate()+' '+MN[day.getMonth()]+' '+day.getFullYear()+(d===ds(new Date())?' · ថ្ងៃនេះ':'');$('dLbl').style.color=day.getDay()%6===0?'#e53935':'';$('dPick').value=d;
   const cols=D=>D.cols.map(c=>'<div class="dcol"><div class="sl">'+esc(c.label)+'</div><div class="ppl">'+(get(d,D.id,c.id).map(n=>pill(D,n)).join('')||'<span style="color:#c3c9d3">—</span>')+'</div>'+noteBadge(d,D.id,c.id)+'</div>').join('');
-  $('dGrid').innerHTML=blocks().map(b=>{const D0=b.ds[0];
-    return '<div class="dept dr" draggable="true" data-id="'+b.key+'"><div class="dh" style="background:'+D0.color+'"><span class="grip no-p" title="ទាញដើម្បីផ្លាស់ទី">⋮⋮</span><span style="flex:1">'+bName(b)+'</span><span class="mv no-p"><b data-up="'+b.key+'">▲</b><b data-dn="'+b.key+'">▼</b></span></div>'+
-      (b.ds.length===1?'<div class="dcols">'+cols(D0)+'</div>':'<div class="dsubs">'+b.ds.map(D=>'<div class="dsub"><div class="dsn" style="color:'+D.color+'">'+D.icon+' '+esc(D.name)+'</div><div class="dcols">'+cols(D)+'</div></div>').join('')+'</div>')+'</div>'}).join('');
+  const mv=key=>'<span class="mv no-p"><b data-up="'+key+'">▲</b><b data-dn="'+key+'">▼</b></span>';
+  const hd=(b,D,first)=>'<div class="dh" style="background:'+D.color+'">'+(first?'<span class="grip no-p" title="ទាញដើម្បីផ្លាស់ទី">⋮⋮</span>':'<span class="no-p" style="width:14px"></span>')+'<span style="flex:1">'+D.icon+' '+esc(D.name)+'</span>'+(first?mv(b.key):'')+'</div>';
+  $('dGrid').innerHTML=blocks().map(b=>'<div class="dept dr" draggable="true" data-id="'+b.key+'">'+(b.ds.length===1?hd(b,b.ds[0],1)+'<div class="dcols">'+cols(b.ds[0])+'</div>':'<div class="dsubs">'+b.ds.map((D,i)=>'<div class="dsub">'+hd(b,D,i===0)+'<div class="dcols">'+cols(D)+'</div></div>').join('')+'</div>')+'</div>').join('');
 }
 let dragId=null;const dg=$('dGrid');
 dg.addEventListener('dragstart',e=>{const b=e.target.closest('.dr');if(!b)return;dragId=b.dataset.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragId)});
@@ -337,7 +339,7 @@ function renderMonthDay(){
     let h='<div class="mdept" data-id="'+b.key+'"><div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span><span>'+(canEdit?noonBtnG(b.ds):'')+(started?' <button class="nb no-p" data-bedit="1">'+(bEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button>':'')+'</span></div><div style="overflow-x:auto"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+(g?'<th></th>':'')+UC.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>';
     for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
       b.ds.forEach((D,k)=>{
-        h+='<tr class="'+cl+'">'+(k===0?'<td class="nmc '+cl+'"'+(g?' rowspan="'+b.ds.length+'"':'')+'>'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>':'')+(g?'<td class="gl" style="color:'+D.color+'">'+D.icon+' '+esc(D.name)+'</td>':'')+
+        h+='<tr class="'+cl+(g&&k===b.ds.length-1?' dend':'')+'">'+(k===0?'<td class="nmc '+cl+'"'+(g?' rowspan="'+b.ds.length+'" style="border-bottom:2px solid #9aa7bd"':'')+'>'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>':'')+(g?'<td class="gl" style="color:'+D.color+';background:'+D.color+'18">'+D.icon+' '+esc(D.name)+'</td>':'')+
           UC.map(c=>{if(!D.cols.some(x=>x.id===c.id))return '<td class="na"></td>';const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
             return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',(started&&bEdit)?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+noteBadge(d,D.id,c.id)+'</div></td>'}).join('')+'</tr>'})}
     return h+'</tbody></table></div></div>'}).join('');
