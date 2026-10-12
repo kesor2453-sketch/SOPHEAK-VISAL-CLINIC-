@@ -69,6 +69,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .pst td.pd small{display:block;font-weight:400;font-size:9px}.pst td.pn1 small{color:#555;margin-left:3px;font-size:9.5px}.pst td.po{font-size:10px}.pst tr.pon td{background:#e3ecfb}.pf{margin-top:8px;font-size:12px;text-align:right}.pst td.pc{text-align:center;font-weight:700}.pst tr.pt td{background:#eee;font-weight:700;font-size:10px}
 @media print{.psd{break-after:page}.psd:last-child{break-after:auto}.pst thead{display:table-header-group}.pst tr{break-inside:avoid}}
 .ppl .pp{padding:8px 15px;font-size:14px}
+#dGrid .pp{white-space:nowrap;box-sizing:border-box;justify-content:space-between}
 .mt.dt th,.mt.dt td{border-left:1px solid #cfd6e2}.mt.dt .nmc{border-left:0}.mt.dt tr.dend td{border-bottom:2px solid #9aa7bd}
 .mt.dt thead th{border-bottom:2px solid #9aa7bd}
 .dsubs{flex:1;display:flex;flex-direction:column}.dsub{display:flex;align-items:stretch;border-top:1px solid var(--line)}.dsub:first-child{border-top:0}
@@ -138,7 +139,7 @@ const cols2=()=>[{id:'c1',label:'ព្រឹក'},{id:'c3',label:'យប់'}];
 const MIDW={id:'midwife',name:'ឆ្មប',icon:'🤰',color:'#d6336c'};
 const DEF=()=>[{id:'doctor',name:'គ្រូពេទ្យ',icon:'🩺',color:'#2f6fed'},{id:'nurse',name:'គិលានុបដ្ឋាយិកា',icon:'💉',color:'#0f9d7a'},MIDW,{id:'eye',name:'ភ្នែក',icon:'👁️',color:'#8a4fd6'},{id:'dental',name:'ធ្មេញ',icon:'🦷',color:'#e07b00'}].map(d=>({...d,cols:cols2()}));
 const ord=c=>({c1:1,c2:2,c3:3}[c.id]||9);
-let S={v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null};S.depts.forEach(d=>S.staff[d.id]=[]);
+let S={v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null,fxm:{},fxMonths:[]};S.depts.forEach(d=>S.staff[d.id]=[]);
 let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day',pDept=null,pName=null,pEdit=false,dayDept='all',bEdit=false,rEdit=null,E=null;
 const $=id=>document.getElementById(id),p2=n=>(n<10?'0':'')+n,ds=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -157,7 +158,7 @@ const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at
 function save(){if(USE_FB)setDoc(ref,S).catch(e=>toast('⚠ '+e.message));else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
-function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null};
+function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[]};
   S.depts.forEach(x=>S.staff[x.id]=(S.staff[x.id]||[]).map(s=>typeof s==='string'?{n:s,r:''}:s));
   S.depts.forEach(D=>{D.roles=D.roles||[];(S.staff[D.id]||[]).forEach(s=>{if(s.r&&!D.roles.includes(s.r))D.roles.push(s.r)})});
   if(mig){
@@ -244,6 +245,7 @@ function renderDay(){
   const mv=key=>'<span class="mv no-p"><b data-up="'+key+'">▲</b><b data-dn="'+key+'">▼</b></span>';
   const hd=(b,D,first)=>'<div class="dh" style="background:'+D.color+'">'+(first?'<span class="grip no-p" title="ទាញដើម្បីផ្លាស់ទី">⋮⋮</span>':'<span class="no-p" style="width:14px"></span>')+'<span style="flex:1">'+D.icon+' '+esc(D.name)+'</span>'+(first?mv(b.key):'')+'</div>';
   $('dGrid').innerHTML=blocks().map(b=>'<div class="dept dr" draggable="true" data-id="'+b.key+'">'+(b.ds.length===1?hd(b,b.ds[0],1)+'<div class="dcols">'+cols(b.ds[0])+'</div>':'<div class="dsubs">'+b.ds.map((D,i)=>'<div class="dsub">'+hd(b,D,i===0)+'<div class="dcols">'+cols(D)+'</div></div>').join('')+'</div>')+'</div>').join('');
+  eqPillsD();
 }
 let dragId=null;const dg=$('dGrid');
 dg.addEventListener('dragstart',e=>{const b=e.target.closest('.dr');if(!b)return;dragId=b.dataset.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragId)});
@@ -338,6 +340,9 @@ $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   const a=t.closest('[data-dact]');if(a){const n=$('dNote');M.note=n?n.value:'';M.act=a.dataset.dact;renderDlg();return}
   if(t.dataset.ndel!==undefined){getN(M.d,M.dp,M.c).splice(+t.dataset.ndel,1);save();renderAll();renderDlg()}});
 addEventListener('keydown',e=>{if(M&&e.key==='Escape')closeDlg()});
+function eqPillsD(){const ps=[...document.querySelectorAll('#dGrid .pp')];if(!ps.length)return;
+  ps.forEach(p=>{p.style.width=''});let m=0;ps.forEach(p=>{m=Math.max(m,p.offsetWidth)});if(m>0)ps.forEach(p=>{p.style.width=m+'px'})}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>eqPillsD());
 function eqPills(){const ps=[...document.querySelectorAll('#mWrap .dt .pp')];if(!ps.length)return;
   ps.forEach(p=>p.style.width='');let m=0;ps.forEach(p=>{m=Math.max(m,p.offsetWidth)});if(m>0)ps.forEach(p=>p.style.width=m+'px')}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(mview==='day')eqPills()});
@@ -351,7 +356,7 @@ function renderMonthDay(){
       b.ds.forEach((D,k)=>{
         h+='<tr class="'+cl+(g&&k===b.ds.length-1?' dend':'')+'">'+(k===0?'<td class="nmc '+cl+'"'+(g?' rowspan="'+b.ds.length+'" style="border-bottom:2px solid #9aa7bd"':'')+'>'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>':'')+(g?'<td class="gl" style="color:'+D.color+';background:'+D.color+'18">'+D.icon+' '+esc(D.name)+'</td>':'')+
           UC.map(c=>{if(!D.cols.some(x=>x.id===c.id))return '<td class="na"></td>';const a='data-d="'+d+'" data-dp="'+D.id+'" data-c="'+c.id+'"';
-            return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',(started&&bEdit)?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+noteBadge(d,D.id,c.id)+'</div></td>'}).join('')+'</tr>'})}
+            return '<td><div class="ppl">'+get(d,D.id,c.id).map(nm=>pill(D,nm,canEdit?'<span class="x no-p" data-rm="'+esc(nm)+'" '+a+'>×</span>':'',(started&&bEdit)?'data-pk="1" data-n="'+esc(nm)+'" '+a:'')).join('')+(canEdit?'<span class="addp no-p" '+a+'>+</span>':'')+'</div></td>'}).join('')+'</tr>'})}
     return h+'</tbody></table></div></div>'}).join('');
   eqPills();
 }
@@ -473,6 +478,25 @@ function fxSummary(D,s){const f=s.fx,ex=f?(f.extra||[]).length:0;if(!f||(!(f.day
   let dn='';if((f.days||[]).length){const d=f.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)),k=d.join(',');
     dn=k==='1,2,3,4,5'?'ច័ន្ទ–សុក្រ':k==='6,0'?'សៅរ៍–អាទិត្យ':k==='1,2,3,4,5,6,0'?'រាល់ថ្ងៃ':d.map(x=>FXD.find(y=>y[0]===x)[1]).join(' · ')}
   const cl=(f.cols||[]).map(id=>(D.cols.find(c=>c.id===id)||{}).label).filter(Boolean).join('/')||'គ្មានវេន';return (dn||'គ្មានថ្ងៃថេរ')+(ex?' + '+ex+' ថ្ងៃបន្ថែម':'')+' · '+cl}
+const fxExtras=f=>(f.extra||[]).map(x=>{const k=x.indexOf('|');return k<0?[x,f.cols||[]]:[x.slice(0,k),[x.slice(k+1)]]});
+function fxDesired(D,s,y,m){const f=s.fx,out=[];if(!f)return out;const nd=new Date(y,m,0).getDate(),pre=y+'-'+p2(m);
+  for(let i=1;i<=nd;i++){if((f.days||[]).includes(new Date(y,m-1,i).getDay()))(f.cols||[]).forEach(c=>out.push(pre+'-'+p2(i)+'|'+c))}
+  fxExtras(f).forEach(e=>{if(e[0].indexOf(pre)===0)e[1].forEach(c=>out.push(e[0]+'|'+c))});
+  return out.filter((x,i,a)=>a.indexOf(x)===i&&D.cols.some(c=>c.id===x.split('|')[1]))}
+function fxPlan(extraMonth){const months=(S.fxMonths||[]).slice();if(extraMonth&&!months.includes(extraMonth))months.push(extraMonth);
+  const want={},add=[],rem=[];S.fxm=S.fxm||{};
+  S.depts.forEach(D=>(S.staff[D.id]||[]).forEach(s=>{if(!s.fx)return;months.forEach(mo=>{const ym=mo.split('-'),k=D.id+'|'+s.n;fxDesired(D,s,+ym[0],+ym[1]).forEach(x=>{(want[k]=want[k]||{})[x]=1})})}));
+  Object.keys(S.fxm).forEach(d=>Object.keys(S.fxm[d]).forEach(k=>{const p=k.split('__');S.fxm[d][k].forEach(n=>{const w=want[p[0]+'|'+n];if(!(w&&w[d+'|'+p[1]]))rem.push([d,p[0],p[1],n])})}));
+  Object.keys(want).forEach(k=>{const dp=k.slice(0,k.indexOf('|')),n=k.slice(k.indexOf('|')+1);Object.keys(want[k]).forEach(x=>{const d=x.split('|')[0],cid=x.split('|')[1];
+    if(((S.fxm[d]||{})[key(dp,cid)]||[]).includes(n)||get(d,dp,cid).includes(n))return;add.push([d,dp,cid,n])})});
+  return{add,rem,months}}
+function fxRun(pl){S.fxMonths=pl.months;S.fxm=S.fxm||{};
+  pl.rem.forEach(o=>{const d=o[0],dp=o[1],cid=o[2],n=o[3],l=get(d,dp,cid);if(l.includes(n))setL(d,dp,cid,l.filter(x=>x!==n));
+    const k=key(dp,cid),a=S.fxm[d]&&S.fxm[d][k];if(a){const b=a.filter(x=>x!==n);if(b.length)S.fxm[d][k]=b;else{delete S.fxm[d][k];if(!Object.keys(S.fxm[d]).length)delete S.fxm[d]}}});
+  pl.add.forEach(o=>{const d=o[0],dp=o[1],cid=o[2],n=o[3],l=get(d,dp,cid);if(!l.includes(n))setL(d,dp,cid,l.concat(n));const k=key(dp,cid),m=S.fxm[d]=S.fxm[d]||{};m[k]=(m[k]||[]).concat(n)})}
+function fxAuto(){const pl=fxPlan();if(pl.add.length||pl.rem.length){fxRun(pl);toast('កែតាមកាឡោនដែរ ✓ +'+pl.add.length+' / −'+pl.rem.length)}}
+const fxxSel={};
+const fxExLbl=(D,x)=>{const k=x.indexOf('|');return k<0?fmtD(x):fmtD(x.slice(0,k))+' · '+((D.cols.find(c=>c.id===x.slice(k+1))||{}).label||'')};
 function fxEnsure(D,s){if(!s.fx)s.fx={days:[],cols:[]};if(!s.fx.cols.length)s.fx.cols=[D.cols.some(c=>c.id==='c3')?'c3':D.cols[D.cols.length-1].id];return s.fx}
 function renderFx(){
   if(!$('fxList'))return;const D=dept(staffDept);
@@ -481,29 +505,28 @@ function renderFx(){
   if(!D){$('fxList').innerHTML='';return}
   const L=S.staff[D.id]||[];
   $('fxList').innerHTML=L.map((s,i)=>{const f=s.fx||{days:[],cols:[]};
-    return '<div class="fxr"><span class="fxn">'+esc(s.n)+'</span><span class="fxs">'+esc(fxSummary(D,s))+'</span>'+(eFx?'<div class="fxe"><button class="btn" data-fxp="wk" data-i="'+i+'">ច័ន្ទ–សុក្រ</button><button class="btn" data-fxp="we" data-i="'+i+'">សៅរ៍–អាទិត្យ</button><button class="btn" data-fxp="all" data-i="'+i+'">រាល់ថ្ងៃ</button><button class="btn" data-fxp="clr" data-i="'+i+'">ជម្រះ</button></div><div class="fxe"><label class="fxc">+ ថ្ងៃធ្វើការបន្ថែម <input type="date" data-fxx="'+i+'"></label>'+((f.extra||[]).map(dt=>'<span class="nm" style="padding:2px 8px;font-size:12px">'+fmtD(dt)+' <span class="x" data-fxxd="'+dt+'" data-i="'+i+'">×</span></span>').join(''))+'</div><div class="fxe">'+
+    return '<div class="fxr"><span class="fxn">'+esc(s.n)+'</span><span class="fxs">'+esc(fxSummary(D,s))+'</span>'+(eFx?'<div class="fxe"><button class="btn" data-fxp="wk" data-i="'+i+'">ច័ន្ទ–សុក្រ</button><button class="btn" data-fxp="we" data-i="'+i+'">សៅរ៍–អាទិត្យ</button><button class="btn" data-fxp="all" data-i="'+i+'">រាល់ថ្ងៃ</button><button class="btn" data-fxp="clr" data-i="'+i+'">ជម្រះ</button></div><div class="fxe"><label class="fxc">+ ថ្ងៃធ្វើការបន្ថែម <select data-fxxc="'+i+'">'+D.cols.map(c=>'<option value="'+c.id+'"'+((fxxSel[i]||(D.cols.some(x=>x.id==='c3')?'c3':D.cols[D.cols.length-1].id))===c.id?' selected':'')+'>'+esc(c.label)+'</option>').join('')+'<option value="all"'+(fxxSel[i]==='all'?' selected':'')+'>'+esc(D.cols.map(c=>c.label).join(' + '))+'</option></select> <input type="date" data-fxx="'+i+'"></label>'+((f.extra||[]).map(dt=>'<span class="nm" style="padding:2px 8px;font-size:12px">'+esc(fxExLbl(D,dt))+' <span class="x" data-fxxd="'+dt+'" data-i="'+i+'">×</span></span>').join(''))+'</div><div class="fxe">'+
       FXD.map(x=>'<label class="fxc"><input type="checkbox" data-fxd="'+x[0]+'" data-i="'+i+'"'+((f.days||[]).includes(x[0])?' checked':'')+'>'+x[1]+'</label>').join('')+'</div><div class="fxe">'+
       D.cols.map(c=>'<label class="fxc"><input type="checkbox" data-fxc="'+c.id+'" data-i="'+i+'"'+((f.cols||[]).includes(c.id)?' checked':'')+'>'+esc(c.label)+'</label>').join('')+'</div>':'')+'</div>'}).join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
 }
 $('fxChips').onclick=e=>{const c=e.target.closest('.chip');if(c){staffDept=c.dataset.dp;renderStaff()}};
 $('fxEditBtn').onclick=()=>{eFx=!eFx;renderStaff()};
 $('fxPrev').onclick=()=>{fxm--;if(fxm<1){fxm=12;fxy--}renderFx()};$('fxNext').onclick=()=>{fxm++;if(fxm>12){fxm=1;fxy++}renderFx()};
-$('fxList').onclick=e=>{if(e.target.dataset.fxxd){const s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(s&&s.fx){s.fx.extra=(s.fx.extra||[]).filter(x=>x!==e.target.dataset.fxxd);save();renderStaff()}return}
+$('fxList').onclick=e=>{if(e.target.dataset.fxxd){const s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(s&&s.fx){s.fx.extra=(s.fx.extra||[]).filter(x=>x!==e.target.dataset.fxxd);fxAuto();save();renderStaff()}return}
   const p=e.target.dataset.fxp;if(!p)return;const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;
   if(p==='clr')delete s.fx;else{const f=fxEnsure(D,s);f.days=p==='wk'?[1,2,3,4,5]:p==='we'?[6,0]:[1,2,3,4,5,6,0]}
-  save();renderStaff()};
-$('fxList').onchange=e=>{if(e.target.dataset.fxx!==undefined){const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.fxx],v=e.target.value;if(D&&s&&v){const f=fxEnsure(D,s);f.extra=f.extra||[];if(!f.extra.includes(v))f.extra.push(v);f.extra.sort();save();renderStaff()}return}
+  fxAuto();save();renderStaff()};
+$('fxList').onchange=e=>{if(e.target.dataset.fxxc!==undefined){fxxSel[+e.target.dataset.fxxc]=e.target.value;return}
+  if(e.target.dataset.fxx!==undefined){const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.fxx],v=e.target.value;if(D&&s&&v){const f=fxEnsure(D,s),sel=fxxSel[+e.target.dataset.fxx]||(D.cols.some(x=>x.id==='c3')?'c3':D.cols[D.cols.length-1].id),cs=sel==='all'?D.cols.map(c=>c.id):[sel];f.extra=f.extra||[];cs.forEach(c=>{const x=v+'|'+c;if(!f.extra.includes(x))f.extra.push(x)});f.extra.sort();fxAuto();save();renderStaff()}return}
   const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;const f=fxEnsure(D,s);
   if(e.target.dataset.fxd!==undefined){const v=+e.target.dataset.fxd;f.days=e.target.checked?f.days.concat(v).filter((x,i,a)=>a.indexOf(x)===i):f.days.filter(x=>x!==v)}
   else if(e.target.dataset.fxc!==undefined){const v=e.target.dataset.fxc;f.cols=e.target.checked?f.cols.concat(v).filter((x,i,a)=>a.indexOf(x)===i):f.cols.filter(x=>x!==v)}
-  save();renderStaff()};
-$('fxApply').onclick=()=>{const nd=new Date(fxy,fxm,0).getDate(),ops=[],ppl={};
-  S.depts.forEach(D=>(S.staff[D.id]||[]).forEach(s=>{const f=s.fx;if(!f||(!(f.days||[]).length&&!(f.extra||[]).length)||!(f.cols||[]).length)return;
-    for(let i=1;i<=nd;i++){const d=fxy+'-'+p2(fxm)+'-'+p2(i);if(!(f.days||[]).includes(new Date(fxy,fxm-1,i).getDay())&&!(f.extra||[]).includes(d))continue;
-      f.cols.forEach(cid=>{if(!D.cols.some(c=>c.id===cid))return;if(!get(d,D.id,cid).includes(s.n)){ops.push([d,D.id,cid,s.n]);ppl[D.id+'|'+s.n]=1}})}}));
-  if(!ops.length){toast('គ្មានអ្វីត្រូវបន្ថែម (គ្មានម៉ោងធ្វើការ ឬបំពេញរួចហើយ)');return}
-  if(!confirm('បំពេញ '+MN[fxm-1]+' '+fxy+' តាមម៉ោងធ្វើការ៖ បន្ថែម '+ops.length+' វេន សម្រាប់ '+Object.keys(ppl).length+' នាក់ ?'))return;
-  ops.forEach(o=>setL(o[0],o[1],o[2],get(o[0],o[1],o[2]).concat(o[3])));save();renderAll();toast('បំពេញរួចរាល់ ✓ '+ops.length+' វេន')};
+  fxAuto();save();renderStaff()};
+$('fxApply').onclick=()=>{const mo=fxy+'-'+p2(fxm),pl=fxPlan(mo);
+  if(!pl.add.length&&!pl.rem.length){if(!(S.fxMonths||[]).includes(mo)){fxRun(pl);save()}toast('គ្មានអ្វីត្រូវផ្លាស់ប្ដូរ (គ្មានម៉ោងធ្វើការ ឬបំពេញរួចហើយ)');return}
+  const ppl={};pl.add.forEach(o=>{ppl[o[1]+'|'+o[3]]=1});
+  if(!confirm('បំពេញ '+MN[fxm-1]+' '+fxy+' តាមម៉ោងធ្វើការ៖ បន្ថែម '+pl.add.length+' វេន សម្រាប់ '+Object.keys(ppl).length+' នាក់'+(pl.rem.length?' · ដកចេញ '+pl.rem.length+' វេន':'')+' ?'))return;
+  fxRun(pl);save();renderAll();toast('បំពេញរួចរាល់ ✓ +'+pl.add.length+(pl.rem.length?' / −'+pl.rem.length:''))};
 function renderStaff(){renderDeps();
   $('sChips').innerHTML=chips(staffDept);const l=S.staff[staffDept]||[];
   $('sForm').style.display=(dept(staffDept)&&eStf)?'':'none';$('stfEditBtn').textContent=eStf?'✅ រួចរាល់':'✏️ កែប្រែ';$('stfHint').textContent=eStf?'(ចុចលើឈ្មោះដើម្បីកែតួនាទី · ✎ ប្ដូរឈ្មោះ)':'';
@@ -519,12 +542,13 @@ function renameStaff(i){const L=S.staff[staffDept],s=L[i],v=(prompt('ប្ដ�
   if(L.some(x=>x.n===v)){toast('⚠ ឈ្មោះនេះមានរួចហើយ');return}
   const old=s.n,pre=staffDept+'__';
   Object.values(S.sched).forEach(o=>Object.keys(o).forEach(k=>{if(k.indexOf(pre)!==0)return;const a=o[k];o[k]=Array.isArray(a)?a.map(x=>x===old?v:x):(a===old?v:a)}));
+  Object.values(S.fxm||{}).forEach(o=>Object.keys(o).forEach(k=>{if(k.indexOf(pre)!==0)return;o[k]=o[k].map(x=>x===old?v:x)}));
   s.n=v;save();renderAll();toast('ប្ដូរឈ្មោះរួចរាល់ ✓')}
 $('depEditBtn').onclick=()=>{eDep=!eDep;renderStaff()};
 $('stfEditBtn').onclick=()=>{eStf=!eStf;rEdit=null;renderStaff()};
 $('sNames').onclick=e=>{if(!eStf)return;const L=S.staff[staffDept];if(e.target.dataset.sc!==undefined)return;
   if(e.target.dataset.rn2!==undefined){renameStaff(+e.target.dataset.rn2);return}
-  if(e.target.dataset.x!==undefined){if(confirm('លុបឈ្មោះនេះ? (វេនចាស់នៅដដែល)')){L.splice(+e.target.dataset.x,1);save();renderAll()}return}
+  if(e.target.dataset.x!==undefined){if(confirm('លុបឈ្មោះនេះ? (វេនចាស់នៅដដែល)')){L.splice(+e.target.dataset.x,1);fxRun(fxPlan());save();renderAll()}return}
   if(e.target.tagName==='SELECT')return;const nm=e.target.closest('.nm');if(nm){rEdit=+nm.dataset.i;renderStaff();const sel=document.querySelector('#sNames select.rs');if(sel)sel.focus()}};
 $('sForm').onsubmit=e=>{e.preventDefault();const v=$('sNew').value.trim();if(!v)return;
   const L=S.staff[staffDept]=S.staff[staffDept]||[];if(!L.some(s=>s.n===v))L.push({n:v,r:$('sRole').value.trim(),c:$('sColor').dataset.set?$('sColor').value:''});$('sNew').value='';$('sRole').value='';$('sColor').dataset.set='';save();renderAll();toast('បន្ថែមរួចរាល់ ✓')};
