@@ -69,6 +69,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .pst td.pd small{display:block;font-weight:400;font-size:9px}.pst td.pn1 small{color:#555;margin-left:3px;font-size:9.5px}.pst td.po{font-size:10px}.pst tr.pon td{background:#e3ecfb}.pf{margin-top:8px;font-size:12px;text-align:right}.pst td.pc{text-align:center;font-weight:700}.pst tr.pt td{background:#eee;font-weight:700;font-size:10px}
 @media print{.psd{break-after:page}.psd:last-child{break-after:auto}.pst thead{display:table-header-group}.pst tr{break-inside:avoid}}
 .ppl .pp{padding:8px 15px;font-size:14px}
+.fxt{border-collapse:collapse;font-size:12px;margin:2px 0}.fxt th,.fxt td{padding:3px 12px;text-align:center;border:1px solid var(--line)}.fxt td:first-child{text-align:left;font-weight:600}
 #dGrid .pp{white-space:nowrap;box-sizing:border-box;justify-content:space-between}
 .mt.dt th,.mt.dt td{border-left:1px solid #cfd6e2}.mt.dt .nmc{border-left:0}.mt.dt tr.dend td{border-bottom:2px solid #9aa7bd}
 .mt.dt thead th{border-bottom:2px solid #9aa7bd}
@@ -474,13 +475,15 @@ $('rBox').onclick=e=>{const i=e.target.dataset.rx;if(i===undefined)return;const 
 $('sNames').addEventListener('focusout',e=>{if(e.target.dataset.rs!==undefined)setTimeout(()=>{if(rEdit!==null){rEdit=null;renderStaff()}},200)});
 let eFx=false,fxy=new Date().getFullYear(),fxm=new Date().getMonth()+1;
 const FXD=[[1,'ច័ន្ទ'],[2,'អង្គារ'],[3,'ពុធ'],[4,'ព្រហស្បតិ៍'],[5,'សុក្រ'],[6,'សៅរ៍'],[0,'អាទិត្យ']];
-function fxSummary(D,s){const f=s.fx,ex=f?(f.extra||[]).length:0;if(!f||(!(f.days||[]).length&&!ex))return '— មិនកំណត់ —';
-  let dn='';if((f.days||[]).length){const d=f.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)),k=d.join(',');
-    dn=k==='1,2,3,4,5'?'ច័ន្ទ–សុក្រ':k==='6,0'?'សៅរ៍–អាទិត្យ':k==='1,2,3,4,5,6,0'?'រាល់ថ្ងៃ':d.map(x=>FXD.find(y=>y[0]===x)[1]).join(' · ')}
-  const cl=(f.cols||[]).map(id=>(D.cols.find(c=>c.id===id)||{}).label).filter(Boolean).join('/')||'គ្មានវេន';return (dn||'គ្មានថ្ងៃថេរ')+(ex?' + '+ex+' ថ្ងៃបន្ថែម':'')+' · '+cl}
+function fxSummary(D,s){const f=s.fx,ex=f?(f.extra||[]).length:0,mp=f?fxMap(f):{},ks=FXD.map(x=>x[0]).filter(w=>(mp[w]||[]).length);
+  if(!f||(!ks.length&&!ex))return '— មិនកំណត់ —';
+  const nm=w=>FXD.find(y=>y[0]===w)[1],cl=a=>a.map(id=>(D.cols.find(c=>c.id===id)||{}).label).filter(Boolean).join('/'),g=[];
+  ks.forEach(w=>{const l=cl(mp[w]),t=g.find(x=>x.l===l);if(t)t.d.push(w);else g.push({l,d:[w]})});
+  const dn=d=>{const k=d.join(',');return k==='1,2,3,4,5'?'ច័ន្ទ–សុក្រ':k==='6,0'?'សៅរ៍–អាទិត្យ':k==='1,2,3,4,5,6,0'?'រាល់ថ្ងៃ':d.map(nm).join('·')};
+  return g.map(x=>dn(x.d)+' '+x.l).join(' · ')+(ex?(g.length?' ':'')+'+ '+ex+' ថ្ងៃបន្ថែម':'')}
 const fxExtras=f=>(f.extra||[]).map(x=>{const k=x.indexOf('|');return k<0?[x,f.cols||[]]:[x.slice(0,k),[x.slice(k+1)]]});
 function fxDesired(D,s,y,m){const f=s.fx,out=[];if(!f)return out;const nd=new Date(y,m,0).getDate(),pre=y+'-'+p2(m);
-  for(let i=1;i<=nd;i++){if((f.days||[]).includes(new Date(y,m-1,i).getDay()))(f.cols||[]).forEach(c=>out.push(pre+'-'+p2(i)+'|'+c))}
+  for(let i=1;i<=nd;i++){(fxMap(f)[new Date(y,m-1,i).getDay()]||[]).forEach(c=>out.push(pre+'-'+p2(i)+'|'+c))}
   fxExtras(f).forEach(e=>{if(e[0].indexOf(pre)===0)e[1].forEach(c=>out.push(e[0]+'|'+c))});
   return out.filter((x,i,a)=>a.indexOf(x)===i&&D.cols.some(c=>c.id===x.split('|')[1]))}
 function fxPlan(extraMonth){const months=(S.fxMonths||[]).slice();if(extraMonth&&!months.includes(extraMonth))months.push(extraMonth);
@@ -497,7 +500,9 @@ function fxRun(pl){S.fxMonths=pl.months;S.fxm=S.fxm||{};
 function fxAuto(){const pl=fxPlan();if(pl.add.length||pl.rem.length){fxRun(pl);toast('កែតាមកាឡោនដែរ ✓ +'+pl.add.length+' / −'+pl.rem.length)}}
 const fxxSel={};
 const fxExLbl=(D,x)=>{const k=x.indexOf('|');return k<0?fmtD(x):fmtD(x.slice(0,k))+' · '+((D.cols.find(c=>c.id===x.slice(k+1))||{}).label||'')};
-function fxEnsure(D,s){if(!s.fx)s.fx={days:[],cols:[]};if(!s.fx.cols.length)s.fx.cols=[D.cols.some(c=>c.id==='c3')?'c3':D.cols[D.cols.length-1].id];return s.fx}
+const fxDef=D=>D.cols.some(c=>c.id==='c3')?'c3':D.cols[D.cols.length-1].id;
+const fxMap=f=>{if(f.dc)return f.dc;const o={};(f.days||[]).forEach(w=>{o[w]=(f.cols||[]).slice()});return o};
+function fxEnsure(D,s){if(!s.fx)s.fx={days:[],cols:[]};const f=s.fx;if(!f.cols.length)f.cols=[fxDef(D)];if(!f.dc){f.dc={};(f.days||[]).forEach(w=>{f.dc[w]=f.cols.slice()})}return f}
 function renderFx(){
   if(!$('fxList'))return;const D=dept(staffDept);
   $('fxEditBtn').textContent=eFx?'✅ រួចរាល់':'✏️ កែប្រែ';$('fxHint').textContent=eFx?'(ជ្រើសថ្ងៃ និងវេន ឬប្រើប៊ូតុងរហ័ស)':'';
@@ -505,22 +510,19 @@ function renderFx(){
   if(!D){$('fxList').innerHTML='';return}
   const L=S.staff[D.id]||[];
   $('fxList').innerHTML=L.map((s,i)=>{const f=s.fx||{days:[],cols:[]};
-    return '<div class="fxr"><span class="fxn">'+esc(s.n)+'</span><span class="fxs">'+esc(fxSummary(D,s))+'</span>'+(eFx?'<div class="fxe"><button class="btn" data-fxp="wk" data-i="'+i+'">ច័ន្ទ–សុក្រ</button><button class="btn" data-fxp="we" data-i="'+i+'">សៅរ៍–អាទិត្យ</button><button class="btn" data-fxp="all" data-i="'+i+'">រាល់ថ្ងៃ</button><button class="btn" data-fxp="clr" data-i="'+i+'">ជម្រះ</button></div><div class="fxe"><label class="fxc">+ ថ្ងៃធ្វើការបន្ថែម <select data-fxxc="'+i+'">'+D.cols.map(c=>'<option value="'+c.id+'"'+((fxxSel[i]||(D.cols.some(x=>x.id==='c3')?'c3':D.cols[D.cols.length-1].id))===c.id?' selected':'')+'>'+esc(c.label)+'</option>').join('')+'<option value="all"'+(fxxSel[i]==='all'?' selected':'')+'>'+esc(D.cols.map(c=>c.label).join(' + '))+'</option></select> <input type="date" data-fxx="'+i+'"></label>'+((f.extra||[]).map(dt=>'<span class="nm" style="padding:2px 8px;font-size:12px">'+esc(fxExLbl(D,dt))+' <span class="x" data-fxxd="'+dt+'" data-i="'+i+'">×</span></span>').join(''))+'</div><div class="fxe">'+
-      FXD.map(x=>'<label class="fxc"><input type="checkbox" data-fxd="'+x[0]+'" data-i="'+i+'"'+((f.days||[]).includes(x[0])?' checked':'')+'>'+x[1]+'</label>').join('')+'</div><div class="fxe">'+
-      D.cols.map(c=>'<label class="fxc"><input type="checkbox" data-fxc="'+c.id+'" data-i="'+i+'"'+((f.cols||[]).includes(c.id)?' checked':'')+'>'+esc(c.label)+'</label>').join('')+'</div>':'')+'</div>'}).join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
+    return '<div class="fxr"><span class="fxn">'+esc(s.n)+'</span><span class="fxs">'+esc(fxSummary(D,s))+'</span>'+(eFx?'<div class="fxe"><button class="btn" data-fxp="wk" data-i="'+i+'">ច័ន្ទ–សុក្រ</button><button class="btn" data-fxp="we" data-i="'+i+'">សៅរ៍–អាទិត្យ</button><button class="btn" data-fxp="all" data-i="'+i+'">រាល់ថ្ងៃ</button><button class="btn" data-fxp="clr" data-i="'+i+'">ជម្រះ</button></div><div class="fxe"><label class="fxc">+ ថ្ងៃធ្វើការបន្ថែម <select data-fxxc="'+i+'">'+D.cols.map(c=>'<option value="'+c.id+'"'+((fxxSel[i]||(D.cols.some(x=>x.id==='c3')?'c3':D.cols[D.cols.length-1].id))===c.id?' selected':'')+'>'+esc(c.label)+'</option>').join('')+'<option value="all"'+(fxxSel[i]==='all'?' selected':'')+'>'+esc(D.cols.map(c=>c.label).join(' + '))+'</option></select> <input type="date" data-fxx="'+i+'"></label>'+((f.extra||[]).map(dt=>'<span class="nm" style="padding:2px 8px;font-size:12px">'+esc(fxExLbl(D,dt))+' <span class="x" data-fxxd="'+dt+'" data-i="'+i+'">×</span></span>').join(''))+'</div><div class="fxe"><table class="fxt"><thead><tr><th></th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>'+FXD.map(x=>{const a=fxMap(f)[x[0]]||[];return '<tr><td>'+x[1]+'</td>'+D.cols.map(c=>'<td><input type="checkbox" data-fxdc="'+x[0]+'|'+c.id+'" data-i="'+i+'"'+(a.includes(c.id)?' checked':'')+'></td>').join('')+'</tr>'}).join('')+'</tbody></table></div>':'')+'</div>'}).join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
 }
 $('fxChips').onclick=e=>{const c=e.target.closest('.chip');if(c){staffDept=c.dataset.dp;renderStaff()}};
 $('fxEditBtn').onclick=()=>{eFx=!eFx;renderStaff()};
 $('fxPrev').onclick=()=>{fxm--;if(fxm<1){fxm=12;fxy--}renderFx()};$('fxNext').onclick=()=>{fxm++;if(fxm>12){fxm=1;fxy++}renderFx()};
 $('fxList').onclick=e=>{if(e.target.dataset.fxxd){const s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(s&&s.fx){s.fx.extra=(s.fx.extra||[]).filter(x=>x!==e.target.dataset.fxxd);fxAuto();save();renderStaff()}return}
   const p=e.target.dataset.fxp;if(!p)return;const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;
-  if(p==='clr')delete s.fx;else{const f=fxEnsure(D,s);f.days=p==='wk'?[1,2,3,4,5]:p==='we'?[6,0]:[1,2,3,4,5,6,0]}
+  if(p==='clr')delete s.fx;else{const f=fxEnsure(D,s),dd=p==='wk'?[1,2,3,4,5]:p==='we'?[6,0]:[1,2,3,4,5,6,0];f.days=dd;f.dc={};dd.forEach(w=>{f.dc[w]=[fxDef(D)]})}
   fxAuto();save();renderStaff()};
 $('fxList').onchange=e=>{if(e.target.dataset.fxxc!==undefined){fxxSel[+e.target.dataset.fxxc]=e.target.value;return}
   if(e.target.dataset.fxx!==undefined){const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.fxx],v=e.target.value;if(D&&s&&v){const f=fxEnsure(D,s),sel=fxxSel[+e.target.dataset.fxx]||(D.cols.some(x=>x.id==='c3')?'c3':D.cols[D.cols.length-1].id),cs=sel==='all'?D.cols.map(c=>c.id):[sel];f.extra=f.extra||[];cs.forEach(c=>{const x=v+'|'+c;if(!f.extra.includes(x))f.extra.push(x)});f.extra.sort();fxAuto();save();renderStaff()}return}
   const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;const f=fxEnsure(D,s);
-  if(e.target.dataset.fxd!==undefined){const v=+e.target.dataset.fxd;f.days=e.target.checked?f.days.concat(v).filter((x,i,a)=>a.indexOf(x)===i):f.days.filter(x=>x!==v)}
-  else if(e.target.dataset.fxc!==undefined){const v=e.target.dataset.fxc;f.cols=e.target.checked?f.cols.concat(v).filter((x,i,a)=>a.indexOf(x)===i):f.cols.filter(x=>x!==v)}
+  if(e.target.dataset.fxdc!==undefined){const kk=e.target.dataset.fxdc.split('|'),w=kk[0],c=kk[1],a=f.dc[w]||[];f.dc[w]=e.target.checked?a.concat(c).filter((x,i,r)=>r.indexOf(x)===i):a.filter(x=>x!==c);if(!f.dc[w].length)delete f.dc[w];f.days=Object.keys(f.dc).map(Number)}
   fxAuto();save();renderStaff()};
 $('fxApply').onclick=()=>{const mo=fxy+'-'+p2(fxm),pl=fxPlan(mo);
   if(!pl.add.length&&!pl.rem.length){if(!(S.fxMonths||[]).includes(mo)){fxRun(pl);save()}toast('គ្មានអ្វីត្រូវផ្លាស់ប្ដូរ (គ្មានម៉ោងធ្វើការ ឬបំពេញរួចហើយ)');return}
