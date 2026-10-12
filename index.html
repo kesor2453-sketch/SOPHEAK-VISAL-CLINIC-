@@ -76,6 +76,8 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 @media(max-width:640px){.dsub{flex-direction:column}.dsn{width:auto}}
 .mt td.gl{font-weight:700;white-space:nowrap;font-size:12px;padding:5px 8px}.mt td.na{background:#f1f3f7!important}
 .mt td.subh{background:#f3f6fb;font-weight:700;font-size:12px;text-align:left}
+.fxr{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0;border-top:1px solid var(--line)}.fxn{font-weight:700;min-width:140px}.fxs{color:var(--sub);font-size:13px}
+.fxe{width:100%;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;padding:4px 0}.fxc{display:inline-flex;align-items:center;gap:3px;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:3px 8px;background:#fff;cursor:pointer}
 .gc{min-height:26px;min-width:44px;padding:2px 5px;border-radius:6px;font-weight:700;font-size:11.5px;white-space:nowrap;display:flex;align-items:center;justify-content:center}
 .mc:focus{outline:2px solid var(--brand);outline-offset:1px}.mc{scroll-margin-left:150px}
 .pp{border-radius:9px;padding:5px 11px;box-shadow:0 1px 2px rgba(20,25,40,.12)}.pp small{color:inherit;opacity:.8}
@@ -112,7 +114,11 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <input type="color" id="depColor" value="#2f6fed" style="flex:0 0 46px;padding:2px"><button class="btn p">+ បន្ថែមផ្នែក</button></form></div>
 <div class="card"><div class="ch"><b>បុគ្គលិកតាមផ្នែក <small id="stfHint"></small></b><button class="btn" type="button" id="stfEditBtn"></button></div><div class="chips" id="sChips" style="margin-bottom:6px"></div>
 <div id="rBox"></div><div class="names" id="sNames"></div>
-<form class="add" id="sForm"><input id="sNew" placeholder="ឈ្មោះ — ឧ. Dr.Sok Dara"><select id="sRole" class="btn" title="តួនាទី (ស្រេចចិត្ត)"></select><input type="color" id="sColor" value="#4f8df5" title="ព័ណ៌ប្រអប់ឈ្មោះ" style="flex:0 0 46px;padding:2px;min-width:46px"><button class="btn p">+ បន្ថែម</button></form></div></div>
+<form class="add" id="sForm"><input id="sNew" placeholder="ឈ្មោះ — ឧ. Dr.Sok Dara"><select id="sRole" class="btn" title="តួនាទី (ស្រេចចិត្ត)"></select><input type="color" id="sColor" value="#4f8df5" title="ព័ណ៌ប្រអប់ឈ្មោះ" style="flex:0 0 46px;padding:2px;min-width:46px"><button class="btn p">+ បន្ថែម</button></form></div><div class="card"><div class="ch"><b>ម៉ោងធ្វើការ (ថ្ងៃថេរ) <small id="fxHint"></small></b><button class="btn" type="button" id="fxEditBtn"></button></div>
+<div class="chips" id="fxChips" style="margin-bottom:8px"></div><div id="fxList"></div>
+<div class="nav" style="margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line)"><button class="btn" id="fxPrev">‹</button><div class="lbl" id="fxLbl"></div><button class="btn" id="fxNext">›</button><button class="btn p" id="fxApply">⚡ បំពេញខែនេះតាមម៉ោងធ្វើការ</button></div>
+<small>បំពេញតែវេនដែលនៅទំនេរ មិនលុបឬប៉ះពាល់វេនដែលមានស្រាប់ទេ។</small></div>
+</div>
 
 
 
@@ -166,7 +172,7 @@ if(USE_FB){
   setTimeout(renderAll,0);
 }
 
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{eDep=eStf=false;rEdit=null;
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{eDep=eStf=eFx=false;rEdit=null;
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.pn').forEach(x=>x.classList.remove('on'));
   t.classList.add('on');$('p-'+t.dataset.p).classList.add('on');renderAll()});
 function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.value||'all',bs=blocks();x.innerHTML='<option value="all">ព្រីនទាំងអស់</option>'+bs.map(b=>'<option value="'+b.key+'">'+b.ds.map(D=>D.icon+' '+D.name).map(esc).join(' + ')+'</option>').join('');x.value=bs.some(b=>b.key===v)?v:'all'})}
@@ -457,6 +463,41 @@ const roleSel=(dp,s,i)=>'<select class="rs" data-rs="'+i+'"><option value="">—
 $('rBox').onsubmit=e=>{e.preventDefault();const v=$('rNew').value.trim(),D=dept(staffDept);if(!v||!D)return;D.roles=D.roles||[];if(!D.roles.includes(v))D.roles.push(v);save();renderStaff();toast('បន្ថែមតួនាទីរួចរាល់ ✓')};
 $('rBox').onclick=e=>{const i=e.target.dataset.rx;if(i===undefined)return;const D=dept(staffDept);if(confirm('លុបតួនាទី "'+D.roles[+i]+'"? (បុគ្គលិកដែលមានតួនាទីនេះនៅដដែល)')){D.roles.splice(+i,1);save();renderStaff()}};
 $('sNames').addEventListener('focusout',e=>{if(e.target.dataset.rs!==undefined)setTimeout(()=>{if(rEdit!==null){rEdit=null;renderStaff()}},200)});
+let eFx=false,fxy=new Date().getFullYear(),fxm=new Date().getMonth()+1;
+const FXD=[[1,'ច័ន្ទ'],[2,'អង្គារ'],[3,'ពុធ'],[4,'ព្រហស្បតិ៍'],[5,'សុក្រ'],[6,'សៅរ៍'],[0,'អាទិត្យ']];
+function fxSummary(D,s){const f=s.fx;if(!f||!(f.days||[]).length)return '— មិនកំណត់ —';
+  const d=f.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)),k=d.join(',');
+  const dn=k==='1,2,3,4,5'?'ច័ន្ទ–សុក្រ':k==='6,0'?'សៅរ៍–អាទិត្យ':k==='1,2,3,4,5,6,0'?'រាល់ថ្ងៃ':d.map(x=>FXD.find(y=>y[0]===x)[1]).join(' · ');
+  const cl=(f.cols||[]).map(id=>(D.cols.find(c=>c.id===id)||{}).label).filter(Boolean).join('/')||'គ្មានវេន';return dn+' · '+cl}
+function fxEnsure(D,s){if(!s.fx)s.fx={days:[],cols:[]};if(!s.fx.cols.length)s.fx.cols=[D.cols.some(c=>c.id==='c3')?'c3':D.cols[D.cols.length-1].id];return s.fx}
+function renderFx(){
+  if(!$('fxList'))return;const D=dept(staffDept);
+  $('fxEditBtn').textContent=eFx?'✅ រួចរាល់':'✏️ កែប្រែ';$('fxHint').textContent=eFx?'(ជ្រើសថ្ងៃ និងវេន ឬប្រើប៊ូតុងរហ័ស)':'';
+  $('fxChips').innerHTML=chips(staffDept);$('fxLbl').textContent=MN[fxm-1]+' '+fxy;
+  if(!D){$('fxList').innerHTML='';return}
+  const L=S.staff[D.id]||[];
+  $('fxList').innerHTML=L.map((s,i)=>{const f=s.fx||{days:[],cols:[]};
+    return '<div class="fxr"><span class="fxn">'+esc(s.n)+'</span><span class="fxs">'+esc(fxSummary(D,s))+'</span>'+(eFx?'<div class="fxe"><button class="btn" data-fxp="wk" data-i="'+i+'">ច័ន្ទ–សុក្រ</button><button class="btn" data-fxp="we" data-i="'+i+'">សៅរ៍–អាទិត្យ</button><button class="btn" data-fxp="all" data-i="'+i+'">រាល់ថ្ងៃ</button><button class="btn" data-fxp="clr" data-i="'+i+'">ជម្រះ</button></div><div class="fxe">'+
+      FXD.map(x=>'<label class="fxc"><input type="checkbox" data-fxd="'+x[0]+'" data-i="'+i+'"'+((f.days||[]).includes(x[0])?' checked':'')+'>'+x[1]+'</label>').join('')+'</div><div class="fxe">'+
+      D.cols.map(c=>'<label class="fxc"><input type="checkbox" data-fxc="'+c.id+'" data-i="'+i+'"'+((f.cols||[]).includes(c.id)?' checked':'')+'>'+esc(c.label)+'</label>').join('')+'</div>':'')+'</div>'}).join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
+}
+$('fxChips').onclick=e=>{const c=e.target.closest('.chip');if(c){staffDept=c.dataset.dp;renderStaff()}};
+$('fxEditBtn').onclick=()=>{eFx=!eFx;renderStaff()};
+$('fxPrev').onclick=()=>{fxm--;if(fxm<1){fxm=12;fxy--}renderFx()};$('fxNext').onclick=()=>{fxm++;if(fxm>12){fxm=1;fxy++}renderFx()};
+$('fxList').onclick=e=>{const p=e.target.dataset.fxp;if(!p)return;const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;
+  if(p==='clr')delete s.fx;else{const f=fxEnsure(D,s);f.days=p==='wk'?[1,2,3,4,5]:p==='we'?[6,0]:[1,2,3,4,5,6,0]}
+  save();renderStaff()};
+$('fxList').onchange=e=>{const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;const f=fxEnsure(D,s);
+  if(e.target.dataset.fxd!==undefined){const v=+e.target.dataset.fxd;f.days=e.target.checked?f.days.concat(v).filter((x,i,a)=>a.indexOf(x)===i):f.days.filter(x=>x!==v)}
+  else if(e.target.dataset.fxc!==undefined){const v=e.target.dataset.fxc;f.cols=e.target.checked?f.cols.concat(v).filter((x,i,a)=>a.indexOf(x)===i):f.cols.filter(x=>x!==v)}
+  save();renderStaff()};
+$('fxApply').onclick=()=>{const nd=new Date(fxy,fxm,0).getDate(),ops=[],ppl={};
+  S.depts.forEach(D=>(S.staff[D.id]||[]).forEach(s=>{const f=s.fx;if(!f||!(f.days||[]).length||!(f.cols||[]).length)return;
+    for(let i=1;i<=nd;i++){if(!f.days.includes(new Date(fxy,fxm-1,i).getDay()))continue;const d=fxy+'-'+p2(fxm)+'-'+p2(i);
+      f.cols.forEach(cid=>{if(!D.cols.some(c=>c.id===cid))return;if(!get(d,D.id,cid).includes(s.n)){ops.push([d,D.id,cid,s.n]);ppl[D.id+'|'+s.n]=1}})}}));
+  if(!ops.length){toast('គ្មានអ្វីត្រូវបន្ថែម (គ្មានម៉ោងធ្វើការ ឬបំពេញរួចហើយ)');return}
+  if(!confirm('បំពេញ '+MN[fxm-1]+' '+fxy+' តាមម៉ោងធ្វើការ៖ បន្ថែម '+ops.length+' វេន សម្រាប់ '+Object.keys(ppl).length+' នាក់ ?'))return;
+  ops.forEach(o=>setL(o[0],o[1],o[2],get(o[0],o[1],o[2]).concat(o[3])));save();renderAll();toast('បំពេញរួចរាល់ ✓ '+ops.length+' វេន')};
 function renderStaff(){renderDeps();
   $('sChips').innerHTML=chips(staffDept);const l=S.staff[staffDept]||[];
   $('sForm').style.display=(dept(staffDept)&&eStf)?'':'none';$('stfEditBtn').textContent=eStf?'✅ រួចរាល់':'✏️ កែប្រែ';$('stfHint').textContent=eStf?'(ចុចលើឈ្មោះដើម្បីកែតួនាទី · ✎ ប្ដូរឈ្មោះ)':'';
@@ -464,6 +505,7 @@ function renderStaff(){renderDeps();
   $('rBox').innerHTML=(RD&&eStf)?'<div style="font-size:12px;color:var(--sub);margin:6px 0 4px">តួនាទីក្នុងផ្នែកនេះ (សម្រាប់ជ្រើសក្នុង Dropdown)</div><div class="names" style="margin:4px 0">'+((RD.roles||[]).map((r,i)=>'<span class="nm">'+esc(r)+' <span class="x" data-rx="'+i+'">×</span></span>').join('')||'<span style="color:var(--sub)">មិនទាន់មានតួនាទី</span>')+'</div><form class="add" id="rForm" style="margin-bottom:10px"><input id="rNew" placeholder="តួនាទីថ្មី — ឧ. ប្រធានវេន"><button class="btn p">+ តួនាទី</button></form>':'';
   $('sRole').innerHTML='<option value="">— តួនាទី (ស្រេចចិត្ត) —</option>'+rolesOf(staffDept,'').map(r=>'<option value="'+esc(r)+'">'+esc(r)+'</option>').join('');
   $('sNames').innerHTML=l.length?l.map((s,i)=>'<span class="nm" data-i="'+i+'" style="'+nmSt(staffDept,s.n)+'">'+(rEdit===i?esc(s.n)+' '+roleSel(staffDept,s,i):lab(staffDept,s.n))+(eStf?' <span class="x" style="color:var(--sub)" data-rn2="'+i+'" title="ប្ដូរឈ្មោះ">✎</span> <input type="color" class="sc" title="ព័ណ៌" data-sc="'+i+'" value="'+(s.c||dept(staffDept).color)+'"><span class="x" data-x="'+i+'">×</span>':'')+'</span>').join(''):'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
+  renderFx();
 }
 $('sNames').onchange=e=>{if(e.target.dataset.rs!==undefined){S.staff[staffDept][+e.target.dataset.rs].r=e.target.value;rEdit=null;save();renderAll();return}if(e.target.dataset.sc!==undefined){S.staff[staffDept][+e.target.dataset.sc].c=e.target.value;save();renderAll()}};
 $('sColor').oninput=()=>{$('sColor').dataset.set='1'};
