@@ -350,6 +350,10 @@ function renderMonth(){
   if(dayDept!=='all'&&!dept(dayDept))dayDept='all';
   return mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
 }
+const NC_KM=new Intl.Collator('km',{numeric:true,sensitivity:'base'}),NC_LA=new Intl.Collator(['en','fr'],{numeric:true,sensitivity:'base'});
+const nameKey=n=>String(n).replace(/^\s*(dr|pr|prof|mr|ms|mrs)(\.\s*|\s+)(?=\S)/i,'').trim();
+const nameRank=n=>/[\u1780-\u17FF]/.test(n.charAt(0))?0:1;
+const nameCmp=(a,b)=>{const x=nameKey(a),y=nameKey(b),r=nameRank(x)-nameRank(y);if(r)return r;const C=nameRank(x)?NC_LA:NC_KM;return C.compare(x,y)||C.compare(a,b)};
 function renderMonthGrid(){
   const n=new Date(my,mm,0).getDate(),t=ds(new Date()),days=[];
   for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();days.push({i,d,c:(w==0||w==6?'we ':'')+(d===t?'td':'')})}
@@ -359,6 +363,7 @@ function renderMonthGrid(){
     b.ds.forEach(D=>{
       const names=(S.staff[D.id]||[]).map(s=>s.n);
       days.forEach(x=>D.cols.forEach(c=>get(x.d,D.id,c.id).forEach(nm=>{if(!names.includes(nm))names.push(nm)})));
+      names.sort(nameCmp);
       if(g)h+='<tr><td class="nmc subh" colspan="'+(n+1)+'" style="color:'+D.color+'">'+D.icon+' '+esc(D.name)+'</td></tr>';
       names.forEach(nm=>{const pc=col(D.id,nm)||D.color;h+='<tr><td class="nmc" style="'+nmSt(D.id,nm)+'">'+lab(D.id,nm)+'</td>'+days.map(x=>{
         const cs=D.cols.filter(c=>get(x.d,D.id,c.id).includes(nm));
