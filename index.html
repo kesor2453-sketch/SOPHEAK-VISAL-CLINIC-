@@ -146,9 +146,11 @@ const key=(d,c)=>d+'__'+c;
 const get=(date,dp,col)=>{const v=(S.sched[date]||{})[key(dp,col)];return Array.isArray(v)?v:(v?[v]:[])};
 const setL=(date,dp,col,l)=>{(S.sched[date]=S.sched[date]||{})[key(dp,col)]=l};
 const role=(dp,n)=>{const s=(S.staff[dp]||[]).find(x=>x.n===n);return s?s.r:''};
-const lab=(dp,n)=>esc(n)+(role(dp,n)?'<small>('+esc(role(dp,n))+')</small>':'');
+const lab=(dp,n)=>esc(n)+(role(dp,n)?'<small>('+esc(role(dp,n))+')</small>':'')+(sibHas(dp,n)?'<small>('+((dept(sibOf(dp))||{}).icon||'')+')</small>':'');
 const dept=id=>S.depts.find(d=>d.id===id);
-const col=(dp,n)=>{const s=(S.staff[dp]||[]).find(x=>x.n===n);return (s&&s.c)||''};
+const sibOf=dp=>GRP.includes(dp)?GRP.find(x=>x!==dp):null;
+const sibHas=(dp,n)=>{const o=sibOf(dp);return !!o&&(S.staff[o]||[]).some(x=>x.n===n)&&!(S.staff[dp]||[]).some(x=>x.n===n)};
+const col=(dp,n)=>{let s=(S.staff[dp]||[]).find(x=>x.n===n);if(!s&&sibHas(dp,n))s=(S.staff[sibOf(dp)]||[]).find(x=>x.n===n);return (s&&s.c)||''};
 const ink=h=>{const m=/^#(..)(..)(..)$/.exec(h);if(!m)return '#1c2430';return (.299*parseInt(m[1],16)+.587*parseInt(m[2],16)+.114*parseInt(m[3],16))>150?'#1c2430':'#fff'};
 const nmSt=(dp,n)=>{const c=col(dp,n);return c?'background:'+c+';color:'+ink(c)+';border-color:'+c:''};
 const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at:'')+' style="'+(c?'background:'+c+';color:'+ink(c):'background:'+D.color+'1f')+'">'+lab(D.id,n)+(x||'')+'</span>'};
@@ -252,14 +254,14 @@ dg.addEventListener('drop',e=>{e.preventDefault();const el=e.target.closest('.dr
 function moveDept(key,k){const bs=blocks(),i=bs.findIndex(x=>x.key===key),j=i+k;if(i<0||j<0||j>=bs.length)return;const m=bs.splice(i,1)[0];bs.splice(j,0,m);S.depts=bs.flatMap(x=>x.ds);save();renderAll()}
 function addEdit(el){
   editing=true;const d=el.dataset.d,dp=el.dataset.dp,col=el.dataset.c,cur=get(d,dp,col);
-  const opts=(S.staff[dp]||[]).filter(s=>!cur.includes(s.n)),id='dl'+Date.now();
+  const opts=(S.staff[dp]||[]).filter(s=>!cur.includes(s.n)).concat(sibOf(dp)?(S.staff[sibOf(dp)]||[]).filter(s=>!cur.includes(s.n)&&!(S.staff[dp]||[]).some(t=>t.n===s.n)):[]),id='dl'+Date.now();
   el.className='adding';
   el.innerHTML='<input class="ed" list="'+id+'" placeholder="វាយ/ជ្រើសឈ្មោះ..."><datalist id="'+id+'">'+opts.map(s=>'<option value="'+esc(s.n)+'">'+esc(s.r)+'</option>').join('')+'</datalist>';
   const inp=el.querySelector('input');inp.focus();let done=false;
   const fin=(cancel,again)=>{if(done)return;done=true;editing=false;
     const v=inp.value.trim();
     if(!cancel&&v){if(cur.includes(v))toast('⚠ '+v+' មានរួចហើយ');
-      else{S.staff[dp]=S.staff[dp]||[];if(!S.staff[dp].some(s=>s.n===v))S.staff[dp].push({n:v,r:''});setL(d,dp,col,cur.concat(v));save();toast('រក្សាទុករួចរាល់ ✓')}}
+      else{S.staff[dp]=S.staff[dp]||[];if(!S.staff[dp].some(s=>s.n===v)&&!sibHas(dp,v))S.staff[dp].push({n:v,r:''});setL(d,dp,col,cur.concat(v));save();toast('រក្សាទុករួចរាល់ ✓')}}
     renderAll();
     if(again){const b=[...document.querySelectorAll('.pn.on .addp')].find(x=>x.dataset.d===d&&x.dataset.dp===dp&&x.dataset.c===col);if(b)addEdit(b)}};
   inp.addEventListener('keydown',ev=>{if(ev.isComposing||ev.keyCode===229)return;
@@ -299,17 +301,19 @@ function renderDlg(){
     B.innerHTML='<div class="dt1">'+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div><label class="fl">គ្រូពេទ្យ<select id="dSel">'+(av.length?mopt(av.map(x=>[x,x]),''):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select></label><label class="fl">ឬវាយឈ្មោះថ្មី<input id="dNm" type="text" placeholder="ឈ្មោះ..."></label>'+foot('✓ បំពេញ');return}
   if(M.mode==='note'){const L=getN(M.d,M.dp,M.c);
     B.innerHTML='<div class="dt1">📝 សំគាល់ · '+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div>'+(L.map((x,i)=>'<div class="nt2">'+esc(x.x)+' <span class="x" data-ndel="'+i+'">×</span></div>').join('')||'<div style="color:var(--sub);margin:6px 0">មិនទាន់មានសំគាល់</div>')+'<textarea id="dNote" rows="3" placeholder="សរសេរសំគាល់..."></textarea>'+foot('+ បន្ថែមសំគាល់');return}
-  const l1=get(M.d,D.id,M.c),av=(S.staff[D.id]||[]).map(x=>x.n).filter(x=>!l1.includes(x));M.act=M.act||'rep';
-  if(!av.includes(M.r))M.r=av[0]||'';
-  if(!M.d2)M.d2=M.d;if(!D.cols.some(c=>c.id===M.c2))M.c2=M.c;
+  const l1=get(M.d,D.id,M.c),blk=blocks().find(b=>inBlock(b,D.id)),mem=blk?blk.ds:[D],pool=[],seen={};
+  mem.forEach(X=>(S.staff[X.id]||[]).forEach(s=>{if(!seen[s.n]){seen[s.n]=1;pool.push([s.n,s.n+(X.id!==D.id?' ('+X.icon+' '+X.name+')':'')])}}));
+  const av=pool.filter(x=>!l1.includes(x[0]));M.act=M.act||'rep';
+  if(!av.some(x=>x[0]===M.r))M.r=(av[0]||[''])[0];
+  if(!M.d2)M.d2=M.d;if(!mem.some(x=>x.id===M.dp2))M.dp2=D.id;const D2=dept(M.dp2)||D;if(!D2.cols.some(c=>c.id===M.c2))M.c2=D2.cols.some(c=>c.id===M.c)?M.c:D2.cols[0].id;
   const nd=new Date(my,mm,0).getDate(),days=[];for(let i=1;i<=nd;i++){const k=my+'-'+p2(mm)+'-'+p2(i);days.push([k,DW[new Date(my,mm-1,i).getDay()]+' '+i+'/'+p2(mm)])}
-  const l2=get(M.d2,D.id,M.c2);if(!l2.includes(M.n2))M.n2=l2[0]||'';
+  const l2=get(M.d2,D2.id,M.c2);if(!l2.includes(M.n2))M.n2=l2[0]||'';
   const lb=(t,h)=>'<label class="fl">'+t+h+'</label>';
   let h='<div class="dt1">'+esc(M.n)+' · '+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div><div class="chips" style="margin-bottom:6px">'+[['rep','🔁 ជំនួសគ្រូពេទ្យ'],['swap','⇄ ដូរវេន'],['self','🙋 វេនយាមខ្លួនឯង'],['misc','📝 ផ្សេងៗ']].map(x=>'<div class="chip" data-dact="'+x[0]+'" style="'+(M.act===x[0]?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">'+x[1]+'</div>').join('')+'</div>';
-  if(M.act==='rep')h+=lb('ជំនួសដោយ','<select data-m="r">'+(av.length?mopt(av.map(x=>[x,x]),M.r):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select>');
-  else if(M.act==='self')h+=lb('គ្រូពេទ្យដែលយាមខ្លួនឯង','<select data-m="r">'+(av.length?mopt(av.map(x=>[x,x]),M.r):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select>');
+  if(M.act==='rep')h+=lb('ជំនួសដោយ','<select data-m="r">'+(av.length?mopt(av,M.r):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select>');
+  else if(M.act==='self')h+=lb('គ្រូពេទ្យដែលយាមខ្លួនឯង','<select data-m="r">'+(av.length?mopt(av,M.r):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select>');
   else if(M.act==='misc')h+='';
-  else h+=lb('ដូរជាមួយ — ថ្ងៃ','<select data-m="d2">'+mopt(days,M.d2)+'</select>')+lb('វេន','<select data-m="c2">'+mopt(D.cols.map(c=>[c.id,c.label]),M.c2)+'</select>')+lb('ឈ្មោះ','<select data-m="n2">'+(l2.length?mopt(l2.map(x=>[x,x]),M.n2):'<option value="">— គ្មានអ្នកប្រចាំការ —</option>')+'</select>');
+  else h+=(mem.length>1?lb('ដូរជាមួយ — ផ្នែក','<select data-m="dp2">'+mopt(mem.map(x=>[x.id,x.icon+' '+x.name]),M.dp2)+'</select>'):'')+lb('ដូរជាមួយ — ថ្ងៃ','<select data-m="d2">'+mopt(days,M.d2)+'</select>')+lb('វេន','<select data-m="c2">'+mopt(D2.cols.map(c=>[c.id,c.label]),M.c2)+'</select>')+lb('ឈ្មោះ','<select data-m="n2">'+(l2.length?mopt(l2.map(x=>[x,x]),M.n2):'<option value="">— គ្មានអ្នកប្រចាំការ —</option>')+'</select>');
   B.innerHTML=h+lb(M.act==='misc'?'ផ្សេងៗ (សរសេរ)':'សំគាល់ (ស្រេចចិត្ត)','<textarea id="dNote" rows="2" placeholder="ឧ. មូលហេតុនៃការដូរ..."></textarea>')+foot('✓ អនុវត្ត');
   const t=$('dNote');if(t)t.value=M.note||'';
 }
@@ -324,9 +328,9 @@ function applyDlg(){
   if(M.act==='rep')ok=doChange('rep',D,{...base,n1:M.n,n2:M.r});
   else if(M.act==='self')ok=doChange('self',D,{...base,n1:M.r});
   else if(M.act==='misc')ok=doChange('misc',D,{...base,n1:M.n});
-  else ok=doChange('swap',D,{...base,n1:M.n,d2:M.d2,c2:M.c2,n2:M.n2});
+  else ok=doChange('swap',D,{...base,n1:M.n,dp2:M.dp2,d2:M.d2,c2:M.c2,n2:M.n2});
   if(ok){closeDlg();renderAll();toast('រក្សាទុករួចរាល់ ✓')}}
-$('dlg').addEventListener('change',e=>{const k=e.target.dataset.m;if(!k||!M)return;const t=$('dNote');M.note=t?t.value:'';M[k]=e.target.value;if(k==='d2'||k==='c2')M.n2='';renderDlg()});
+$('dlg').addEventListener('change',e=>{const k=e.target.dataset.m;if(!k||!M)return;const t=$('dNote');M.note=t?t.value:'';M[k]=e.target.value;if(k==='d2'||k==='c2'||k==='dp2')M.n2='';renderDlg()});
 $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   if(t===$('dlg')||t.dataset.dclose){closeDlg();return}
   if(t.dataset.dprint){const v=M.v,wc=t.dataset.dprint==='cols';closeDlg();printSheet(v,wc);return}
@@ -465,10 +469,10 @@ $('rBox').onclick=e=>{const i=e.target.dataset.rx;if(i===undefined)return;const 
 $('sNames').addEventListener('focusout',e=>{if(e.target.dataset.rs!==undefined)setTimeout(()=>{if(rEdit!==null){rEdit=null;renderStaff()}},200)});
 let eFx=false,fxy=new Date().getFullYear(),fxm=new Date().getMonth()+1;
 const FXD=[[1,'ច័ន្ទ'],[2,'អង្គារ'],[3,'ពុធ'],[4,'ព្រហស្បតិ៍'],[5,'សុក្រ'],[6,'សៅរ៍'],[0,'អាទិត្យ']];
-function fxSummary(D,s){const f=s.fx;if(!f||!(f.days||[]).length)return '— មិនកំណត់ —';
-  const d=f.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)),k=d.join(',');
-  const dn=k==='1,2,3,4,5'?'ច័ន្ទ–សុក្រ':k==='6,0'?'សៅរ៍–អាទិត្យ':k==='1,2,3,4,5,6,0'?'រាល់ថ្ងៃ':d.map(x=>FXD.find(y=>y[0]===x)[1]).join(' · ');
-  const cl=(f.cols||[]).map(id=>(D.cols.find(c=>c.id===id)||{}).label).filter(Boolean).join('/')||'គ្មានវេន';return dn+' · '+cl}
+function fxSummary(D,s){const f=s.fx,ex=f?(f.extra||[]).length:0;if(!f||(!(f.days||[]).length&&!ex))return '— មិនកំណត់ —';
+  let dn='';if((f.days||[]).length){const d=f.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)),k=d.join(',');
+    dn=k==='1,2,3,4,5'?'ច័ន្ទ–សុក្រ':k==='6,0'?'សៅរ៍–អាទិត្យ':k==='1,2,3,4,5,6,0'?'រាល់ថ្ងៃ':d.map(x=>FXD.find(y=>y[0]===x)[1]).join(' · ')}
+  const cl=(f.cols||[]).map(id=>(D.cols.find(c=>c.id===id)||{}).label).filter(Boolean).join('/')||'គ្មានវេន';return (dn||'គ្មានថ្ងៃថេរ')+(ex?' + '+ex+' ថ្ងៃបន្ថែម':'')+' · '+cl}
 function fxEnsure(D,s){if(!s.fx)s.fx={days:[],cols:[]};if(!s.fx.cols.length)s.fx.cols=[D.cols.some(c=>c.id==='c3')?'c3':D.cols[D.cols.length-1].id];return s.fx}
 function renderFx(){
   if(!$('fxList'))return;const D=dept(staffDept);
@@ -477,23 +481,25 @@ function renderFx(){
   if(!D){$('fxList').innerHTML='';return}
   const L=S.staff[D.id]||[];
   $('fxList').innerHTML=L.map((s,i)=>{const f=s.fx||{days:[],cols:[]};
-    return '<div class="fxr"><span class="fxn">'+esc(s.n)+'</span><span class="fxs">'+esc(fxSummary(D,s))+'</span>'+(eFx?'<div class="fxe"><button class="btn" data-fxp="wk" data-i="'+i+'">ច័ន្ទ–សុក្រ</button><button class="btn" data-fxp="we" data-i="'+i+'">សៅរ៍–អាទិត្យ</button><button class="btn" data-fxp="all" data-i="'+i+'">រាល់ថ្ងៃ</button><button class="btn" data-fxp="clr" data-i="'+i+'">ជម្រះ</button></div><div class="fxe">'+
+    return '<div class="fxr"><span class="fxn">'+esc(s.n)+'</span><span class="fxs">'+esc(fxSummary(D,s))+'</span>'+(eFx?'<div class="fxe"><button class="btn" data-fxp="wk" data-i="'+i+'">ច័ន្ទ–សុក្រ</button><button class="btn" data-fxp="we" data-i="'+i+'">សៅរ៍–អាទិត្យ</button><button class="btn" data-fxp="all" data-i="'+i+'">រាល់ថ្ងៃ</button><button class="btn" data-fxp="clr" data-i="'+i+'">ជម្រះ</button></div><div class="fxe"><label class="fxc">+ ថ្ងៃធ្វើការបន្ថែម <input type="date" data-fxx="'+i+'"></label>'+((f.extra||[]).map(dt=>'<span class="nm" style="padding:2px 8px;font-size:12px">'+fmtD(dt)+' <span class="x" data-fxxd="'+dt+'" data-i="'+i+'">×</span></span>').join(''))+'</div><div class="fxe">'+
       FXD.map(x=>'<label class="fxc"><input type="checkbox" data-fxd="'+x[0]+'" data-i="'+i+'"'+((f.days||[]).includes(x[0])?' checked':'')+'>'+x[1]+'</label>').join('')+'</div><div class="fxe">'+
       D.cols.map(c=>'<label class="fxc"><input type="checkbox" data-fxc="'+c.id+'" data-i="'+i+'"'+((f.cols||[]).includes(c.id)?' checked':'')+'>'+esc(c.label)+'</label>').join('')+'</div>':'')+'</div>'}).join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
 }
 $('fxChips').onclick=e=>{const c=e.target.closest('.chip');if(c){staffDept=c.dataset.dp;renderStaff()}};
 $('fxEditBtn').onclick=()=>{eFx=!eFx;renderStaff()};
 $('fxPrev').onclick=()=>{fxm--;if(fxm<1){fxm=12;fxy--}renderFx()};$('fxNext').onclick=()=>{fxm++;if(fxm>12){fxm=1;fxy++}renderFx()};
-$('fxList').onclick=e=>{const p=e.target.dataset.fxp;if(!p)return;const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;
+$('fxList').onclick=e=>{if(e.target.dataset.fxxd){const s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(s&&s.fx){s.fx.extra=(s.fx.extra||[]).filter(x=>x!==e.target.dataset.fxxd);save();renderStaff()}return}
+  const p=e.target.dataset.fxp;if(!p)return;const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;
   if(p==='clr')delete s.fx;else{const f=fxEnsure(D,s);f.days=p==='wk'?[1,2,3,4,5]:p==='we'?[6,0]:[1,2,3,4,5,6,0]}
   save();renderStaff()};
-$('fxList').onchange=e=>{const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;const f=fxEnsure(D,s);
+$('fxList').onchange=e=>{if(e.target.dataset.fxx!==undefined){const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.fxx],v=e.target.value;if(D&&s&&v){const f=fxEnsure(D,s);f.extra=f.extra||[];if(!f.extra.includes(v))f.extra.push(v);f.extra.sort();save();renderStaff()}return}
+  const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;const f=fxEnsure(D,s);
   if(e.target.dataset.fxd!==undefined){const v=+e.target.dataset.fxd;f.days=e.target.checked?f.days.concat(v).filter((x,i,a)=>a.indexOf(x)===i):f.days.filter(x=>x!==v)}
   else if(e.target.dataset.fxc!==undefined){const v=e.target.dataset.fxc;f.cols=e.target.checked?f.cols.concat(v).filter((x,i,a)=>a.indexOf(x)===i):f.cols.filter(x=>x!==v)}
   save();renderStaff()};
 $('fxApply').onclick=()=>{const nd=new Date(fxy,fxm,0).getDate(),ops=[],ppl={};
-  S.depts.forEach(D=>(S.staff[D.id]||[]).forEach(s=>{const f=s.fx;if(!f||!(f.days||[]).length||!(f.cols||[]).length)return;
-    for(let i=1;i<=nd;i++){if(!f.days.includes(new Date(fxy,fxm-1,i).getDay()))continue;const d=fxy+'-'+p2(fxm)+'-'+p2(i);
+  S.depts.forEach(D=>(S.staff[D.id]||[]).forEach(s=>{const f=s.fx;if(!f||(!(f.days||[]).length&&!(f.extra||[]).length)||!(f.cols||[]).length)return;
+    for(let i=1;i<=nd;i++){const d=fxy+'-'+p2(fxm)+'-'+p2(i);if(!(f.days||[]).includes(new Date(fxy,fxm-1,i).getDay())&&!(f.extra||[]).includes(d))continue;
       f.cols.forEach(cid=>{if(!D.cols.some(c=>c.id===cid))return;if(!get(d,D.id,cid).includes(s.n)){ops.push([d,D.id,cid,s.n]);ppl[D.id+'|'+s.n]=1}})}}));
   if(!ops.length){toast('គ្មានអ្វីត្រូវបន្ថែម (គ្មានម៉ោងធ្វើការ ឬបំពេញរួចហើយ)');return}
   if(!confirm('បំពេញ '+MN[fxm-1]+' '+fxy+' តាមម៉ោងធ្វើការ៖ បន្ថែម '+ops.length+' វេន សម្រាប់ '+Object.keys(ppl).length+' នាក់ ?'))return;
@@ -534,24 +540,28 @@ const xopt=(a,v)=>a.map(x=>'<option value="'+esc(x[0])+'"'+(x[0]===v?' selected'
 const xnopt=(a,v)=>xopt(a.length?a.map(x=>[x,x]):[['','— គ្មាន —']],v);
 const xfld=(l,h)=>'<label class="xf"><span>'+l+'</span>'+h+'</label>';
 function doChange(type,D,p){
-  const sl=(d,c)=>fmtD(d)+' '+((D.cols.find(x=>x.id===c)||{}).label||''),l1=get(p.d,D.id,p.c);let msg='',slots=[];
+  const D2=(type==='swap'&&p.dp2&&dept(p.dp2))||D,lbl=(X,c)=>((X.cols.find(x=>x.id===c))||{}).label||'';
+  const sl=(d,c,X)=>fmtD(d)+' '+lbl(X||D,c)+((X&&X.id!==D.id)?' · '+X.icon+' '+X.name:'');
+  const tag=n=>{const b=blocks().find(b=>inBlock(b,D.id));if(!b||(S.staff[D.id]||[]).some(s=>s.n===n))return '';const X=b.ds.find(x=>x.id!==D.id&&(S.staff[x.id]||[]).some(s=>s.n===n));return X?' ('+X.icon+' '+X.name+')':''};
+  const l1=get(p.d,D.id,p.c);let msg='',slots=[];
   const ask=()=>confirm('បញ្ជាក់៖ '+D.name+'\n'+msg+(p.note?'\nសំគាល់៖ '+p.note:'')+'\n\nអនុវត្ត?');
   if(type==='rep'){
     if(!l1.includes(p.n1)||!p.n2||l1.includes(p.n2)){toast('⚠ ទិន្នន័យមិនត្រឹមត្រូវ');return false}
-    msg='🔁 ជំនួស · '+sl(p.d,p.c)+' · '+p.n1+' → '+p.n2;slots=[[p.d,p.c,'ជំនួស '+p.n1+' → '+p.n2]];
+    msg='🔁 ជំនួស · '+sl(p.d,p.c)+' · '+p.n1+' → '+p.n2+tag(p.n2);slots=[[p.d,p.c,'ជំនួស '+p.n1+' → '+p.n2+tag(p.n2),D.id]];
     if(!ask())return false;setL(p.d,D.id,p.c,l1.map(x=>x===p.n1?p.n2:x))}
-  else if(type==='swap'){const l2=get(p.d2,D.id,p.c2);
-    if(!l1.includes(p.n1)||!l2.includes(p.n2)||p.n1===p.n2||(p.d===p.d2&&p.c===p.c2)||l1.includes(p.n2)||l2.includes(p.n1)){toast('⚠ មិនអាចដូរបាន');return false}
-    msg='⇄ ដូរវេន · '+p.n1+' ('+sl(p.d,p.c)+') ⇄ '+p.n2+' ('+sl(p.d2,p.c2)+')';
-    slots=[[p.d,p.c,'ដូរវេនជាមួយ '+p.n2+' ('+sl(p.d2,p.c2)+')'],[p.d2,p.c2,'ដូរវេនជាមួយ '+p.n1+' ('+sl(p.d,p.c)+')']];
-    if(!ask())return false;setL(p.d,D.id,p.c,l1.map(x=>x===p.n1?p.n2:x));setL(p.d2,D.id,p.c2,l2.map(x=>x===p.n2?p.n1:x))}
-  else if(type==='misc'){if(!p.note){toast('⚠ សូមសរសេរអត្ថបទ');return false}msg='📝 ផ្សេងៗ · '+sl(p.d,p.c);slots=[[p.d,p.c,'']];if(!ask())return false}
+  else if(type==='swap'){const l2=get(p.d2,D2.id,p.c2);
+    if(!l1.includes(p.n1)||!l2.includes(p.n2)||p.n1===p.n2||(p.d===p.d2&&p.c===p.c2&&D2.id===D.id)||l1.includes(p.n2)||l2.includes(p.n1)){toast('⚠ មិនអាចដូរបាន');return false}
+    msg='⇄ ដូរវេន · '+p.n1+' ('+sl(p.d,p.c)+') ⇄ '+p.n2+' ('+sl(p.d2,p.c2,D2)+')';
+    slots=[[p.d,p.c,'ដូរវេនជាមួយ '+p.n2+' ('+sl(p.d2,p.c2,D2)+')',D.id],[p.d2,p.c2,'ដូរវេនជាមួយ '+p.n1+' ('+sl(p.d,p.c,D)+')',D2.id]];
+    if(!ask())return false;setL(p.d,D.id,p.c,l1.map(x=>x===p.n1?p.n2:x));setL(p.d2,D2.id,p.c2,l2.map(x=>x===p.n2?p.n1:x))}
+  else if(type==='misc'){if(!p.note){toast('⚠ សូមសរសេរអត្ថបទ');return false}msg='📝 ផ្សេងៗ · '+sl(p.d,p.c);slots=[[p.d,p.c,'',D.id]];if(!ask())return false}
   else{if(!p.n1||l1.includes(p.n1)){toast('⚠ ទិន្នន័យមិនត្រឹមត្រូវ');return false}
-    msg='🙋 វេនយាមខ្លួនឯង · '+sl(p.d,p.c)+' · '+p.n1;slots=[[p.d,p.c,'វេនយាមខ្លួនឯង '+p.n1]];
+    msg='🙋 វេនយាមខ្លួនឯង · '+sl(p.d,p.c)+' · '+p.n1+tag(p.n1);slots=[[p.d,p.c,'វេនយាមខ្លួនឯង '+p.n1+tag(p.n1),D.id]];
     if(!ask())return false;setL(p.d,D.id,p.c,l1.concat(p.n1))}
-  slots.forEach(x=>addN(x[0],D.id,x[1],x[2]?x[2]+(p.note?' · '+p.note:''):p.note));
+  slots.forEach(x=>addN(x[0],x[3]||D.id,x[1],x[2]?x[2]+(p.note?' · '+p.note:''):p.note));
   S.log=[{t:Date.now(),x:D.icon+' '+D.name+' · '+msg+(p.note?' · សំគាល់៖ '+p.note:'')}].concat(S.log||[]).slice(0,100);
   save();return true}
+
 function renderEdit(){const box=$('eCard');if(!box)return;
   const lg=(S.log||[]).map(x=>'<div style="padding:7px 0;border-top:1px solid var(--line);font-size:13px"><span style="color:var(--sub)">'+fmtT(x.t)+'</span> '+esc(x.x)+'</div>').join('')||'<div style="color:var(--sub)">មិនទាន់មានកំណត់ត្រា</div>';
   box.innerHTML='<div style="font-weight:700;margin-bottom:4px">កំណត់ត្រាកែប្រែ</div><div style="color:var(--sub);font-size:12px;margin-bottom:8px">ការជំនួស / ដូរវេន / វេនយាមខ្លួនឯង / ផ្សេងៗ ដែលធ្វើក្នុង «មើលតាមថ្ងៃ (រាយឈ្មោះ)» ត្រូវកត់ត្រានៅទីនេះ។</div>'+lg}
