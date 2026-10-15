@@ -54,6 +54,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .dt .pp{justify-content:space-between;box-sizing:border-box;white-space:nowrap}
 .dlg{position:fixed;inset:0;background:rgba(20,25,40,.45);z-index:100;align-items:center;justify-content:center;padding:14px}
+.dbox.wide{max-width:600px}.pvin .no-p{display:none!important}.pvin .dh,.pvin th,.pvin .nmc{position:static!important}.pvpage{background:#fff;border:1px solid #cfd6e2;overflow:hidden;position:relative}.pvbox{border:1px solid var(--line);box-shadow:var(--sh);background:#eef1f6;margin-top:6px;overflow:hidden}
 .dbox{background:#fff;border-radius:14px;max-width:460px;width:100%;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.3);max-height:90vh;overflow:auto}
 .dbox label.fl{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:4px;margin-top:8px}
 .dbox select,.dbox textarea,.dbox input[type=text]{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;width:100%;background:#fff;color:var(--ink)}
@@ -159,7 +160,7 @@ const cols2=()=>[{id:'c1',label:'ព្រឹក'},{id:'c3',label:'យប់'}];
 const MIDW={id:'midwife',name:'ឆ្មប',icon:'🤰',color:'#d6336c'};
 const DEF=()=>[{id:'doctor',name:'គ្រូពេទ្យ',icon:'🩺',color:'#2f6fed'},{id:'nurse',name:'គិលានុបដ្ឋាយិកា',icon:'💉',color:'#0f9d7a'},MIDW,{id:'eye',name:'ភ្នែក',icon:'👁️',color:'#8a4fd6'},{id:'dental',name:'ធ្មេញ',icon:'🦷',color:'#e07b00'}].map(d=>({...d,cols:cols2()}));
 const ord=c=>({c1:1,c2:2,c3:3}[c.id]||9);
-let S={v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null,fxm:{},fxMonths:[],fxs:{},pv:{}};S.depts.forEach(d=>S.staff[d.id]=[]);
+let S={v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null,fxm:{},fxMonths:[],fxs:{},pv:{},last:['Dr.Ka Seyla']};S.depts.forEach(d=>S.staff[d.id]=[]);
 let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day',pDept=null,pName=null,pEdit=false,dayDept='all',bEdit=false,rEdit=null,E=null,pShow=false;
 const $=id=>document.getElementById(id),p2=n=>(n<10?'0':'')+n,ds=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -178,7 +179,7 @@ const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at
 function save(){if(CI)return;if(USE_FB)setDoc(ref,S).catch(e=>toast('⚠ '+e.message));else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
-function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{}};
+function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla']};
   S.depts.forEach(x=>S.staff[x.id]=(S.staff[x.id]||[]).map(s=>typeof s==='string'?{n:s,r:''}:s));
   S.depts.forEach(D=>{D.roles=D.roles||[];(S.staff[D.id]||[]).forEach(s=>{if(s.r&&!D.roles.includes(s.r))D.roles.push(s.r)})});
   if(mig){
@@ -223,7 +224,7 @@ document.addEventListener('drop',e=>{if(pcDrag===null)return;e.preventDefault();
   const L=pcols().slice(),m=L.splice(f,1)[0];L.splice(t,0,m);S.pcols=L;save();renderMonth()});
 function workCount(D,nm){const nd=new Date(my,mm,0).getDate(),per={};let tot=0;D.cols.forEach(c=>per[c.id]=0);
   for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i);D.cols.forEach(c=>{if(get(d,D.id,c.id).includes(nm)){per[c.id]++;tot++}})}return{per,tot}}
-let noToday=false,ORI='auto',gridSplit=false,SPLIT=true,GAPPX=32;try{const o=JSON.parse(localStorage.getItem('deptPrintOpt')||'{}');if(typeof o.split==='boolean')SPLIT=o.split;if([12,32,64,100].includes(o.gap))GAPPX=o.gap}catch(e){}
+let noToday=false,ORI='auto',gridSplit=false,SPLIT=true,GAPPX=32;try{const o=JSON.parse(localStorage.getItem('deptPrintOpt')||'{}');if(typeof o.split==='boolean')SPLIT=o.split;if(typeof o.gap==='number'&&o.gap>=0&&o.gap<=300)GAPPX=o.gap}catch(e){}
 const savePO=()=>{try{localStorage.setItem('deptPrintOpt',JSON.stringify({split:SPLIT,gap:GAPPX}))}catch(e){}};try{const v=localStorage.getItem('deptPrintOri');if(v==='portrait'||v==='landscape')ORI=v}catch(e){}
 const syncOri=()=>document.querySelectorAll('.orsel').forEach(x=>{x.value=ORI});syncOri();
 document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('orsel')){ORI=e.target.value;try{localStorage.setItem('deptPrintOri',ORI)}catch(x){}syncOri()}});
@@ -324,7 +325,7 @@ $('mViews').addEventListener('drop',e=>{e.preventDefault();const b=e.target.clos
 applyVOrd();
 const dChips=()=>'<div class="chips no-p" style="margin-bottom:12px;position:sticky;top:0;z-index:5;background:#fff;padding:6px 0"><div class="chip" data-dd="all" style="'+(dayDept==='all'?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">ទាំងអស់</div>'+blocks().map(b=>'<div class="chip" data-dd="'+b.key+'" style="'+(dayDept!=='all'&&inBlock(b,dayDept)?'background:'+b.ds[0].color+';color:#fff;border-color:'+b.ds[0].color:'')+'">'+bName(b)+'</div>').join('')+'</div>';
 const getN=(d,dp,c)=>((S.notes||{})[d]||{})[key(dp,c)]||[];
-const addN=(d,dp,c,x)=>{S.notes=S.notes||{};const o=S.notes[d]=S.notes[d]||{},k=key(dp,c);(o[k]=o[k]||[]).push({t:Date.now(),x})};
+const addN=(d,dp,c,x)=>{S.notes=S.notes||{};const o=S.notes[d]=S.notes[d]||{},k=key(dp,c);const ar=o[k]=o[k]||[];if(ar.length&&ar[ar.length-1].x===x)return;ar.push({t:Date.now(),x})};
 const noteBadge=(d,dp,c)=>{const L=getN(d,dp,c);return L.length?'<span class="nb2 has no-p" data-note="1" data-d="'+d+'" data-dp="'+dp+'" data-c="'+c+'" title="'+esc(L.map(x=>x.x).join('\n'))+'">📝'+L.length+'</span>':''};
 const fmD=(d,c,D)=>d.slice(8)+'/'+d.slice(5,7)+' '+((D.cols.find(x=>x.id===c)||{}).label||'');
 const mopt=(a,v)=>a.map(x=>'<option value="'+esc(x[0])+'"'+(x[0]===v?' selected':'')+'>'+esc(x[1])+'</option>').join('');
@@ -332,7 +333,7 @@ let M=null;
 function openDlg(m){M=m;$('dlg').style.display='flex';renderDlg()}
 function closeDlg(){M=null;$('dlg').style.display='none'}
 function renderDlg(){
-  if(!M)return;if(M.mode==='gprint'){renderGprint();return}const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
+  if(!M)return;$('dbox').classList.remove('wide');if(M.mode==='gprint'){renderGprint();return}const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
   const foot=ok=>'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn" data-dclose="1">បិទ</button><button class="btn p" data-dok="1">'+ok+'</button></div>';
   if(M.mode==='print'){const nm=M.v.slice(M.v.indexOf('|')+1),sh=D.cols.map(c=>c.label).join(' / '),wk=workCount(D,nm),wt=wk.tot+' វេន ('+D.cols.map(c=>c.label+' '+wk.per[c.id]).join(' · ')+')';
     B.innerHTML='<div class="dt1">🖨️ ព្រីនប្រចាំខែ · '+esc(nm)+' · '+MN[mm-1]+' '+my+'</div><div style="margin:4px 0 14px;line-height:1.7">ចង់ព្រីនបន្ថែមជួរកាឡោន <b>'+esc(sh)+'</b> (ដាក់ ✓ ត្រង់វេនដែលគាត់យាម) ដែរឬទេ?</div><div style="margin:-6px 0 12px;font-weight:600">ចំនួនធ្វើការ៖ '+esc(wt)+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" data-dclose="1">បោះបង់</button><button class="btn" data-dprint="plain">ព្រីនធម្មតា</button><button class="btn p" data-dprint="cols">ព្រីន + ជួរ '+esc(sh)+' + ចំនួនធ្វើការ</button></div>';return}
@@ -356,13 +357,23 @@ function renderDlg(){
   B.innerHTML=h+lb(M.act==='misc'?'ផ្សេងៗ (សរសេរ)':'សំគាល់ (ស្រេចចិត្ត)','<textarea id="dNote" rows="2" placeholder="ឧ. មូលហេតុនៃការដូរ..."></textarea>')+foot('✓ អនុវត្ត');
   const t=$('dNote');if(t)t.value=M.note||'';
 }
-function renderGprint(){const n=new Date(my,mm,0).getDate(),hf=Math.ceil(n/2);
+function renderGprint(){const n=new Date(my,mm,0).getDate(),hf=Math.ceil(n/2);$('dbox').classList.add('wide');
   $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនកាឡោនដើម · '+MN[mm-1]+' '+my+'</div>'+
     '<label class="fl">ទិសដៅក្រដាស<select data-gp="ori"><option value="auto">ស្វ័យប្រវត្តិ</option><option value="portrait">បញ្ឈរ</option><option value="landscape">ផ្ដេក</option></select></label>'+
-    '<label class="fl" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--ink)"><input type="checkbox" data-gp="split"'+(SPLIT?' checked':'')+'> កាត់ជា ២ ជួរ ចុះក្រោម (ថ្ងៃ ១–'+hf+' / '+(hf+1)+'–'+n+') រក្សាក្បាលដដែល</label>'+
-    '<label class="fl">ចន្លោះរវាង ២ ជួរ<select data-gp="gap">'+[[12,'តូច'],[32,'មធ្យម'],[64,'ធំ'],[100,'ធំខ្លាំង']].map(x=>'<option value="'+x[0]+'"'+(x[0]===GAPPX?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></label>'+
+    '<label class="fl" style="flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--ink)"><input type="checkbox" data-gp="split"'+(SPLIT?' checked':'')+'> កាត់ជា ២ ជួរ ចុះក្រោម (ថ្ងៃ ១–'+hf+' / '+(hf+1)+'–'+n+') ក្បាលផ្នែក និងក្បាលតារាងនៅគ្រប់ជួរ</label>'+
+    '<label class="fl">ចន្លោះរវាង ២ ជួរ — អូសចុះឡើង៖ <b id="gpGapV" style="color:var(--ink)">'+GAPPX+'px</b><input type="range" data-gp="gap" min="0" max="150" step="2" value="'+GAPPX+'" style="padding:0"></label>'+
+    '<div style="margin-top:10px;font-size:12px;color:var(--sub)">មើលជាមុន (<span id="gpOri"></span>)</div><div id="gpPv"></div>'+
     '<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn" data-dclose="1">បោះបង់</button><button class="btn p" data-dgp="1">🖨️ ព្រីន</button></div>';
-  $('dbox').querySelector('[data-gp="ori"]').value=ORI}
+  $('dbox').querySelector('[data-gp="ori"]').value=ORI;fillGpPv()}
+function fillGpPv(){const box=$('gpPv');if(!box||mview!=='grid')return;
+  const k=[gridSplit,noToday];gridSplit=SPLIT;noToday=true;renderMonth();const html=$('mWrap').innerHTML;gridSplit=k[0];noToday=k[1];renderMonth();
+  box.innerHTML='<div class="pvbox"><div class="pvpage"><div class="pvin">'+html+'</div></div></div>';
+  const inn=box.querySelector('.pvin'),page=box.querySelector('.pvpage'),pb=box.querySelector('.pvbox');
+  inn.style.width='max-content';const w=inn.offsetWidth||1,h=inn.offsetHeight||1,dim={landscape:[1020,700],portrait:[700,1020]};
+  let o=ORI,bs=0;if(o==='auto'){o='landscape';for(const q in dim){const sc=Math.min(2,dim[q][0]/w,dim[q][1]/h);if(sc>bs){bs=sc;o=q}}}
+  const PW=dim[o][0],PH=dim[o][1],fit=Math.max(Math.min(2,PW/w,PH/h),.3),avail=Math.min(520,($('dbox').clientWidth||560)-40),ps=avail/PW;
+  inn.style.zoom=fit;page.style.cssText='width:'+PW+'px;height:'+PH+'px;transform:scale('+ps+');transform-origin:0 0';pb.style.cssText='width:'+Math.round(PW*ps)+'px;height:'+Math.round(PH*ps)+'px';
+  $('gpOri').textContent=(o==='landscape'?'ក្រដាសផ្ដេក':'ក្រដាសបញ្ឈរ')+' · ពង្រីក '+Math.round(fit*100)+'%'}
 function applyDlg(){
   const D=dept(M.dp);if(!D)return;const nt=$('dNote'),note=nt?nt.value.trim():'';
   if(M.mode==='fill'){const sl=$('dSel'),ip=$('dNm'),v=(ip&&ip.value.trim())||(sl&&sl.value)||'';if(!v){toast('⚠ សូមជ្រើសឈ្មោះ');return}
@@ -377,8 +388,9 @@ function applyDlg(){
   else ok=doChange('swap',D,{...base,n1:M.n,dp2:M.dp2,d2:M.d2,c2:M.c2,n2:M.n2});
   if(ok){closeDlg();renderAll();toast('រក្សាទុករួចរាល់ ✓')}}
 $('dlg').addEventListener('change',e=>{const gk=e.target.dataset.gp;
-  if(gk&&M&&M.mode==='gprint'){if(gk==='ori'){ORI=e.target.value;try{localStorage.setItem('deptPrintOri',ORI)}catch(x){}syncOri()}else if(gk==='split')SPLIT=e.target.checked;else GAPPX=+e.target.value;savePO();return}
+  if(gk&&M&&M.mode==='gprint'){if(gk==='ori'){ORI=e.target.value;try{localStorage.setItem('deptPrintOri',ORI)}catch(x){}syncOri()}else if(gk==='split')SPLIT=e.target.checked;else GAPPX=+e.target.value;savePO();fillGpPv();return}
   const k=e.target.dataset.m;if(!k||!M)return;const t=$('dNote');M.note=t?t.value:'';M[k]=e.target.value;if(k==='d2'||k==='c2'||k==='dp2')M.n2='';renderDlg()});
+$('dlg').addEventListener('input',e=>{if(e.target.dataset.gp==='gap'&&M&&M.mode==='gprint'){GAPPX=+e.target.value;$('gpGapV').textContent=GAPPX+'px';savePO();fillGpPv()}});
 $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   if(t===$('dlg')||t.dataset.dclose){closeDlg();return}
   if(t.dataset.dprint){const v=M.v,wc=t.dataset.dprint==='cols';closeDlg();printSheet(v,wc);return}
@@ -415,7 +427,8 @@ function renderMonth(){
 const NC_KM=new Intl.Collator('km',{numeric:true,sensitivity:'base'}),NC_LA=new Intl.Collator(['en','fr'],{numeric:true,sensitivity:'base'});
 const nameKey=n=>String(n).replace(/^\s*(dr|pr|prof|mr|ms|mrs)(\.\s*|\s+)(?=\S)/i,'').trim();
 const nameRank=n=>/[\u1780-\u17FF]/.test(n.charAt(0))?0:1;
-const nameCmp=(a,b)=>{const x=nameKey(a),y=nameKey(b),r=nameRank(x)-nameRank(y);if(r)return r;const C=nameRank(x)?NC_LA:NC_KM;return C.compare(x,y)||C.compare(a,b)};
+const isLast=n=>(S.last||[]).some(x=>String(x).trim().toLowerCase()===String(n).trim().toLowerCase());
+const nameCmp=(a,b)=>{const la=isLast(a),lb=isLast(b);if(la!==lb)return la?1:-1;const x=nameKey(a),y=nameKey(b),r=nameRank(x)-nameRank(y);if(r)return r;const C=nameRank(x)?NC_LA:NC_KM;return C.compare(x,y)||C.compare(a,b)};
 const nsort=a=>a.slice().sort(nameCmp);
 function sortStaff(){S.depts.forEach(D=>{if(S.staff[D.id])S.staff[D.id].sort((a,b)=>nameCmp(a.n,b.n))})}
 function renderMonthGrid(){
@@ -434,7 +447,8 @@ function renderMonthGrid(){
           return '<td class="'+x.c+'"><div class="gc"'+(cs.length?' style="background:'+pc+';color:'+ink(pc)+'"':'')+'>'+cs.map(c=>esc(c.label)).join('/')+'</div></td>'}).join('')+'</tr>'});
         if(!o.names.length)h+='<tr><td class="nmc" colspan="'+(sub.length+1)+'" style="color:var(--sub)">មិនទាន់មានឈ្មោះ — បន្ថែមនៅផ្ទាំង «បុគ្គលិក»</td></tr>'});
       return h+'</tbody></table>'};
-    return '<div class="mdept" data-id="'+b.key+'"><div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span></div>'+parts.map((sub,k)=>(k?'<div class="cut" style="height:'+GAPPX+'px"><div style="border-top:2px dashed #9aa7bd;position:relative;top:50%"></div></div>':'')+'<div class="tw">'+tbl(sub)+'</div>').join('')+'</div>'}).join('');
+    const dh='<div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span></div>';
+    return parts.map((sub,k)=>(k?'<div class="cut" style="height:'+GAPPX+'px"><div style="border-top:2px dashed #9aa7bd;position:relative;top:50%"></div></div>':'')+'<div class="mdept" data-id="'+b.key+'">'+dh+'<div class="tw">'+tbl(sub)+'</div></div>').join('')}).join('');
 }
 
 function renderMonthStaff(){
@@ -572,7 +586,7 @@ function renderFx(){
   if(!D){$('fxList').innerHTML='';return}
   const L=S.staff[D.id]||[];
   $('fxList').innerHTML=L.map((s,i)=>{const f=s.fx||{days:[],cols:[]};
-    return '<div class="fxr"><span class="fxn">'+esc(s.n)+'</span><span class="fxs">'+esc(fxSummary(D,s))+'</span>'+(eFx?'<div class="fxe"><button class="btn" data-fxp="wk" data-i="'+i+'">ច័ន្ទ–សុក្រ</button><button class="btn" data-fxp="we" data-i="'+i+'">សៅរ៍–អាទិត្យ</button><button class="btn" data-fxp="all" data-i="'+i+'">រាល់ថ្ងៃ</button><button class="btn" data-fxp="clr" data-i="'+i+'">ជម្រះ</button></div><div class="fxe"><label class="fxc">+ ថ្ងៃធ្វើការបន្ថែម <select data-fxxc="'+i+'">'+D.cols.map(c=>'<option value="'+c.id+'"'+((fxxSel[i]||(D.cols.some(x=>x.id==='c3')?'c3':D.cols[D.cols.length-1].id))===c.id?' selected':'')+'>'+esc(c.label)+'</option>').join('')+'<option value="all"'+(fxxSel[i]==='all'?' selected':'')+'>'+esc(D.cols.map(c=>c.label).join(' + '))+'</option></select> <input type="date" data-fxx="'+i+'"></label>'+((f.extra||[]).map(dt=>'<span class="nm" style="padding:2px 8px;font-size:12px">'+esc(fxExLbl(D,dt))+' <span class="x" data-fxxd="'+dt+'" data-i="'+i+'">×</span></span>').join(''))+'</div><div class="fxe"><table class="fxt"><thead><tr><th></th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>'+FXD.map(x=>{const a=fxMap(f)[x[0]]||[];return '<tr><td>'+x[1]+'</td>'+D.cols.map(c=>'<td><input type="checkbox" data-fxdc="'+x[0]+'|'+c.id+'" data-i="'+i+'"'+(a.includes(c.id)?' checked':'')+'></td>').join('')+'</tr>'}).join('')+'</tbody></table></div>':'')+'</div>'}).join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
+    return '<div class="fxr"><span class="fxn">'+esc(s.n)+'</span><span class="fxs">'+esc(fxSummary(D,s)+(s.st&&s.st!=='07:00'?' · ចូល '+s.st:''))+'</span>'+(eFx?'<div class="fxe"><label class="fxc">ម៉ោងចូលធ្វើការ (ស្តង់ដារ) <input type="time" data-fxt="'+i+'" value="'+esc(s.st||'07:00')+'"></label></div><div class="fxe"><button class="btn" data-fxp="wk" data-i="'+i+'">ច័ន្ទ–សុក្រ</button><button class="btn" data-fxp="we" data-i="'+i+'">សៅរ៍–អាទិត្យ</button><button class="btn" data-fxp="all" data-i="'+i+'">រាល់ថ្ងៃ</button><button class="btn" data-fxp="clr" data-i="'+i+'">ជម្រះ</button></div><div class="fxe"><label class="fxc">+ ថ្ងៃធ្វើការបន្ថែម <select data-fxxc="'+i+'">'+D.cols.map(c=>'<option value="'+c.id+'"'+((fxxSel[i]||(D.cols.some(x=>x.id==='c3')?'c3':D.cols[D.cols.length-1].id))===c.id?' selected':'')+'>'+esc(c.label)+'</option>').join('')+'<option value="all"'+(fxxSel[i]==='all'?' selected':'')+'>'+esc(D.cols.map(c=>c.label).join(' + '))+'</option></select> <input type="date" data-fxx="'+i+'"></label>'+((f.extra||[]).map(dt=>'<span class="nm" style="padding:2px 8px;font-size:12px">'+esc(fxExLbl(D,dt))+' <span class="x" data-fxxd="'+dt+'" data-i="'+i+'">×</span></span>').join(''))+'</div><div class="fxe"><table class="fxt"><thead><tr><th></th>'+D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>'+FXD.map(x=>{const a=fxMap(f)[x[0]]||[];return '<tr><td>'+x[1]+'</td>'+D.cols.map(c=>'<td><input type="checkbox" data-fxdc="'+x[0]+'|'+c.id+'" data-i="'+i+'"'+(a.includes(c.id)?' checked':'')+'></td>').join('')+'</tr>'}).join('')+'</tbody></table></div>':'')+'</div>'}).join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
 }
 $('fxChips').onclick=e=>{const c=e.target.closest('.chip');if(c){staffDept=c.dataset.dp;renderStaff()}};
 $('fxEditBtn').onclick=()=>{eFx=!eFx;renderStaff()};
@@ -581,7 +595,8 @@ $('fxList').onclick=e=>{if(e.target.dataset.fxxd){const s=(S.staff[staffDept]||[
   const p=e.target.dataset.fxp;if(!p)return;const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;
   if(p==='clr')delete s.fx;else{const f=fxEnsure(D,s),dd=p==='wk'?[1,2,3,4,5]:p==='we'?[6,0]:[1,2,3,4,5,6,0];f.days=dd;f.dc={};dd.forEach(w=>{f.dc[w]=[fxDef(D)]})}
   fxAuto();save();renderStaff()};
-$('fxList').onchange=e=>{if(e.target.dataset.fxxc!==undefined){fxxSel[+e.target.dataset.fxxc]=e.target.value;return}
+$('fxList').onchange=e=>{if(e.target.dataset.fxt!==undefined){const s=(S.staff[staffDept]||[])[+e.target.dataset.fxt];if(s&&e.target.value){s.st=e.target.value;save();renderStaff()}return}
+  if(e.target.dataset.fxxc!==undefined){fxxSel[+e.target.dataset.fxxc]=e.target.value;return}
   if(e.target.dataset.fxx!==undefined){const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.fxx],v=e.target.value;if(D&&s&&v){const f=fxEnsure(D,s),sel=fxxSel[+e.target.dataset.fxx]||(D.cols.some(x=>x.id==='c3')?'c3':D.cols[D.cols.length-1].id),cs=sel==='all'?D.cols.map(c=>c.id):[sel];f.extra=f.extra||[];cs.forEach(c=>{const x=v+'|'+c;if(!f.extra.includes(x))f.extra.push(x)});f.extra.sort();fxAuto();save();renderStaff()}return}
   const D=dept(staffDept),s=(S.staff[staffDept]||[])[+e.target.dataset.i];if(!D||!s)return;const f=fxEnsure(D,s);
   if(e.target.dataset.fxdc!==undefined){const kk=e.target.dataset.fxdc.split('|'),w=kk[0],c=kk[1],a=f.dc[w]||[];f.dc[w]=e.target.checked?a.concat(c).filter((x,i,r)=>r.indexOf(x)===i):a.filter(x=>x!==c);if(!f.dc[w].length)delete f.dc[w];f.days=Object.keys(f.dc).map(Number)}
@@ -597,7 +612,7 @@ function renderStaff(){sortStaff();renderDeps();
   const RD=dept(staffDept);
   $('rBox').innerHTML=(RD&&eStf)?'<div style="font-size:12px;color:var(--sub);margin:6px 0 4px">តួនាទីក្នុងផ្នែកនេះ (សម្រាប់ជ្រើសក្នុង Dropdown)</div><div class="names" style="margin:4px 0">'+((RD.roles||[]).map((r,i)=>'<span class="nm">'+esc(r)+' <span class="x" data-rx="'+i+'">×</span></span>').join('')||'<span style="color:var(--sub)">មិនទាន់មានតួនាទី</span>')+'</div><form class="add" id="rForm" style="margin-bottom:10px"><input id="rNew" placeholder="តួនាទីថ្មី — ឧ. ប្រធានវេន"><button class="btn p">+ តួនាទី</button></form>':'';
   $('sRole').innerHTML='<option value="">— តួនាទី (ស្រេចចិត្ត) —</option>'+rolesOf(staffDept,'').map(r=>'<option value="'+esc(r)+'">'+esc(r)+'</option>').join('');
-  $('sNames').innerHTML=l.length?l.map((s,i)=>'<span class="nm" data-i="'+i+'" style="'+nmSt(staffDept,s.n)+'">'+(rEdit===i?esc(s.n)+' '+roleSel(staffDept,s,i):lab(staffDept,s.n))+(eStf?' <span class="x" style="color:var(--sub)" data-rn2="'+i+'" title="ប្ដូរឈ្មោះ">✎</span> <input type="color" class="sc" title="ព័ណ៌" data-sc="'+i+'" value="'+(s.c||dept(staffDept).color)+'"><span class="x" data-x="'+i+'">×</span>':'')+'</span>').join(''):'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
+  $('sNames').innerHTML=l.length?l.map((s,i)=>'<span class="nm" data-i="'+i+'" style="'+nmSt(staffDept,s.n)+'">'+(rEdit===i?esc(s.n)+' '+roleSel(staffDept,s,i):lab(staffDept,s.n))+(eStf?' <span class="x" style="color:var(--sub)" data-rn2="'+i+'" title="ប្ដូរឈ្មោះ">✎</span> <span class="x" style="color:'+(isLast(s.n)?'#0f9d7a':'var(--sub)')+'" data-last="'+i+'" title="ដាក់នៅចុងគេបង្អស់ក្នុងបញ្ជី">⤓</span> <input type="color" class="sc" title="ព័ណ៌" data-sc="'+i+'" value="'+(s.c||dept(staffDept).color)+'"><span class="x" data-x="'+i+'">×</span>':'')+'</span>').join(''):'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ</span>';
   renderFx();
 }
 $('sNames').onchange=e=>{if(e.target.dataset.rs!==undefined){S.staff[staffDept][+e.target.dataset.rs].r=e.target.value;rEdit=null;save();renderAll();return}if(e.target.dataset.sc!==undefined){S.staff[staffDept][+e.target.dataset.sc].c=e.target.value;save();renderAll()}};
@@ -613,6 +628,7 @@ $('depEditBtn').onclick=()=>{eDep=!eDep;renderStaff()};
 $('stfEditBtn').onclick=()=>{eStf=!eStf;rEdit=null;renderStaff()};
 $('sNames').onclick=e=>{if(!eStf)return;const L=S.staff[staffDept];if(e.target.dataset.sc!==undefined)return;
   if(e.target.dataset.rn2!==undefined){renameStaff(+e.target.dataset.rn2);return}
+  if(e.target.dataset.last!==undefined){const s2=L[+e.target.dataset.last];if(s2){S.last=S.last||[];const k=S.last.findIndex(x=>String(x).trim().toLowerCase()===s2.n.trim().toLowerCase());if(k>=0)S.last.splice(k,1);else S.last.push(s2.n);save();renderAll()}return}
   if(e.target.dataset.x!==undefined){if(confirm('លុបឈ្មោះនេះ? (វេនចាស់នៅដដែល)')){L.splice(+e.target.dataset.x,1);fxRun(fxPlan());save();renderAll()}return}
   if(e.target.tagName==='SELECT')return;const nm=e.target.closest('.nm');if(nm){rEdit=+nm.dataset.i;renderStaff();const sel=document.querySelector('#sNames select.rs');if(sel)sel.focus()}};
 $('sForm').onsubmit=e=>{e.preventDefault();const v=$('sNew').value.trim();if(!v)return;
@@ -649,7 +665,8 @@ function doChange(type,D,p){
     if(!ask())return false;setL(p.d,D.id,p.c,l1.concat(p.n1))}
   if(type==='rep')fxManualRemove(p.d,D.id,p.c,p.n1);else if(type==='swap'){fxManualRemove(p.d,D.id,p.c,p.n1);fxManualRemove(p.d2,D2.id,p.c2,p.n2)}
   slots.forEach(x=>addN(x[0],x[3]||D.id,x[1],x[2]?x[2]+(p.note?' · '+p.note:''):p.note));
-  S.log=[{t:Date.now(),x:D.icon+' '+D.name+' · '+msg+(p.note?' · សំគាល់៖ '+p.note:'')}].concat(S.log||[]).slice(0,100);
+  const lx=D.icon+' '+D.name+' · '+msg+(p.note?' · សំគាល់៖ '+p.note:''),nowT=Date.now();
+  if(!(S.log||[]).some((e,i)=>e.x===lx&&(i===0||nowT-e.t<600000)))S.log=[{t:nowT,x:lx}].concat(S.log||[]).slice(0,100);
   save();return true}
 
 function renderEdit(){const box=$('eCard');if(!box)return;
@@ -661,31 +678,49 @@ const sha=async x=>{const b=await crypto.subtle.digest('SHA-256',new TextEncoder
 const hhmm=ms=>new Date(ms).toLocaleTimeString('en-GB',{timeZone:'Asia/Phnom_Penh',hour:'2-digit',minute:'2-digit'});
 const hrsF=ms=>{const m=Math.round(ms/60000);return Math.floor(m/60)+':'+p2(m%60)};
 const ATTM={},attSubs={};
-function watchAtt(y,m){if(!USE_FB)return;const ym=y+'-'+p2(m);if(attSubs[ym])return;const nx=new Date(y,m,1);
-  attSubs[ym]=onSnapshot(query(collection(DB,'deptCheckins'),where('d','>=',ym+'-01'),where('d','<=',nx.getFullYear()+'-'+p2(nx.getMonth()+1)+'-02')),
+function watchAtt(y,m){if(!USE_FB)return;const ym=y+'-'+p2(m);if(attSubs[ym])return;const nx=new Date(y,m,1),pv=new Date(y,m-2,1);
+  attSubs[ym]=onSnapshot(query(collection(DB,'deptCheckins'),where('d','>=',pv.getFullYear()+'-'+p2(pv.getMonth()+1)+'-20'),where('d','<=',nx.getFullYear()+'-'+p2(nx.getMonth()+1)+'-02')),
     snap=>{ATTM[ym]=snap.docs.map(q=>{const x=q.data();return{t:x.t,d:x.d,dp:x.dp,n:x.n,ts:x.ts&&x.ts.toMillis?x.ts.toMillis():null}}).filter(x=>x.ts);if(mview==='staff'&&pShow)renderMonth()},()=>{})}
-function attCalc(dp,nm,ym){const rec=(ATTM[ym]||[]).filter(x=>x.dp===dp&&x.n===nm).sort((a,b)=>a.ts-b.ts),ss=[];let op=null;
-  rec.forEach(x=>{if(x.t==='in'){if(op)ss.push(op);op={d:x.d,i:x.ts,o:null}}else if(op&&x.ts-op.i<864e5){op.o=x.ts;ss.push(op);op=null}else ss.push({d:x.d,i:null,o:x.ts})});if(op)ss.push(op);
-  const m={};ss.forEach(q=>{const o=m[q.d]=m[q.d]||{in:null,out:null,ms:0};if(q.i&&(o.in==null||q.i<o.in))o.in=q.i;if(q.o&&(o.out==null||q.o>o.out))o.out=q.o;if(q.i&&q.o)o.ms+=q.o-q.i});return m}
+const PPOFF=7*36e5,ppDate=ms=>{const t=new Date(ms+PPOFF);return t.getUTCFullYear()+'-'+p2(t.getUTCMonth()+1)+'-'+p2(t.getUTCDate())};
+const dayMs=d=>{const q=d.split('-');return Date.UTC(+q[0],+q[1]-1,+q[2])-PPOFF},nextD=d=>ppDate(dayMs(d)+864e5);
+const stOf=(dp,nm)=>((S.staff[dp]||[]).find(x=>x.n===nm)||{}).st||'07:00';
+/* a scan-in and a scan-out can be several days apart: every day in between is filled automatically
+   (in = the person's standard start time, out = the same time next day, i.e. a 24 h work-day) */
+function attCalc(dp,nm,ym){const T=stOf(dp,nm),tOff=(+T.split(':')[0]*60+(+T.split(':')[1]||0))*60000,all=[],seen={};
+  Object.keys(ATTM).forEach(k=>(ATTM[k]||[]).forEach(x=>{if(x.dp===dp&&x.n===nm&&!seen[x.t+x.ts]){seen[x.t+x.ts]=1;all.push(x)}}));
+  all.sort((a,b)=>a.ts-b.ts);const ss=[];let op=null;
+  all.forEach(x=>{if(x.t==='in'){if(op)ss.push(op);op={i:x.ts,o:null}}else if(op&&x.ts-op.i<=5*864e5){op.o=x.ts;ss.push(op);op=null}else ss.push({i:null,o:x.ts})});if(op)ss.push(op);
+  const m={},put=(d,inS,outS,ms,inMs,outMs)=>{const o=m[d]=m[d]||{inS:null,outS:null,ms:0,in:null,out:null};
+    if(inS&&(o.in==null||inMs<o.in)){o.inS=inS;o.in=inMs}if(outS&&(o.out==null||outMs>o.out)){o.outS=outS;o.out=outMs}o.ms+=ms};
+  ss.forEach(q=>{
+    if(q.i&&q.o){const first=ppDate(q.i-tOff+3*36e5);let last=ppDate(q.o-tOff-60000-72e5);if(last<first)last=first;
+      for(let d=first;d<=last;d=nextD(d)){const ws=dayMs(d)+tOff,a=d===first?q.i:ws,b=d===last?q.o:ws+864e5;put(d,d===first?hhmm(q.i):T,d===last?hhmm(q.o):T,Math.max(0,b-a),a,b)}}
+    else if(q.i)put(ppDate(q.i-tOff+3*36e5),hhmm(q.i),null,0,q.i,null);
+    else if(q.o)put(ppDate(q.o-tOff-60000),null,hhmm(q.o),0,null,q.o)});
+  return m}
 const hmN=x=>{const q=String(x).split(':');return (+q[0])*60+(+q[1]||0)};
 function effVals(dp,nm,d,A,nts){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{},a=A&&A[d];
-  const inn=o['ម៉ោងចូល']!==undefined?o['ម៉ោងចូល']:(a&&a.in?hhmm(a.in):''),out=o['ម៉ោងចេញ']!==undefined?o['ម៉ោងចេញ']:(a&&a.out?hhmm(a.out):'');
+  const inn=o['ម៉ោងចូល']!==undefined?o['ម៉ោងចូល']:(a&&a.inS||''),out=o['ម៉ោងចេញ']!==undefined?o['ម៉ោងចេញ']:(a&&a.outS||'');
   let h=o['ចំនួនម៉ោង'];
   if(h===undefined){h='';const ov=o['ម៉ោងចូល']!==undefined||o['ម៉ោងចេញ']!==undefined;
-    if(!ov&&a&&a.in&&a.out)h=hrsF(a.ms);else if(inn&&out){let m=hmN(out)-hmN(inn);if(m<0)m+=1440;h=Math.floor(m/60)+':'+p2(m%60)}}
+    if(!ov&&a&&a.inS&&a.outS)h=hrsF(a.ms);else if(inn&&out){let m=hmN(out)-hmN(inn);if(m<0)m+=1440;h=Math.floor(m/60)+':'+p2(m%60)}}
   return lbl=>lbl==='ម៉ោងចូល'?inn:lbl==='ម៉ោងចេញ'?out:lbl==='ចំនួនម៉ោង'?h:(o[lbl]!==undefined?o[lbl]:(lbl==='ផ្សេងៗ'?(nts||''):''))}
 function pcCell(dp,nm,d,x,A,nts,edit){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{};
   return '<td class="pcx'+(o[x]!==undefined?' ov':'')+'"'+(edit?' data-pv="'+d+'|'+esc(x)+'" title="ចុចដើម្បីកែ" style="cursor:pointer"':'')+'>'+esc(effVals(dp,nm,d,A,nts)(x))+'</td>'}
 function attVal(lbl,o){if(!o)return '';if(lbl==='ម៉ោងចូល')return o.in?hhmm(o.in):'';if(lbl==='ម៉ោងចេញ')return o.out?hhmm(o.out):'';if(lbl==='ចំនួនម៉ោង')return(o.in&&o.out)?hrsF(o.ms):'';return ''}
-function renderCI(){if(!CI)return;const dp=$('ciDept'),nm=$('ciName'),fx=new URLSearchParams(location.search).get('dp');
+function renderCI(){if(!CI)return;const dp=$('ciDept'),nm=$('ciName'),fx=(new URLSearchParams(location.search).get('dp')||'').split(',').filter(Boolean);
   if(!USE_FB){$('ciMsg').textContent='⚠ ត្រូវការការតភ្ជាប់ Firebase ដើម្បីចុះវត្តមាន';return}
-  const list=S.depts.filter(D=>!fx||D.id===fx),dv=dp.value,nv=nm.value;
+  const list=S.depts.filter(D=>!fx.length||fx.includes(D.id)),merged=list.length>1&&fx.length>1,dv=dp.value,nv=nm.value;
   dp.innerHTML=list.map(D=>'<option value="'+D.id+'">'+esc(D.icon+' '+D.name)+'</option>').join('');if([...dp.options].some(o=>o.value===dv))dp.value=dv;
-  $('ciDeptLbl').style.display=(fx&&list.length===1)?'none':'';const D0=dept(dp.value);$('ciTitle').textContent=(fx&&D0)?D0.icon+' '+D0.name+' · ចុះវត្តមាន':'⏱️ ចុះវត្តមាន';
-  nm.innerHTML=((S.staff[dp.value]||[]).slice().sort((a,b)=>nameCmp(a.n,b.n)).map(x=>'<option value="'+esc(x.n)+'">'+esc(x.n)+'</option>').join(''))||'<option value="">— គ្មានបុគ្គលិក —</option>';
+  $('ciDeptLbl').style.display=(fx.length&&list.length>=1)?'none':'';nm.dataset.m=merged?'1':'';
+  if(merged){$('ciTitle').textContent=list.map(D=>D.icon+' '+D.name).join(' + ')+' · ចុះវត្តមាន';
+    nm.innerHTML=list.map(D=>'<optgroup label="'+esc(D.icon+' '+D.name)+'">'+(S.staff[D.id]||[]).slice().sort((a,b)=>nameCmp(a.n,b.n)).map(x=>'<option value="'+esc(D.id+'|'+x.n)+'">'+esc(x.n)+'</option>').join('')+'</optgroup>').join('')}
+  else{const D0=dept(dp.value);$('ciTitle').textContent=(fx.length&&D0)?D0.icon+' '+D0.name+' · ចុះវត្តមាន':'⏱️ ចុះវត្តមាន';
+    nm.innerHTML=((S.staff[dp.value]||[]).slice().sort((a,b)=>nameCmp(a.n,b.n)).map(x=>'<option value="'+esc(x.n)+'">'+esc(x.n)+'</option>').join(''))||'<option value="">— គ្មានបុគ្គលិក —</option>'}
   if([...nm.options].some(o=>o.value===nv))nm.value=nv;$('ciNow').textContent=new Date().toLocaleDateString('en-GB',{timeZone:'Asia/Phnom_Penh'})}
 let ciBusy=false;
-async function ciGo(t){const msg=$('ciMsg'),dpv=$('ciDept').value,n=$('ciName').value;if(ciBusy)return;
+async function ciGo(t){const msg=$('ciMsg');let dpv=$('ciDept').value,n=$('ciName').value;if(ciBusy)return;
+  if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}
   const s=(S.staff[dpv]||[]).find(x=>x.n===n);if(!s){msg.textContent='⚠ សូមជ្រើសឈ្មោះ';return}
   if(!confirm('ចុះឈ្មោះ "'+n+'" '+(t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+' ឥឡូវនេះ?'))return;
   ciBusy=true;msg.textContent='…';
@@ -696,23 +731,24 @@ async function ciGo(t){const msg=$('ciMsg'),dpv=$('ciDept').value,n=$('ciName').
   catch(e){msg.textContent='⚠ មិនអាចកត់ត្រា៖ '+e.message}
   ciBusy=false}
 $('ciDept').onchange=renderCI;$('ciIn').onclick=()=>ciGo('in');$('ciOut').onclick=()=>ciGo('out');
-const qrOn={},ALLQ={id:'__all',icon:'🌐',name:'ទាំងអស់ (ជ្រើសផ្នែកនៅលើទូរស័ព្ទ)',color:'#2f6fed'};
-const ciUrl=dp=>location.origin+location.pathname+'?ci=1'+(dp&&dp!=='__all'?'&dp='+encodeURIComponent(dp):'');
+const qrOn={};
+const ciUrl=dp=>location.origin+location.pathname+'?ci=1'+(dp?'&dp='+encodeURIComponent(dp):'');
+const qrList=()=>[{id:'__all',html:'🌐 ទាំងអស់ (ជ្រើសផ្នែកនៅលើទូរស័ព្ទ)',color:'#2f6fed',url:ciUrl('')}].concat(blocks().map(b=>({id:b.key,html:bName(b),color:b.ds[0].color,url:ciUrl(b.ds.map(D=>D.id).join(','))})));
 function loadQR(){return window.QRCode?Promise.resolve():new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('QR'));document.head.appendChild(sc)})}
 async function makeQR(el,u,sz){if(!el)return;try{await loadQR();el.innerHTML='';new QRCode(el,{text:u,width:sz,height:sz,correctLevel:QRCode.CorrectLevel.M})}catch(e){el.textContent='⚠ មិនអាចផ្ទុកសៀវភៅ QR (ត្រូវការអ៊ីនធឺណិត) — ប្រើតំណខាងក្រោមជំនួស'}}
-function renderQR(){const b=$('qrBox');if(!b)return;const k=JSON.stringify(qrOn)+'|'+S.depts.map(D=>D.id+D.name+D.icon).join(',')+'|'+USE_FB;if(b.dataset.k===k&&b.innerHTML)return;b.dataset.k=k;
+function renderQR(){const b=$('qrBox');if(!b)return;const L=qrList(),k=JSON.stringify(qrOn)+'|'+L.map(x=>x.id+x.html).join(',')+'|'+USE_FB;if(b.dataset.k===k&&b.innerHTML)return;b.dataset.k=k;
   const bad=location.protocol==='file:'||!USE_FB;
-  b.innerHTML='<div style="font-size:12.5px;color:var(--sub);margin-bottom:8px;line-height:1.7">QR ទាំងអស់ (ជ្រើសផ្នែកលើទូរស័ព្ទ) ឬ QR តាមផ្នែកនីមួយៗ៖ បុគ្គលិកស្កេនដោយទូរស័ព្ទ → ជ្រើសឈ្មោះ → ចុច «ចូលធ្វើការ» ឬ «ចេញ»។ ម៉ោងកត់ពីម៉ាស៊ីនបម្រើ ហើយចូលក្នុងជួរ ម៉ោងចូល / ម៉ោងចេញ / ចំនួនម៉ោង ដោយស្វ័យប្រវត្តិ (កែបានក្នុងតារាង «បំពេញវេន»)។</div>'+
+  b.innerHTML='<div style="font-size:12.5px;color:var(--sub);margin-bottom:8px;line-height:1.7">QR ទាំងអស់ (ជ្រើសផ្នែកលើទូរស័ព្ទ) ឬ QR តាមផ្នែក (💉 គិលានុបដ្ឋាយិកា + 🤰 ឆ្មប ជា QR តែមួយ)៖ បុគ្គលិកស្កេនដោយទូរស័ព្ទ → ជ្រើសឈ្មោះ → ចុច «ចូលធ្វើការ» ឬ «ចេញ»។ ម៉ោងចូល / ចេញ / ចំនួនម៉ោង បំពេញស្វ័យប្រវត្តិ (កែបានក្នុងតារាង «បំពេញវេន»)។</div>'+
     (bad?'<div class="note" style="margin-bottom:8px">⚠ QR ដំណើរការបានតែពេលគេហទំព័រនេះនៅលើអ៊ីនធឺណិត (https) និងភ្ជាប់ Firebase។</div>':'')+
     '<div style="margin-bottom:6px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="qrGen">🖨️ ព្រីន QR ទាំងអស់</button><button class="btn" id="qrAll">🖨️ ព្រីន QR តាមផ្នែកទាំងអស់ (១ ផ្នែក = ១ ទំព័រ)</button></div>'+
-    [ALLQ].concat(S.depts).map(D=>'<div style="border-top:1px solid var(--line);padding:8px 0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="flex:1;min-width:130px;color:'+D.color+'">'+D.icon+' '+esc(D.name)+'</b><button class="btn" data-qs="'+D.id+'">'+(qrOn[D.id]?'លាក់ QR':'បង្ហាញ QR')+'</button>'+(qrOn[D.id]?'<button class="btn" data-qp="'+D.id+'">🖨️ ព្រីន</button><button class="btn" data-qc="'+D.id+'">📋 ចម្លងតំណ</button>':'')+'</div>'+(qrOn[D.id]?'<div data-qi="'+D.id+'" style="margin:10px 0"></div><div style="font-size:12px;word-break:break-all;color:var(--sub)">'+esc(ciUrl(D.id))+'</div>':'')+'</div>').join('');
-  [ALLQ].concat(S.depts).forEach(D=>{if(qrOn[D.id])makeQR(b.querySelector('[data-qi="'+D.id+'"]'),ciUrl(D.id),180)})}
-async function printQR(ids){const ps=$('psheet');
-  ps.innerHTML=ids.map(id=>{const D=id==='__all'?ALLQ:dept(id);return D?'<div class="psd" style="text-align:center;padding-top:40px"><div style="font-size:60px">'+D.icon+'</div><h2 style="font-size:30px;margin:6px 0">'+esc(D.name)+'</h2><div style="font-size:18px;margin:4px 0 24px">ស្កេនដើម្បីចុះវត្តមាន ចូល / ចេញ</div><div data-qi="'+id+'" style="display:inline-block"></div><div style="font-size:15px;margin-top:24px;line-height:1.9">១) ស្កេន QR  ២) ជ្រើសឈ្មោះ  ៣) ចុច «ចូលធ្វើការ» ឬ «ចេញ»</div></div>':''}).join('');
-  document.body.classList.add('psp');await Promise.all(ids.map(id=>makeQR(ps.querySelector('[data-qi="'+id+'"]'),ciUrl(id),320)));
+    L.map(it=>'<div style="border-top:1px solid var(--line);padding:8px 0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="flex:1;min-width:130px;color:'+it.color+'">'+it.html+'</b><button class="btn" data-qs="'+it.id+'">'+(qrOn[it.id]?'លាក់ QR':'បង្ហាញ QR')+'</button>'+(qrOn[it.id]?'<button class="btn" data-qp="'+it.id+'">🖨️ ព្រីន</button><button class="btn" data-qc="'+it.id+'">📋 ចម្លងតំណ</button>':'')+'</div>'+(qrOn[it.id]?'<div data-qi="'+it.id+'" style="margin:10px 0"></div><div style="font-size:12px;word-break:break-all;color:var(--sub)">'+esc(it.url)+'</div>':'')+'</div>').join('');
+  L.forEach(it=>{if(qrOn[it.id])makeQR(b.querySelector('[data-qi="'+it.id+'"]'),it.url,180)})}
+async function printQR(ids){const ps=$('psheet'),L=qrList().filter(x=>ids.includes(x.id));
+  ps.innerHTML=L.map(it=>'<div class="psd" style="text-align:center;padding-top:50px"><h2 style="font-size:28px;margin:6px 0">'+it.html+'</h2><div style="font-size:18px;margin:4px 0 24px">ស្កេនដើម្បីចុះវត្តមាន ចូល / ចេញ</div><div data-qi="'+it.id+'" style="display:inline-block"></div><div style="font-size:15px;margin-top:24px;line-height:1.9">១) ស្កេន QR  ២) ជ្រើសឈ្មោះ  ៣) ចុច «ចូលធ្វើការ» ឬ «ចេញ»</div></div>').join('');
+  document.body.classList.add('psp');await Promise.all(L.map(it=>makeQR(ps.querySelector('[data-qi="'+it.id+'"]'),it.url,320)));
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 portrait;margin:8mm}}';document.head.appendChild(st);
   const clean=()=>{document.body.classList.remove('psp');ps.innerHTML='';st.remove();removeEventListener('afterprint',clean)};addEventListener('afterprint',clean);print()}
-$('qrBox').onclick=async e=>{const t=e.target;if(t.dataset.qs){qrOn[t.dataset.qs]=!qrOn[t.dataset.qs];renderQR()}else if(t.dataset.qp)printQR([t.dataset.qp]);else if(t.id==='qrGen')printQR(['__all']);else if(t.id==='qrAll')printQR(S.depts.map(D=>D.id));else if(t.dataset.qc){try{await navigator.clipboard.writeText(ciUrl(t.dataset.qc));toast('ចម្លងរួចរាល់ ✓')}catch(x){toast('⚠ ចម្លងមិនបាន')}}};
+$('qrBox').onclick=async e=>{const t=e.target;if(t.dataset.qs){qrOn[t.dataset.qs]=!qrOn[t.dataset.qs];renderQR()}else if(t.dataset.qp)printQR([t.dataset.qp]);else if(t.id==='qrGen')printQR(['__all']);else if(t.id==='qrAll')printQR(qrList().slice(1).map(x=>x.id));else if(t.dataset.qc){const it=qrList().find(x=>x.id===t.dataset.qc);try{await navigator.clipboard.writeText(it.url);toast('ចម្លងរួចរាល់ ✓')}catch(x){toast('⚠ ចម្លងមិនបាន')}}};
 renderQR();
 
 $('cPrev').onclick=()=>{cm--;if(cm<1){cm=12;cy--}renderCount()};$('cNext').onclick=()=>{cm++;if(cm>12){cm=1;cy++}renderCount()};
