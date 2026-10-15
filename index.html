@@ -325,7 +325,7 @@ $('mViews').addEventListener('drop',e=>{e.preventDefault();const b=e.target.clos
 applyVOrd();
 const dChips=()=>'<div class="chips no-p" style="margin-bottom:12px;position:sticky;top:0;z-index:5;background:#fff;padding:6px 0"><div class="chip" data-dd="all" style="'+(dayDept==='all'?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">ទាំងអស់</div>'+blocks().map(b=>'<div class="chip" data-dd="'+b.key+'" style="'+(dayDept!=='all'&&inBlock(b,dayDept)?'background:'+b.ds[0].color+';color:#fff;border-color:'+b.ds[0].color:'')+'">'+bName(b)+'</div>').join('')+'</div>';
 const getN=(d,dp,c)=>((S.notes||{})[d]||{})[key(dp,c)]||[];
-const addN=(d,dp,c,x)=>{S.notes=S.notes||{};const o=S.notes[d]=S.notes[d]||{},k=key(dp,c);const ar=o[k]=o[k]||[];if(ar.length&&ar[ar.length-1].x===x)return;ar.push({t:Date.now(),x})};
+const addN=(d,dp,c,x)=>{S.notes=S.notes||{};const o=S.notes[d]=S.notes[d]||{},k=key(dp,c);const ar=o[k]=o[k]||[];if(ar.some(q=>q.x===x))return;ar.push({t:Date.now(),x})};
 const noteBadge=(d,dp,c)=>{const L=getN(d,dp,c);return L.length?'<span class="nb2 has no-p" data-note="1" data-d="'+d+'" data-dp="'+dp+'" data-c="'+c+'" title="'+esc(L.map(x=>x.x).join('\n'))+'">📝'+L.length+'</span>':''};
 const fmD=(d,c,D)=>d.slice(8)+'/'+d.slice(5,7)+' '+((D.cols.find(x=>x.id===c)||{}).label||'');
 const mopt=(a,v)=>a.map(x=>'<option value="'+esc(x[0])+'"'+(x[0]===v?' selected':'')+'>'+esc(x[1])+'</option>').join('');
@@ -666,7 +666,7 @@ function doChange(type,D,p){
   if(type==='rep')fxManualRemove(p.d,D.id,p.c,p.n1);else if(type==='swap'){fxManualRemove(p.d,D.id,p.c,p.n1);fxManualRemove(p.d2,D2.id,p.c2,p.n2)}
   slots.forEach(x=>addN(x[0],x[3]||D.id,x[1],x[2]?x[2]+(p.note?' · '+p.note:''):p.note));
   const lx=D.icon+' '+D.name+' · '+msg+(p.note?' · សំគាល់៖ '+p.note:''),nowT=Date.now();
-  if(!(S.log||[]).some((e,i)=>e.x===lx&&(i===0||nowT-e.t<600000)))S.log=[{t:nowT,x:lx}].concat(S.log||[]).slice(0,100);
+  if(!(S.log||[]).some(e=>e.x===lx))S.log=[{t:nowT,x:lx}].concat(S.log||[]).slice(0,100);
   save();return true}
 
 function renderEdit(){const box=$('eCard');if(!box)return;
