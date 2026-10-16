@@ -27,7 +27,7 @@ small{font-weight:400;color:var(--sub);font-size:11.5px;margin-left:3px}
 .addp{border:1px dashed #c3c9d3;border-radius:14px;padding:2px 11px;cursor:pointer;color:var(--sub)}.addp:hover{background:#f0f2f6}
 .adding{flex:1;min-width:150px}
 input.ed{width:100%;padding:5px;border:1px solid var(--brand);border-radius:7px;font-family:inherit;font-size:12.5px}
-.mdept{border:1px solid var(--line);border-radius:12px;overflow:hidden;overflow:clip;margin-bottom:14px}
+.mdept{border:1px solid var(--line);border-radius:12px;overflow:clip;margin-bottom:14px}
 table{border-collapse:collapse;font-size:12.5px}
 .mt{width:100%}.mt th{background:#f7f8fb;color:var(--sub);padding:6px 2px;border-bottom:1px solid var(--line);min-width:30px;font-weight:600}
 .mt td{padding:2px;border-bottom:1px solid var(--line);text-align:center}
@@ -75,6 +75,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .mdept>.dh{position:sticky;top:var(--t1,0px);z-index:6}
 .mt thead th{position:sticky;top:var(--t2,40px);z-index:3}.mt thead th.nmc{left:0;z-index:7}
 #mWrap.wchips{--t1:48px;--t2:90px}
+.mdept>.dh{box-shadow:0 2px 6px rgba(20,25,40,.18)}
 .dhd{position:sticky;top:0;z-index:5;background:#fff;padding:4px 0}
 .gridv .tw{overflow:auto;max-height:calc(100vh - 150px);cursor:grab;-webkit-overflow-scrolling:touch}.gridv .tw.dragging{cursor:grabbing;user-select:none}.gridv .mt thead th{top:0}.gridv .mt{width:max-content;min-width:100%}
 @media print{.gridv .tw{overflow:visible!important;max-height:none!important}}.fitp .gridv .tw,.fitp.gridv .tw{overflow:visible!important;max-height:none!important}
@@ -263,7 +264,8 @@ function printSheet(v,wc){
 function renderAll(){sortStaff();fillSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit();renderQR()}
 
 /* ---------- shift column toggle (afternoon) ---------- */
-const noonBtnG=L=>'<button class="nb no-p" data-noon="'+L.map(D=>D.id).join(',')+'">'+(L.every(D=>D.cols.some(c=>c.id==='c2'))?'− រសៀល':'+ រសៀល')+'</button>';
+const noonBtnG=L=>{L=L.filter(D=>D.id==='eye'||D.id==='dental');return L.length?noonBtnG0(L):''};
+const noonBtnG0=L=>'<button class="nb no-p" data-noon="'+L.map(D=>D.id).join(',')+'">'+(L.every(D=>D.cols.some(c=>c.id==='c2'))?'− រសៀល':'+ រសៀល')+'</button>';
 const noonBtn=D=>noonBtnG([D]);
 function noon(ids){const L=ids.split(',').map(dept).filter(Boolean),has=L.every(D=>D.cols.some(c=>c.id==='c2'));
   if(has){if(!confirm('លុបវេនរសៀល? (ទិន្នន័យចាស់រក្សាទុក)'))return;L.forEach(D=>{D.cols=D.cols.filter(c=>c.id!=='c2')})}
@@ -434,8 +436,10 @@ function renderMonthDay(){
 function renderMonth(){
   $('mLbl').textContent=MN[mm-1]+' '+my;$('mWrap').className=(mview==='staff'?'':'wchips')+(mview==='grid'?' gridv':'');$('mv1').className='btn'+(mview==='day'?' p':'');$('mv2').className='btn'+(mview==='staff'?' p':'');$('mv3').className='btn'+(mview==='grid'?' p':'');
   if(dayDept!=='all'&&!dept(dayDept))dayDept='all';
+  const fixSt=()=>{const W=$('mWrap'),c=[...W.children].find(e=>e.classList&&e.classList.contains('chips')),h1=c?c.offsetHeight:0,dh=W.querySelector('.mdept>.dh');W.style.setProperty('--t1',h1+'px');W.style.setProperty('--t2',(h1+(dh?dh.offsetHeight:0))+'px')};
   const k=my+'-'+mm+'|'+mview+'|'+(mview==='staff'?pDept+'|'+pName:dayDept),same=k===scrollKey,W=$('mWrap'),keep=(mview==='grid'&&same)?[...W.querySelectorAll('.tw')].map(e=>e.scrollLeft):null;
   const r=mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
+  fixSt();requestAnimationFrame(fixSt);setTimeout(fixSt,400);
   if(keep)W.querySelectorAll('.tw').forEach((e,i)=>{if(keep[i])e.scrollLeft=keep[i]});
   if(!noToday&&!same){scrollKey=k;requestAnimationFrame(()=>{
     if(mview==='grid'){const al=()=>{if(scrollKey!==k||userScrolled)return;W.querySelectorAll('.tw').forEach(tw=>{const th=tw.querySelector('thead th.td'),nm=tw.querySelector('thead th.nmc');if(th&&nm)tw.scrollLeft=Math.max(0,tw.scrollLeft+th.getBoundingClientRect().left-nm.getBoundingClientRect().right-2)})};userScrolled=false;al();setTimeout(al,350);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(al)}
