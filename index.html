@@ -186,7 +186,7 @@ const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at
 function save(){if(CI)return;if(USE_FB)setDoc(ref,S).catch(e=>toast('⚠ '+e.message));else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
-function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],clinic:d.clinic||null,imp:d.imp||{map:{},auto:false}};
+function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],clinic:null,imp:d.imp||{map:{},auto:false}};
   S.depts.forEach(x=>S.staff[x.id]=(S.staff[x.id]||[]).map(s=>typeof s==='string'?{n:s,r:''}:s));
   S.depts.forEach(D=>{D.roles=D.roles||[];(S.staff[D.id]||[]).forEach(s=>{if(s.r&&!D.roles.includes(s.r))D.roles.push(s.r)})});
   if(mig){
@@ -877,7 +877,7 @@ async function ciGo(t,skip,at){const msg=$('ciMsg');let dpv=$('ciDept').value,n=
   ciBusy=true;msg.textContent='…';
   let geo=null;
   try{ciRemember();
-    if(S.clinic){msg.textContent='📍 កំពុងពិនិត្យទីតាំង…';
+    if(false){msg.textContent='📍 កំពុងពិនិត្យទីតាំង…';
       const pos=await new Promise((ok,no)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(ok,no,{enableHighAccuracy:true,timeout:15000,maximumAge:0}):no({message:'ទូរស័ព្ទមិនគាំទ្រទីតាំង'}));
       const c=pos.coords,R=6371000,rad=x=>x*Math.PI/180,a=Math.sin(rad(c.latitude-S.clinic.lat)/2)**2+Math.cos(rad(S.clinic.lat))*Math.cos(rad(c.latitude))*Math.sin(rad(c.longitude-S.clinic.lng)/2)**2,dist=Math.round(2*R*Math.asin(Math.sqrt(a)));
       if(t==='in'&&dist-Math.min(c.accuracy||0,100)>(S.clinic.r||150)){msg.innerHTML='<b style="color:#e53935">⛔ អ្នកនៅក្រៅគ្លីនិក</b> (ឆ្ងាយ ~'+dist+' ម៉ែត្រ) — មិនអាចកត់ត្រាបានទេ';ciBusy=false;return}
@@ -897,9 +897,7 @@ async function makeQR(el,u,sz){if(!el)return;try{await loadQR();el.innerHTML='';
 function renderQR(){const b=$('qrBox');if(!b)return;const L=qrList(),k=JSON.stringify(qrOn)+JSON.stringify(S.clinic)+Object.keys(S.staff).map(d=>(S.staff[d]||[]).map(x=>x.n+(x.k||'')).join()).join(';')+'|'+L.map(x=>x.id+x.html).join(',')+'|'+USE_FB;if(b.dataset.k===k&&b.innerHTML)return;b.dataset.k=k;
   const bad=location.protocol==='file:'||!USE_FB;
   b.innerHTML='<div style="font-size:12.5px;color:var(--sub);margin-bottom:8px;line-height:1.7">QR ទាំងអស់ (ជ្រើសផ្នែកលើទូរស័ព្ទ) ឬ QR តាមផ្នែក (💉 គិលានុបដ្ឋាយិកា + 🤰 ឆ្មប ជា QR តែមួយ)៖ បុគ្គលិកស្កេនដោយទូរស័ព្ទ → ជ្រើសឈ្មោះ → ចុច «ចូលធ្វើការ» ឬ «ចេញ»។ ម៉ោងចូល / ចេញ / ចំនួនម៉ោង បំពេញស្វ័យប្រវត្តិ (កែបានក្នុងតារាង «បំពេញវេន»)។</div>'+
-    '<div style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px;font-size:13px;line-height:1.8">📍 <b>ទីតាំងគ្លីនិក (បញ្ជាក់ថានៅគ្លីនិកពិត)</b><br>'+(S.clinic?'<span style="color:#0f9d7a">បានកំណត់ ✓ ('+S.clinic.lat.toFixed(5)+', '+S.clinic.lng.toFixed(5)+')</span> · រង្វង់ <input id="geoR" type="number" min="30" max="2000" value="'+(S.clinic.r||150)+'" style="width:70px"> ម៉ែត្រ ':'<span style="color:var(--sub)">មិនទាន់កំណត់ — បុគ្គលិកអាចចុះវត្តមានពីកន្លែងណាក៏បាន</span> ')+'<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="geoSet">📍 ប្រើទីតាំងបច្ចុប្បន្នរបស់ឧបករណ៍នេះ (ត្រូវនៅក្នុងគ្លីនិក)</button>'+'</div></div>'+
-    
-    (bad?'<div class="note" style="margin-bottom:8px">⚠ QR ដំណើរការបានតែពេលគេហទំព័រនេះនៅលើអ៊ីនធឺណិត (https) និងភ្ជាប់ Firebase។</div>':'')+
+        (bad?'<div class="note" style="margin-bottom:8px">⚠ QR ដំណើរការបានតែពេលគេហទំព័រនេះនៅលើអ៊ីនធឺណិត (https) និងភ្ជាប់ Firebase។</div>':'')+
     '<div style="margin-bottom:6px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="qrGen">🖨️ ព្រីន QR ទាំងអស់</button><button class="btn" id="qrAll">🖨️ ព្រីន QR តាមផ្នែកទាំងអស់ (១ ផ្នែក = ១ ទំព័រ)</button></div>'+
     L.map(it=>'<div style="border-top:1px solid var(--line);padding:8px 0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="flex:1;min-width:130px;color:'+it.color+'">'+it.html+'</b><button class="btn" data-qs="'+it.id+'">'+(qrOn[it.id]?'លាក់ QR':'បង្ហាញ QR')+'</button>'+(qrOn[it.id]?'<button class="btn" data-qp="'+it.id+'">🖨️ ព្រីន</button><button class="btn" data-qc="'+it.id+'">📋 ចម្លងតំណ</button>':'')+'</div>'+(qrOn[it.id]?'<div data-qi="'+it.id+'" style="margin:10px 0"></div><div style="font-size:12px;word-break:break-all;color:var(--sub)">'+esc(it.url)+'</div>':'')+'</div>').join('');
   L.forEach(it=>{if(qrOn[it.id])makeQR(b.querySelector('[data-qi="'+it.id+'"]'),it.url,180)})}
