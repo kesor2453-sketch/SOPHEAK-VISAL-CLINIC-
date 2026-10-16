@@ -844,7 +844,7 @@ async function ciPosHandler(p){
     else if(far&&st==='in'){const ref=(G.seen&&G.seen>last.ms)?G.seen:(G.out&&G.out>last.ms?G.out:0);
       if(ref&&now-ref>=30*60000&&ref>last.ms+60000){ciNotify('🚪 ចាកចេញពីគ្លីនិក ម៉ោង '+hhmm(ref),'កត់ម៉ោងចេញពិត (ក្រោយ ៣០នាទី)');await ciGo('out',true,ref)}}}
   catch(e){}ciBusyW=false}
-function ciWatchStart(){
+function ciWatchStart(){return;
   if(ciW!==null||!S.clinic||!navigator.geolocation)return;
   try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(e){}
   $('ciBell').innerHTML='<div class="note" style="background:#e8f7f1">📍 កំពុងតាមដានទីតាំង — ត្រូវបើកទំព័រនេះទុក (កុំបិទកម្មវិធី)។ ពេលមកដល់គ្លីនិកវាជូនដំណឹង ហើយកត់ម៉ោងចូល។ ពេលចាកចេញលើស ៣០នាទី វាកត់ម៉ោងចេញជាម៉ោងដែលអ្នកចាកចេញពិត។</div>';
@@ -864,11 +864,7 @@ async function ciAutoStart(){
       else if(last.t==='in'&&Date.now()-last.ms<20*36e5)t='out'}}
   catch(e){msg.textContent='⚠ '+e.message;return}
   if(recent)return;
-  let c=3;const lb=t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ';
-  const show=()=>{msg.innerHTML='⏳ '+esc(n)+' — កត់ <b>'+lb+'</b> ក្នុង '+c+' វិនាទី… <button class="btn" id="ciCancel" style="margin-left:6px">បោះបង់</button> <button class="btn" id="ciFlip">ប្ដូរទៅ '+(t==='in'?'ចេញ':'ចូល')+'</button>';
-    $('ciCancel').onclick=()=>{clearInterval(ciTimer);msg.textContent='បានបោះបង់ — ចុចប៊ូតុងខាងលើដោយខ្លួនឯង'};
-    $('ciFlip').onclick=()=>{t=t==='in'?'out':'in';show()}};
-  show();clearInterval(ciTimer);ciTimer=setInterval(()=>{c--;if(c<=0){clearInterval(ciTimer);ciGo(t,true)}else if($('ciCancel'))show()},1000)}
+  ciGo(t,true)}
 async function ciGo(t,skip,at){const msg=$('ciMsg');let dpv=$('ciDept').value,n=$('ciName').value;if(ciBusy)return;
   if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}
   const s=(S.staff[dpv]||[]).find(x=>x.n===n);if(!s){msg.textContent='⚠ សូមជ្រើសឈ្មោះ';return}
