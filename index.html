@@ -708,11 +708,11 @@ function effVals(dp,nm,d,A,nts){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{},a=A&&A[d
   const inn=o['ម៉ោងចូល']!==undefined?o['ម៉ោងចូល']:(a&&a.inS||''),out=o['ម៉ោងចេញ']!==undefined?o['ម៉ោងចេញ']:(a&&a.outS||'');
   let h=o['ចំនួនម៉ោង'];
   if(h===undefined){h='';const ov=o['ម៉ោងចូល']!==undefined||o['ម៉ោងចេញ']!==undefined;
-    if(!ov&&a&&a.inS&&a.outS)h=hrsF(a.ms);else if(inn&&out){let m=hmN(out)-hmN(inn);if(m<0)m+=1440;h=hrsM(m)}}
+    if(inn&&out){let m=hmN(out)-hmN(inn);if(m<0)m+=1440;h=hrsM(m)}}
   return lbl=>lbl==='ម៉ោងចូល'?inn:lbl==='ម៉ោងចេញ'?out:lbl==='ចំនួនម៉ោង'?h:(o[lbl]!==undefined?o[lbl]:(lbl==='ផ្សេងៗ'?(nts||''):''))}
 function pcCell(dp,nm,d,x,A,nts,edit){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{};
   return '<td class="pcx'+(o[x]!==undefined?' ov':'')+'"'+(edit?' data-pv="'+d+'|'+esc(x)+'" title="ចុចដើម្បីកែ" style="cursor:pointer"':'')+'>'+esc(effVals(dp,nm,d,A,nts)(x))+'</td>'}
-function attVal(lbl,o){if(!o)return '';if(lbl==='ម៉ោងចូល')return o.in?hhmm(o.in):'';if(lbl==='ម៉ោងចេញ')return o.out?hhmm(o.out):'';if(lbl==='ចំនួនម៉ោង')return(o.in&&o.out)?hrsF(o.ms):'';return ''}
+function attVal(lbl,o){if(!o)return '';if(lbl==='ម៉ោងចូល')return o.in?hhmm(o.in):'';if(lbl==='ម៉ោងចេញ')return o.out?hhmm(o.out):'';if(lbl==='ចំនួនម៉ោង')return(o.in&&o.out)?hrsF(Math.max(0,o.out-o.in)):'';return ''}
 function renderCI(){if(!CI)return;const dp=$('ciDept'),nm=$('ciName'),fx=(new URLSearchParams(location.search).get('dp')||'').split(',').filter(Boolean);
   if(!USE_FB){$('ciMsg').textContent='⚠ ត្រូវការការតភ្ជាប់ Firebase ដើម្បីចុះវត្តមាន';return}
   const list=S.depts.filter(D=>!fx.length||fx.includes(D.id)),merged=list.length>1&&fx.length>1,dv=dp.value,nv=nm.value;
