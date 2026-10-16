@@ -510,9 +510,9 @@ document.addEventListener('click',e=>{const t=e.target;
   if(t.dataset.pedit){pEdit=!pEdit;renderMonth();return}
   if(t.dataset.pshow){pShow=!pShow;renderMonth();return}
   const pvc=t.closest('[data-pv]');if(pvc&&pEdit){const k=pvc.dataset.pv,q=k.indexOf('|'),d=k.slice(0,q),lb=k.slice(q+1),key=pDept+'|'+pName+'|'+d;
-    const v=prompt(lb+' · '+fmtD(d)+'\nទុកទទេ = ត្រឡប់ទៅស្វ័យប្រវត្តិ',pvc.textContent.trim());if(v===null)return;let val=v.trim();
+    const v=prompt(lb+' · '+fmtD(d)+'\nទុកទទេ = មិនបានធ្វើការ · វាយ * = ត្រឡប់ទៅស្វ័យប្រវត្តិ',pvc.textContent.trim());if(v===null)return;let val=v.trim();
     if((lb==='ម៉ោងចូល'||lb==='ម៉ោងចេញ')&&val){if(!/^([01]?\d|2[0-3]):[0-5]\d$/.test(val)){toast('⚠ ម៉ោងត្រូវជា HH:MM (ឧ. 08:30)');return}if(val.length===4)val='0'+val}
-    S.pv=S.pv||{};const o=S.pv[key]=S.pv[key]||{};if(val==='')delete o[lb];else o[lb]=val;if(!Object.keys(o).length)delete S.pv[key];save();renderMonth();return}
+    S.pv=S.pv||{};const o=S.pv[key]=S.pv[key]||{};if(val==='*')delete o[lb];else o[lb]=val;if(!Object.keys(o).length)delete S.pv[key];save();renderMonth();return}
   if(t.dataset.bedit){bEdit=!bEdit;renderMonth();return}
   if(t.dataset.print){const sl=t.closest('.nav').querySelector('.psel,.psel2');doPrint(sl?sl.value:'all');return}
   if(t.dataset.up||t.dataset.dn){moveDept(t.dataset.up||t.dataset.dn,t.dataset.up?-1:1);return}
