@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="km"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>កាលវិភាគតាមផ្នែក</title>
+<meta name="theme-color" content="#2f6fed"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="វត្តមាន"><link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%232f6fed%27/%3E%3Ctext x=%2750%27 y=%2768%27 font-size=%2760%27 text-anchor=%27middle%27%3E%E2%8F%B1%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f4f6f9;--ink:#1c2430;--sub:#6b7686;--line:#e6e9ef;--brand:#2f6fed;--r:14px;--sh:0 1px 2px rgba(20,25,40,.04),0 8px 24px rgba(20,25,40,.06)}
@@ -142,17 +143,20 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <div class="pn" id="p-count"><div class="card"><div class="nav"><button class="btn" id="cPrev">‹</button><div class="lbl" id="cLbl"></div><button class="btn" id="cNext">›</button></div><div id="cWrap"></div></div></div>
 <div class="pn" id="p-edit"><div class="card" id="eCard"></div></div></div><div id="ciApp"><div class="cibox"><h2 style="margin:0 0 4px" id="ciTitle">⏱️ ចុះវត្តមាន</h2><div style="color:var(--sub);font-size:12.5px;margin-bottom:12px" id="ciNow"></div>
 <label class="fl" id="ciDeptLbl">ផ្នែក<select id="ciDept"></select></label><label class="fl">ឈ្មោះ<select id="ciName"></select></label>
+<div id="ciCodeBox" style="display:none;margin-top:10px"><label class="fl">🔑 កូដផ្ទាល់ខ្លួន (បញ្ចូលតែលើឧបករណ៍ថ្មី)<input id="ciCode" autocomplete="off" style="text-transform:uppercase"></label></div>
+<div id="ciBell" style="margin-top:10px"></div>
+<label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:13px"><input type="checkbox" id="ciAuto"> 📱 ចងចាំខ្ញុំលើទូរស័ព្ទនេះ — ស្កេនម្ដងទៀតកត់ម៉ោងស្វ័យប្រវត្តិ (ចូល/ចេញ)</label>
 <div style="display:flex;gap:10px;margin-top:14px"><button class="btn p" id="ciIn" style="flex:1;padding:12px">✅ ចូលធ្វើការ</button><button class="btn" id="ciOut" style="flex:1;padding:12px">🚪 ចេញ</button></div>
 <div id="ciMsg" style="margin-top:14px;line-height:1.7"></div></div></div>
 <div id="psheet"></div><div class="dlg" id="dlg" style="display:none"><div class="dbox" id="dbox"></div></div><div class="toast" id="toast"></div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {initializeFirestore,persistentLocalCache,doc,setDoc,onSnapshot,collection,addDoc,query,where,serverTimestamp,getDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {initializeFirestore,persistentLocalCache,doc,setDoc,onSnapshot,collection,addDoc,query,where,serverTimestamp,getDoc,getDocs} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const cfg={apiKey:"AIzaSyBdzGaQHj_lRdLARHAIruY-Ha_USzKMiwk",authDomain:"sopheak-visal-clinic.firebaseapp.com",projectId:"sopheak-visal-clinic",storageBucket:"sopheak-visal-clinic.firebasestorage.app",messagingSenderId:"89092779964",appId:"1:89092779964:web:775cb69d9f88580ddd45b9"};
 const USE_FB=cfg.apiKey.indexOf('PASTE')!==0, LS='deptScheduleApp_v1';
 const DB=USE_FB?initializeFirestore(initializeApp(cfg),{localCache:persistentLocalCache()}):null,ref=USE_FB?doc(DB,'deptSchedule','main'):null;
-const CI=new URLSearchParams(location.search).get('ci')==='1';if(CI)document.body.classList.add('ci');
+const CI=new URLSearchParams(location.search).get('ci')==='1';if(CI)document.body.classList.add('ci');if(CI)try{const u=location.href,ic="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#2f6fed"/><text x="50" y="68" font-size="60" text-anchor="middle">⏱</text></svg>'),m={name:'ចុះវត្តមាន',short_name:'វត្តមាន',start_url:u,scope:location.origin+location.pathname,display:'standalone',background_color:'#f4f6f9',theme_color:'#2f6fed',icons:[{src:ic,sizes:'any',type:'image/svg+xml'}]},l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));document.head.appendChild(l)}catch(e){}
 
 const MN=['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
 const DW=['អាទិត្យ','ចន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍'];
@@ -160,7 +164,7 @@ const cols2=()=>[{id:'c1',label:'ព្រឹក'},{id:'c3',label:'យប់'}];
 const MIDW={id:'midwife',name:'ឆ្មប',icon:'🤰',color:'#d6336c'};
 const DEF=()=>[{id:'doctor',name:'គ្រូពេទ្យ',icon:'🩺',color:'#2f6fed'},{id:'nurse',name:'គិលានុបដ្ឋាយិកា',icon:'💉',color:'#0f9d7a'},MIDW,{id:'eye',name:'ភ្នែក',icon:'👁️',color:'#8a4fd6'},{id:'dental',name:'ធ្មេញ',icon:'🦷',color:'#e07b00'}].map(d=>({...d,cols:cols2()}));
 const ord=c=>({c1:1,c2:2,c3:3}[c.id]||9);
-let S={v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null,fxm:{},fxMonths:[],fxs:{},pv:{},last:['Dr.Ka Seyla']};S.depts.forEach(d=>S.staff[d.id]=[]);
+let S={v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null,fxm:{},fxMonths:[],fxs:{},pv:{},last:['Dr.Ka Seyla'],clinic:null};S.depts.forEach(d=>S.staff[d.id]=[]);
 let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day',pDept=null,pName=null,pEdit=false,dayDept='all',bEdit=false,rEdit=null,E=null,pShow=false;
 const $=id=>document.getElementById(id),p2=n=>(n<10?'0':'')+n,ds=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -179,7 +183,7 @@ const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at
 function save(){if(CI)return;if(USE_FB)setDoc(ref,S).catch(e=>toast('⚠ '+e.message));else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
-function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla']};
+function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],clinic:d.clinic||null};
   S.depts.forEach(x=>S.staff[x.id]=(S.staff[x.id]||[]).map(s=>typeof s==='string'?{n:s,r:''}:s));
   S.depts.forEach(D=>{D.roles=D.roles||[];(S.staff[D.id]||[]).forEach(s=>{if(s.r&&!D.roles.includes(s.r))D.roles.push(s.r)})});
   if(mig){
@@ -462,7 +466,7 @@ function renderMonthStaff(){
     const on=D.cols.filter(c=>get(d,D.id,c.id).includes(pName));tot+=on.length;
     rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
       return '<td><div class="tg'+(pEdit?'':' lk')+'"'+(pEdit?' data-tg="'+c.id+'" data-d="'+d+'" data-dp="'+D.id+'"':'')+(a?' style="background:'+pc+';color:'+ink(pc)+';border:1px solid '+pc+'">✓':'>')+'</div></td>'}).join('')+(pShow?pcols().map(x=>pcCell(D.id,pName,d,x,A,on.map(c=>getN(d,D.id,c.id).map(y=>y.x).join(' ; ')).filter(Boolean).join(' ; '),pEdit)).join(''):'')+'</tr>'}
-  $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span>'+D.icon+' '+esc(D.name)+' · '+esc(pName)+' · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-pstep="-1">◀ ថយក្រោយ</button> <button class="nb no-p" data-pstep="1">ចុចបន្ទាប់ ▶</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+' <button class="nb no-p" data-pshow="1">'+(pShow?'🙈 លាក់ជួរព្រីន':'👁 បង្ហាញជួរព្រីន')+'</button> <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span></div>'+(pShow?pcBlock():'')+'<div class="tw"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
+  $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">'+D.icon+' '+esc(D.name)+' · <button class="nb no-p" data-pstep="-1" title="ឈ្មោះមុន">◀ ថយក្រោយ</button><b>'+esc(pName)+'</b><button class="nb no-p" data-pstep="1" title="ឈ្មោះបន្ទាប់">ចុចបន្ទាប់ ▶</button> · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+' <button class="nb no-p" data-pshow="1">'+(pShow?'🙈 លាក់ជួរព្រីន':'👁 បង្ហាញជួរព្រីន')+'</button> <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span></div>'+(pShow?pcBlock():'')+'<div class="tw"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
     D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+(pShow?pcols().map(x=>'<th class="pcx">'+esc(x)+'</th>').join(''):'')+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function closePop(){if(pop){pop.remove();pop=null}}
@@ -677,7 +681,7 @@ function renderEdit(){const box=$('eCard');if(!box)return;
 /* ---------- QR attendance (clinic wall QR + PIN) ---------- */
 const sha=async x=>{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(x));return [...new Uint8Array(b)].map(v=>v.toString(16).padStart(2,'0')).join('')};
 const hhmm=ms=>new Date(ms).toLocaleTimeString('en-GB',{timeZone:'Asia/Phnom_Penh',hour:'2-digit',minute:'2-digit'});
-const hrsF=ms=>{const m=Math.round(ms/60000);return Math.floor(m/60)+':'+p2(m%60)};
+const hrsM=m=>Math.floor(m/60)+':'+p2(m%60);const hrsF=ms=>hrsM(Math.round(ms/60000));
 const ATTM={},attSubs={};
 function watchAtt(y,m){if(!USE_FB)return;const ym=y+'-'+p2(m);if(attSubs[ym])return;const nx=new Date(y,m,1),pv=new Date(y,m-2,1);
   attSubs[ym]=onSnapshot(query(collection(DB,'deptCheckins'),where('d','>=',pv.getFullYear()+'-'+p2(pv.getMonth()+1)+'-20'),where('d','<=',nx.getFullYear()+'-'+p2(nx.getMonth()+1)+'-02')),
@@ -704,7 +708,7 @@ function effVals(dp,nm,d,A,nts){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{},a=A&&A[d
   const inn=o['ម៉ោងចូល']!==undefined?o['ម៉ោងចូល']:(a&&a.inS||''),out=o['ម៉ោងចេញ']!==undefined?o['ម៉ោងចេញ']:(a&&a.outS||'');
   let h=o['ចំនួនម៉ោង'];
   if(h===undefined){h='';const ov=o['ម៉ោងចូល']!==undefined||o['ម៉ោងចេញ']!==undefined;
-    if(!ov&&a&&a.inS&&a.outS)h=hrsF(a.ms);else if(inn&&out){let m=hmN(out)-hmN(inn);if(m<0)m+=1440;h=Math.floor(m/60)+':'+p2(m%60)}}
+    if(!ov&&a&&a.inS&&a.outS)h=hrsF(a.ms);else if(inn&&out){let m=hmN(out)-hmN(inn);if(m<0)m+=1440;h=hrsM(m)}}
   return lbl=>lbl==='ម៉ោងចូល'?inn:lbl==='ម៉ោងចេញ'?out:lbl==='ចំនួនម៉ោង'?h:(o[lbl]!==undefined?o[lbl]:(lbl==='ផ្សេងៗ'?(nts||''):''))}
 function pcCell(dp,nm,d,x,A,nts,edit){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{};
   return '<td class="pcx'+(o[x]!==undefined?' ov':'')+'"'+(edit?' data-pv="'+d+'|'+esc(x)+'" title="ចុចដើម្បីកែ" style="cursor:pointer"':'')+'>'+esc(effVals(dp,nm,d,A,nts)(x))+'</td>'}
@@ -718,18 +722,76 @@ function renderCI(){if(!CI)return;const dp=$('ciDept'),nm=$('ciName'),fx=(new UR
     nm.innerHTML=list.map(D=>'<optgroup label="'+esc(D.icon+' '+D.name)+'">'+(S.staff[D.id]||[]).slice().sort((a,b)=>nameCmp(a.n,b.n)).map(x=>'<option value="'+esc(D.id+'|'+x.n)+'">'+esc(x.n)+'</option>').join('')+'</optgroup>').join('')}
   else{const D0=dept(dp.value);$('ciTitle').textContent=(fx.length&&D0)?D0.icon+' '+D0.name+' · ចុះវត្តមាន':'⏱️ ចុះវត្តមាន';
     nm.innerHTML=((S.staff[dp.value]||[]).slice().sort((a,b)=>nameCmp(a.n,b.n)).map(x=>'<option value="'+esc(x.n)+'">'+esc(x.n)+'</option>').join(''))||'<option value="">— គ្មានបុគ្គលិក —</option>'}
-  if([...nm.options].some(o=>o.value===nv))nm.value=nv;$('ciNow').textContent=new Date().toLocaleDateString('en-GB',{timeZone:'Asia/Phnom_Penh'})}
-let ciBusy=false;
-async function ciGo(t){const msg=$('ciMsg');let dpv=$('ciDept').value,n=$('ciName').value;if(ciBusy)return;
+  if([...nm.options].some(o=>o.value===nv))nm.value=nv;$('ciNow').textContent=new Date().toLocaleDateString('en-GB',{timeZone:'Asia/Phnom_Penh'});if(!ciAutoDone&&!ciBusy)ciAutoStart()}
+let ciBusy=false,ciAutoDone=false,ciTimer=null;
+const ciMeGet=()=>{try{return JSON.parse(localStorage.getItem('deptCiMe')||'null')}catch(e){return null}};
+function ciRemember(){try{if($('ciAuto').checked){let dpv=$('ciDept').value,n=$('ciName').value;if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}const st=(S.staff[dpv]||[]).find(x=>x.n===n);localStorage.setItem('deptCiMe',JSON.stringify({dp:$('ciDept').value,n:$('ciName').value,k:(st&&st.k)||''}))}else localStorage.removeItem('deptCiMe')}catch(e){}}
+$('ciAuto').onchange=()=>{ciRemember();if(!$('ciAuto').checked){clearInterval(ciTimer);if(ciW!==null){navigator.geolocation.clearWatch(ciW);ciW=null;$('ciBell').innerHTML=''}}else ciWatchStart()};
+const ciSel=()=>{let dpv=$('ciDept').value,n=$('ciName').value;if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}return{dpv,n,s:(S.staff[dpv]||[]).find(x=>x.n===n)}};
+const ciBound=st=>{const me=ciMeGet();return !!(me&&st&&me.n&&(me.k||'')===(st.k||'')&&(me.n===st.n||me.n.endsWith('|'+st.n)))};
+function ciShowCode(){const o=ciSel();$('ciCodeBox').style.display=(o.s&&o.s.k&&!ciBound(o.s))?'':'none'}
+$('ciName').addEventListener('change',ciShowCode);
+function ciLinkBind(){const q=new URLSearchParams(location.search),me=q.get('me'),k=(q.get('k')||'').toUpperCase();if(!me||!k)return;
+  const x=me.indexOf('|'),dpv=me.slice(0,x),n=me.slice(x+1),st=(S.staff[dpv]||[]).find(a=>a.n===n);
+  if(st&&st.k===k){try{localStorage.setItem('deptCiMe',JSON.stringify({dp:dpv,n:(S.depts.filter(D=>(q.get('dp')||'').split(',').length>1).length?dpv+'|'+n:n),k}))}catch(e){}$('ciAuto').checked=true;history.replaceState(null,'',location.pathname+'?ci=1'+(q.get('dp')?'&dp='+encodeURIComponent(q.get('dp')):''))}
+  else $('ciMsg').innerHTML='<b style="color:#e53935">⚠ តំណនេះផុតសុពលភាព សូមសុំតំណថ្មី</b>'}
+async function ciFetchLast(dpv,n){const nw=new Date(),yd=new Date(nw.getTime()-864e5),f=x=>x.getFullYear()+'-'+p2(x.getMonth()+1)+'-'+p2(x.getDate());let L=[];
+  for(const d of [f(yd),f(nw)]){const sn=await getDocs(query(collection(DB,'deptCheckins'),where('d','==',d)));sn.forEach(x=>{const v=x.data();if(v.dp===dpv&&v.n===n&&v.ts&&v.ts.toMillis)L.push({t:v.t,ms:v.ts.toMillis()})})}
+  L.sort((a,b)=>a.ms-b.ms);return L[L.length-1]||null}
+function ciNotify(title,body){try{if(navigator.vibrate)navigator.vibrate([200,100,200])}catch(e){}
+  try{if('Notification' in window&&Notification.permission==='granted'){const n=new Notification(title,{body});n.onclick=()=>{focus();n.close()};return}}catch(e){}
+  $('ciBell').innerHTML='<div class="note">🔔 <b>'+esc(title)+'</b> '+esc(body)+'</div>'}
+const geoD=c=>{const k=S.clinic,R=6371000,r=x=>x*Math.PI/180,a=Math.sin(r(c.latitude-k.lat)/2)**2+Math.cos(r(k.lat))*Math.cos(r(c.latitude))*Math.sin(r(c.longitude-k.lng)/2)**2;return Math.round(2*R*Math.asin(Math.sqrt(a)))};
+let ciW=null,ciBusyW=false,ciOutN=0,ciChk=0;
+function ciWatchStart(){
+  if(ciW!==null||!S.clinic||!navigator.geolocation)return;
+  try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(e){}
+  $('ciBell').innerHTML='<div class="note" style="background:#e8f7f1">📍 កំពុងតាមដានទីតាំង — ត្រូវបើកទំព័រនេះទុក (កុំបិទកម្មវិធី)។ ពេលមកដល់គ្លីនិកវានឹងជូនដំណឹង ហើយកត់ម៉ោងចូលដោយស្វ័យប្រវត្តិ។</div>';
+  ciW=navigator.geolocation.watchPosition(async p=>{
+    if(ciBusyW||ciBusy)return;const c=p.coords,dist=geoD(c),eff=dist-Math.min(c.accuracy||0,100),r=S.clinic.r||150,o=ciSel();if(!o.s)return;
+    const inside=eff<=r,far=eff>r*1.5+50;if(!inside&&!far){ciOutN=0;return}
+    if(Date.now()-ciChk<45000)return;ciBusyW=true;
+    try{const last=await ciFetchLast(o.dpv,o.n);ciChk=Date.now();const st=(last&&last.t==='in'&&Date.now()-last.ms<20*36e5)?'in':'out';
+      if(inside&&st==='out'&&!(last&&Date.now()-last.ms<120000)){ciOutN=0;ciNotify('📍 មកដល់គ្លីនិក','កំពុងកត់ម៉ោងចូល…');await ciGo('in',true)}
+      else if(far&&st==='in'&&Date.now()-last.ms>30*60000){ciOutN++;if(ciOutN>=2){ciOutN=0;ciNotify('🚪 ចាកចេញពីគ្លីនិក','កំពុងកត់ម៉ោងចេញ…');await ciGo('out',true)}}else if(inside)ciOutN=0}
+    catch(e){}ciBusyW=false},()=>{},{enableHighAccuracy:true,maximumAge:15000,timeout:30000})}
+async function ciAutoStart(){
+  if(ciAutoDone||!CI||!USE_FB)return;if(!S.depts.length)return;ciLinkBind();const me=ciMeGet();if(!me)return;
+  const dp=$('ciDept'),nm=$('ciName');ciAutoDone=true;
+  if([...dp.options].some(o=>o.value===me.dp))dp.value=me.dp;renderCI();
+  if(![...nm.options].some(o=>o.value===me.n))return;
+  nm.value=me.n;$('ciAuto').checked=true;ciShowCode();
+  const o=ciSel(),dpv=o.dpv,n=o.n;if(o.s&&o.s.k&&(me.k||'')!==o.s.k){$('ciMsg').innerHTML='<b style="color:#e53935">🔑 កូដបានប្ដូរ — សូមបញ្ចូលកូដថ្មី ឬបើកតំណថ្មី</b>';ciShowCode();return}
+  const msg=$('ciMsg');msg.textContent='…';ciWatchStart();
+  let t='in',recent=false;
+  try{const last=await ciFetchLast(dpv,n);
+    if(last){if(Date.now()-last.ms<120000){recent=true;msg.innerHTML='<b style="color:#0f9d7a">✅ បានកត់រួចហើយ</b> · '+(last.t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+' ម៉ោង '+hhmm(last.ms)}
+      else if(last.t==='in'&&Date.now()-last.ms<20*36e5)t='out'}}
+  catch(e){msg.textContent='⚠ '+e.message;return}
+  if(recent)return;
+  let c=3;const lb=t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ';
+  const show=()=>{msg.innerHTML='⏳ '+esc(n)+' — កត់ <b>'+lb+'</b> ក្នុង '+c+' វិនាទី… <button class="btn" id="ciCancel" style="margin-left:6px">បោះបង់</button> <button class="btn" id="ciFlip">ប្ដូរទៅ '+(t==='in'?'ចេញ':'ចូល')+'</button>';
+    $('ciCancel').onclick=()=>{clearInterval(ciTimer);msg.textContent='បានបោះបង់ — ចុចប៊ូតុងខាងលើដោយខ្លួនឯង'};
+    $('ciFlip').onclick=()=>{t=t==='in'?'out':'in';show()}};
+  show();clearInterval(ciTimer);ciTimer=setInterval(()=>{c--;if(c<=0){clearInterval(ciTimer);ciGo(t,true)}else if($('ciCancel'))show()},1000)}
+async function ciGo(t,skip){const msg=$('ciMsg');let dpv=$('ciDept').value,n=$('ciName').value;if(ciBusy)return;
   if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}
   const s=(S.staff[dpv]||[]).find(x=>x.n===n);if(!s){msg.textContent='⚠ សូមជ្រើសឈ្មោះ';return}
-  if(!confirm('ចុះឈ្មោះ "'+n+'" '+(t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+' ឥឡូវនេះ?'))return;
+  if(s.k&&!ciBound(s)){if(($('ciCode').value||'').trim().toUpperCase()!==s.k){msg.innerHTML='<b style="color:#e53935">🔑 សូមបញ្ចូលកូដផ្ទាល់ខ្លួនត្រឹមត្រូវ</b> (សុំពីអ្នកគ្រប់គ្រង)';$('ciCodeBox').style.display='';return}$('ciAuto').checked=true}
+  if(!skip&&!confirm('ចុះឈ្មោះ "'+n+'" '+(t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+' ឥឡូវនេះ?'))return;
   ciBusy=true;msg.textContent='…';
-  try{const nw=new Date(),d=nw.getFullYear()+'-'+p2(nw.getMonth()+1)+'-'+p2(nw.getDate());
-    const r2=await addDoc(collection(DB,'deptCheckins'),{t,d,dp:dpv,n,ts:serverTimestamp(),dev:(navigator.userAgent||'').slice(0,80)});
+  let geo=null;
+  try{ciRemember();
+    if(S.clinic){msg.textContent='📍 កំពុងពិនិត្យទីតាំង…';
+      const pos=await new Promise((ok,no)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(ok,no,{enableHighAccuracy:true,timeout:15000,maximumAge:0}):no({message:'ទូរស័ព្ទមិនគាំទ្រទីតាំង'}));
+      const c=pos.coords,R=6371000,rad=x=>x*Math.PI/180,a=Math.sin(rad(c.latitude-S.clinic.lat)/2)**2+Math.cos(rad(S.clinic.lat))*Math.cos(rad(c.latitude))*Math.sin(rad(c.longitude-S.clinic.lng)/2)**2,dist=Math.round(2*R*Math.asin(Math.sqrt(a)));
+      if(dist-Math.min(c.accuracy||0,100)>(S.clinic.r||150)){msg.innerHTML='<b style="color:#e53935">⛔ អ្នកនៅក្រៅគ្លីនិក</b> (ឆ្ងាយ ~'+dist+' ម៉ែត្រ) — មិនអាចកត់ត្រាបានទេ';ciBusy=false;return}
+      geo={lat:+c.latitude.toFixed(5),lng:+c.longitude.toFixed(5),acc:Math.round(c.accuracy||0),dist}}
+    const nw=new Date(),d=nw.getFullYear()+'-'+p2(nw.getMonth()+1)+'-'+p2(nw.getDate());
+    const r2=await addDoc(collection(DB,'deptCheckins'),Object.assign({t,d,dp:dpv,n,ts:serverTimestamp(),dev:(navigator.userAgent||'').slice(0,80)},geo?{geo}:{}));
     let ms=Date.now();try{const q=await getDoc(r2),ts=q.data().ts;if(ts&&ts.toMillis)ms=ts.toMillis()}catch(x){}
     msg.innerHTML='<b style="color:#0f9d7a">✅ '+(t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+' · '+esc(n)+'</b><br>ម៉ោង '+hhmm(ms)+' ('+d.split('-').reverse().join('/')+')'}
-  catch(e){msg.textContent='⚠ មិនអាចកត់ត្រា៖ '+e.message}
+  catch(e){msg.textContent=e.code===1?'⚠ សូមអនុញ្ញាតទីតាំង (Location) សម្រាប់គេហទំព័រនេះ ដើម្បីកត់ត្រា':'⚠ មិនអាចកត់ត្រា៖ '+e.message}
   ciBusy=false}
 $('ciDept').onchange=renderCI;$('ciIn').onclick=()=>ciGo('in');$('ciOut').onclick=()=>ciGo('out');
 const qrOn={};
@@ -737,9 +799,11 @@ const ciUrl=dp=>location.origin+location.pathname+'?ci=1'+(dp?'&dp='+encodeURICo
 const qrList=()=>[{id:'__all',html:'🌐 ទាំងអស់ (ជ្រើសផ្នែកនៅលើទូរស័ព្ទ)',color:'#2f6fed',url:ciUrl('')}].concat(blocks().map(b=>({id:b.key,html:bName(b),color:b.ds[0].color,url:ciUrl(b.ds.map(D=>D.id).join(','))})));
 function loadQR(){return window.QRCode?Promise.resolve():new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('QR'));document.head.appendChild(sc)})}
 async function makeQR(el,u,sz){if(!el)return;try{await loadQR();el.innerHTML='';new QRCode(el,{text:u,width:sz,height:sz,correctLevel:QRCode.CorrectLevel.M})}catch(e){el.textContent='⚠ មិនអាចផ្ទុកសៀវភៅ QR (ត្រូវការអ៊ីនធឺណិត) — ប្រើតំណខាងក្រោមជំនួស'}}
-function renderQR(){const b=$('qrBox');if(!b)return;const L=qrList(),k=JSON.stringify(qrOn)+'|'+L.map(x=>x.id+x.html).join(',')+'|'+USE_FB;if(b.dataset.k===k&&b.innerHTML)return;b.dataset.k=k;
+function renderQR(){const b=$('qrBox');if(!b)return;const L=qrList(),k=JSON.stringify(qrOn)+JSON.stringify(S.clinic)+Object.keys(S.staff).map(d=>(S.staff[d]||[]).map(x=>x.n+(x.k||'')).join()).join(';')+'|'+L.map(x=>x.id+x.html).join(',')+'|'+USE_FB;if(b.dataset.k===k&&b.innerHTML)return;b.dataset.k=k;
   const bad=location.protocol==='file:'||!USE_FB;
   b.innerHTML='<div style="font-size:12.5px;color:var(--sub);margin-bottom:8px;line-height:1.7">QR ទាំងអស់ (ជ្រើសផ្នែកលើទូរស័ព្ទ) ឬ QR តាមផ្នែក (💉 គិលានុបដ្ឋាយិកា + 🤰 ឆ្មប ជា QR តែមួយ)៖ បុគ្គលិកស្កេនដោយទូរស័ព្ទ → ជ្រើសឈ្មោះ → ចុច «ចូលធ្វើការ» ឬ «ចេញ»។ ម៉ោងចូល / ចេញ / ចំនួនម៉ោង បំពេញស្វ័យប្រវត្តិ (កែបានក្នុងតារាង «បំពេញវេន»)។</div>'+
+    '<div style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px;font-size:13px;line-height:1.8">📍 <b>ទីតាំងគ្លីនិក (បញ្ជាក់ថានៅគ្លីនិកពិត)</b><br>'+(S.clinic?'<span style="color:#0f9d7a">បានកំណត់ ✓ ('+S.clinic.lat.toFixed(5)+', '+S.clinic.lng.toFixed(5)+')</span> · រង្វង់ <input id="geoR" type="number" min="30" max="2000" value="'+(S.clinic.r||150)+'" style="width:70px"> ម៉ែត្រ ':'<span style="color:var(--sub)">មិនទាន់កំណត់ — បុគ្គលិកអាចចុះវត្តមានពីកន្លែងណាក៏បាន</span> ')+'<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="geoSet">📍 ប្រើទីតាំងបច្ចុប្បន្នរបស់ឧបករណ៍នេះ (ត្រូវនៅក្នុងគ្លីនិក)</button>'+(S.clinic?'<button class="btn" id="geoOff">បិទការបញ្ជាក់ទីតាំង</button>':'')+'</div></div>'+
+    '<details style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:10px"><summary style="cursor:pointer;font-size:13px"><b>🔑 តំណ/កូដផ្ទាល់ខ្លួនបុគ្គលិក</b> (សម្គាល់ខ្លួនបានទោះដូរទូរស័ព្ទ)</summary><div style="font-size:12px;color:var(--sub);margin:6px 0;line-height:1.7">ចុច «ចម្លងតំណ» ហើយផ្ញើទៅបុគ្គលិកតាម Telegram ។ បើកតំណម្តងលើទូរស័ព្ទណាក៏ដោយ ទូរស័ព្ទនោះចាំឈ្មោះ។ ឬផ្ដល់កូដឲគេបញ្ចូលដោយខ្លួនឯង។ «ប្ដូរកូដ» ធ្វើឲឧបករណ៍ចាស់ត្រូវបញ្ចូលកូដម្ដងទៀត។</div>'+blocks().map(bk=>bk.ds.map(D=>'<div style="font-weight:700;margin-top:6px;color:'+D.color+'">'+D.icon+' '+esc(D.name)+'</div>'+(S.staff[D.id]||[]).map(x=>'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:3px 0;font-size:13px"><span style="flex:1;min-width:120px">'+esc(x.n)+'</span><code>'+(x.k||'—')+'</code><button class="btn" data-kl="'+esc(D.id+'|'+x.n)+'">📋 ចម្លងតំណ</button><button class="btn" data-kn="'+esc(D.id+'|'+x.n)+'">🔄 ប្ដូរកូដ</button></div>').join('')).join('')).join('')+'</details>'+
     (bad?'<div class="note" style="margin-bottom:8px">⚠ QR ដំណើរការបានតែពេលគេហទំព័រនេះនៅលើអ៊ីនធឺណិត (https) និងភ្ជាប់ Firebase។</div>':'')+
     '<div style="margin-bottom:6px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="qrGen">🖨️ ព្រីន QR ទាំងអស់</button><button class="btn" id="qrAll">🖨️ ព្រីន QR តាមផ្នែកទាំងអស់ (១ ផ្នែក = ១ ទំព័រ)</button></div>'+
     L.map(it=>'<div style="border-top:1px solid var(--line);padding:8px 0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="flex:1;min-width:130px;color:'+it.color+'">'+it.html+'</b><button class="btn" data-qs="'+it.id+'">'+(qrOn[it.id]?'លាក់ QR':'បង្ហាញ QR')+'</button>'+(qrOn[it.id]?'<button class="btn" data-qp="'+it.id+'">🖨️ ព្រីន</button><button class="btn" data-qc="'+it.id+'">📋 ចម្លងតំណ</button>':'')+'</div>'+(qrOn[it.id]?'<div data-qi="'+it.id+'" style="margin:10px 0"></div><div style="font-size:12px;word-break:break-all;color:var(--sub)">'+esc(it.url)+'</div>':'')+'</div>').join('');
@@ -749,7 +813,15 @@ async function printQR(ids){const ps=$('psheet'),L=qrList().filter(x=>ids.includ
   document.body.classList.add('psp');await Promise.all(L.map(it=>makeQR(ps.querySelector('[data-qi="'+it.id+'"]'),it.url,320)));
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 portrait;margin:8mm}}';document.head.appendChild(st);
   const clean=()=>{document.body.classList.remove('psp');ps.innerHTML='';st.remove();removeEventListener('afterprint',clean)};addEventListener('afterprint',clean);print()}
-$('qrBox').onclick=async e=>{const t=e.target;if(t.dataset.qs){qrOn[t.dataset.qs]=!qrOn[t.dataset.qs];renderQR()}else if(t.dataset.qp)printQR([t.dataset.qp]);else if(t.id==='qrGen')printQR(['__all']);else if(t.id==='qrAll')printQR(qrList().slice(1).map(x=>x.id));else if(t.dataset.qc){const it=qrList().find(x=>x.id===t.dataset.qc);try{await navigator.clipboard.writeText(it.url);toast('ចម្លងរួចរាល់ ✓')}catch(x){toast('⚠ ចម្លងមិនបាន')}}};
+$('qrBox').onchange=e=>{if(e.target.id==='geoR'&&S.clinic){S.clinic.r=Math.max(30,Math.min(2000,+e.target.value||150));save();toast('✓ បានរក្សាទុក')}};
+$('qrBox').onclick=async e=>{const t=e.target;
+  if(t.id==='geoSet'){if(!navigator.geolocation){toast('⚠ មិនគាំទ្រទីតាំង');return}toast('📍 កំពុងស្វែងរកទីតាំង…');navigator.geolocation.getCurrentPosition(p=>{S.clinic={lat:p.coords.latitude,lng:p.coords.longitude,r:(S.clinic&&S.clinic.r)||150};save();renderQR();toast('✓ បានកំណត់ទីតាំងគ្លីនិក (±'+Math.round(p.coords.accuracy)+'ម)')},er=>toast('⚠ '+er.message),{enableHighAccuracy:true,timeout:20000});return}
+  if(t.id==='geoOff'){S.clinic=null;save();renderQR();return}
+  if(t.dataset.kl||t.dataset.kn){const v=t.dataset.kl||t.dataset.kn,x=v.indexOf('|'),dpv=v.slice(0,x),n=v.slice(x+1),st=(S.staff[dpv]||[]).find(a=>a.n===n);if(!st)return;
+    if(!st.k||t.dataset.kn){if(t.dataset.kn&&st.k&&!confirm('ប្ដូរកូដរបស់ "'+n+'"? ឧបករណ៍ចាស់នឹងត្រូវបញ្ចូលកូដថ្មី'))return;const cs='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',a=new Uint32Array(6);crypto.getRandomValues(a);st.k=[...a].map(q=>cs[q%cs.length]).join('');save();renderQR()}
+    if(t.dataset.kl){const u=location.origin+location.pathname+'?ci=1&me='+encodeURIComponent(dpv+'|'+n)+'&k='+st.k;try{await navigator.clipboard.writeText(u);toast('✓ បានចម្លងតំណរបស់ '+n)}catch(er){prompt('ចម្លងតំណនេះ៖',u)}}
+    return}
+  if(t.dataset.qs){qrOn[t.dataset.qs]=!qrOn[t.dataset.qs];renderQR()}else if(t.dataset.qp)printQR([t.dataset.qp]);else if(t.id==='qrGen')printQR(['__all']);else if(t.id==='qrAll')printQR(qrList().slice(1).map(x=>x.id));else if(t.dataset.qc){const it=qrList().find(x=>x.id===t.dataset.qc);try{await navigator.clipboard.writeText(it.url);toast('ចម្លងរួចរាល់ ✓')}catch(x){toast('⚠ ចម្លងមិនបាន')}}};
 renderQR();
 
 $('cPrev').onclick=()=>{cm--;if(cm<1){cm=12;cy--}renderCount()};$('cNext').onclick=()=>{cm++;if(cm>12){cm=1;cy++}renderCount()};
