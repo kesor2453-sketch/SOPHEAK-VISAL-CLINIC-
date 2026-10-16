@@ -429,6 +429,7 @@ function renderMonthDay(){
   document.addEventListener('mousedown',e=>{const tw=e.target.closest&&e.target.closest('.gridv .tw');if(!tw||e.button!==0)return;el=tw;x0=e.clientX;s0=tw.scrollLeft;moved=false});
   document.addEventListener('mousemove',e=>{if(!el)return;const dx=e.clientX-x0;if(Math.abs(dx)>4){moved=true;el.classList.add('dragging')}if(moved)el.scrollLeft=s0-dx});
   document.addEventListener('mouseup',()=>{if(el)el.classList.remove('dragging');el=null});
+  ['touchstart','wheel'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true},{passive:true}));document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true});
 })();
 function renderMonth(){
   $('mLbl').textContent=MN[mm-1]+' '+my;$('mWrap').className=(mview==='staff'?'':'wchips')+(mview==='grid'?' gridv':'');$('mv1').className='btn'+(mview==='day'?' p':'');$('mv2').className='btn'+(mview==='staff'?' p':'');$('mv3').className='btn'+(mview==='grid'?' p':'');
@@ -437,10 +438,10 @@ function renderMonth(){
   const r=mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
   if(keep)W.querySelectorAll('.tw').forEach((e,i)=>{if(keep[i])e.scrollLeft=keep[i]});
   if(!noToday&&!same){scrollKey=k;requestAnimationFrame(()=>{
-    if(mview==='grid'){W.querySelectorAll('.tw').forEach(tw=>{const th=tw.querySelector('thead th.td'),nm=tw.querySelector('thead th.nmc');if(th&&nm)tw.scrollLeft=Math.max(0,th.offsetLeft-nm.offsetWidth)})}
+    if(mview==='grid'){const al=()=>{if(scrollKey!==k||userScrolled)return;W.querySelectorAll('.tw').forEach(tw=>{const th=tw.querySelector('thead th.td'),nm=tw.querySelector('thead th.nmc');if(th&&nm)tw.scrollLeft=Math.max(0,tw.scrollLeft+th.getBoundingClientRect().left-nm.getBoundingClientRect().right-2)})};userScrolled=false;al();setTimeout(al,350);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(al)}
     else{const e=W.querySelector('.td');if(e)e.scrollIntoView({block:'center',inline:'center'})}})}
   return r}
-let scrollKey='';
+let scrollKey='',userScrolled=false;
 const NC_KM=new Intl.Collator('km',{numeric:true,sensitivity:'base'}),NC_LA=new Intl.Collator(['en','fr'],{numeric:true,sensitivity:'base'});
 const nameKey=n=>String(n).replace(/^\s*(dr|pr|prof|mr|ms|mrs)(\.\s*|\s+)(?=\S)/i,'').trim();
 const nameRank=n=>/[\u1780-\u17FF]/.test(n.charAt(0))?0:1;
