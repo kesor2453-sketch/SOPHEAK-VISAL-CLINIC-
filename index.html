@@ -251,7 +251,7 @@ function printSheet(v,wc){
   for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),sl=D.cols.filter(c=>get(d,D.id,c.id).includes(nm)),
       nts=sl.map(c=>getN(d,D.id,c.id).map(x=>x.x).join(' ; ')).filter(Boolean).join(' ; ');
     body+='<tr><td class="pd'+(w==0||w==6?' we':'')+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td>'+(wc?D.cols.map(c=>'<td class="pc">'+(sl.some(x=>x.id===c.id)?'✓':'')+'</td>').join(''):'')+PC.map(x=>'<td class="'+(x==='ផ្សេងៗ'?'po':'pc')+tcCls(D.id,nm,d,x,AA,nts)+'">'+esc(effVals(D.id,nm,d,AA,nts)(x))+'</td>').join('')+'</tr>'}
-  if(wc){const wk=workCount(D,nm);body+='<tr class="pt"><td>ចំនួនធ្វើការ</td>'+D.cols.map(c=>'<td class="pc">'+wk.per[c.id]+'</td>').join('')+'<td colspan="'+PC.length+'" style="text-align:left">សរុប '+wk.tot+' វេន</td></tr>'}
+  if(wc){const wk=workCount(D,nm);body+='<tr class="pt"><td>ចំនួនធ្វើការ</td>'+D.cols.map(c=>'<td class="pc">'+wk.per[c.id]+'</td>').join('')+'<td colspan="'+PC.length+'" style="text-align:left">សរុប '+wk.tot+' វេន · ម៉ោងសរុប '+monthHrs(D.id,nm,my+'-'+p2(mm),AA,nd)+'</td></tr>'}else body+='<tr class="pt"><td colspan="'+(1+PC.length)+'" style="text-align:left">ម៉ោងសរុបក្នុងខែ៖ '+monthHrs(D.id,nm,my+'-'+p2(mm),AA,nd)+'</td></tr>'
   ps.innerHTML='<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th>'+(wc?D.cols.map(c=>'<th style="width:6%">'+esc(c.label)+'</th>').join(''):'')+PC.map((x,i)=>'<th style="width:'+W(i)+'">'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+body+'</tbody></table></div>';
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+(ORI==='landscape'?'landscape':'portrait')+';margin:8mm}}';document.head.appendChild(st);
   document.body.classList.add('psp');
@@ -466,7 +466,7 @@ function renderMonthStaff(){
     const on=D.cols.filter(c=>get(d,D.id,c.id).includes(pName));tot+=on.length;
     rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
       return '<td><div class="tg'+(pEdit?'':' lk')+'"'+(pEdit?' data-tg="'+c.id+'" data-d="'+d+'" data-dp="'+D.id+'"':'')+(a?' style="background:'+pc+';color:'+ink(pc)+';border:1px solid '+pc+'">✓':'>')+'</div></td>'}).join('')+(pShow?pcols().map(x=>pcCell(D.id,pName,d,x,A,on.map(c=>getN(d,D.id,c.id).map(y=>y.x).join(' ; ')).filter(Boolean).join(' ; '),pEdit)).join(''):'')+'</tr>'}
-  $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">'+D.icon+' '+esc(D.name)+' · <button class="nb no-p" data-pstep="-1" title="ឈ្មោះមុន">◀</button><b>'+esc(pName)+'</b><button class="nb no-p" data-pstep="1" title="ឈ្មោះបន្ទាប់">▶</button> · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+' <button class="nb no-p" data-pshow="1">'+(pShow?'🙈 លាក់ជួរព្រីន':'👁 បង្ហាញជួរព្រីន')+'</button> <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span></div>'+(pShow?pcBlock():'')+'<div class="tw"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
+  $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">'+D.icon+' '+esc(D.name)+' · <button class="nb no-p" data-pstep="-1" title="ឈ្មោះមុន">◀</button><b>'+esc(pName)+'</b><button class="nb no-p" data-pstep="1" title="ឈ្មោះបន្ទាប់">▶</button> · សរុប '+tot+' វេន · ម៉ោងសរុប '+monthHrs(D.id,pName,my+'-'+p2(mm),A,n)+'</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+' <button class="nb no-p" data-pshow="1">'+(pShow?'🙈 លាក់ជួរព្រីន':'👁 បង្ហាញជួរព្រីន')+'</button> <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span></div>'+(pShow?pcBlock():'')+'<div class="tw"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
     D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+(pShow?pcols().map(x=>'<th class="pcx">'+esc(x)+'</th>').join(''):'')+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function closePop(){if(pop){pop.remove();pop=null}}
@@ -708,11 +708,12 @@ function effVals(dp,nm,d,A,nts){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{},a=A&&A[d
   const inn=o['ម៉ោងចូល']!==undefined?o['ម៉ោងចូល']:(a&&a.inS||''),out=o['ម៉ោងចេញ']!==undefined?o['ម៉ោងចេញ']:(a&&a.outS||'');
   let h=o['ចំនួនម៉ោង'];
   if(h===undefined){h='';const ov=o['ម៉ោងចូល']!==undefined||o['ម៉ោងចេញ']!==undefined;
-    if(inn&&out){let m=hmN(out)-hmN(inn);if(m<0)m+=1440;h=hrsM(m)}}
+    if(!ov&&a&&a.in!=null&&a.out!=null)h=hrsF(Math.max(0,a.out-a.in));else if(inn&&out){let m=hmN(out)-hmN(inn);if(m<0)m+=1440;h=hrsM(m)}}
   return lbl=>lbl==='ម៉ោងចូល'?inn:lbl==='ម៉ោងចេញ'?out:lbl==='ចំនួនម៉ោង'?h:(o[lbl]!==undefined?o[lbl]:(lbl==='ផ្សេងៗ'?(nts||''):''))}
 function tcCls(dp,nm,d,x,A,nts){if(x!=='ម៉ោងចូល'&&x!=='ម៉ោងចេញ')return '';const g=effVals(dp,nm,d,A,nts),a=g('ម៉ោងចូល'),b=g('ម៉ោងចេញ'),ok=v=>/^\d{1,2}:\d{2}$/.test(v||'');
   if(x==='ម៉ោងចូល'){if(!ok(a))return '';let df=(hmN(a)-hmN(stOf(dp,nm))+1440)%1440;if(df>720)df-=1440;return df<=0?' tcb':' tcr'}
   if(!ok(a)||!ok(b))return '';return (hmN(b)-hmN(a)+1440)%1440>=720?' tcb':' tcr'}
+function monthHrs(dp,nm,ym,A,nd){let m=0;for(let i=1;i<=nd;i++){const q=/^(\d+):(\d{2})$/.exec(effVals(dp,nm,ym+'-'+p2(i),A,'')('ចំនួនម៉ោង')||'');if(q)m+=+q[1]*60+ +q[2]}return hrsM(m)}
 function pcCell(dp,nm,d,x,A,nts,edit){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{};
   return '<td class="pcx'+(o[x]!==undefined?' ov':'')+tcCls(dp,nm,d,x,A,nts)+'"'+(edit?' data-pv="'+d+'|'+esc(x)+'" title="ចុចដើម្បីកែ" style="cursor:pointer"':'')+'>'+esc(effVals(dp,nm,d,A,nts)(x))+'</td>'}
 function attVal(lbl,o){if(!o)return '';if(lbl==='ម៉ោងចូល')return o.in?hhmm(o.in):'';if(lbl==='ម៉ោងចេញ')return o.out?hhmm(o.out):'';if(lbl==='ចំនួនម៉ោង')return(o.in&&o.out)?hrsF(Math.max(0,o.out-o.in)):'';return ''}
