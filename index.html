@@ -124,7 +124,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 
 <div class="pn" id="p-month"><div class="card">
 <div class="nav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
-<button class="btn" id="mToday">ខែនេះ</button><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
+<button class="btn" id="mToday">ខែនេះ</button><button class="btn no-p" data-spv="1">⬇ ទាញវេនពីវេប SPV</button><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
 <span id="mViews" class="mvs"><button class="btn" id="mv1" data-v="day" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">មើលតាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2" data-v="staff" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">បំពេញវេន (តាមបុគ្គលិក)</button><button class="btn" id="mv3" data-v="grid" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">កាឡោនដើម (ទាំងអស់)</button><span id="mvArrows" class="no-p"><button class="btn" data-vmove="-1" title="រំកិលទៅមុខ">◀</button><button class="btn" data-vmove="1" title="រំកិលទៅក្រោយ">▶</button></span></span></div>
 <div id="mWrap"></div></div></div>
 
@@ -166,7 +166,7 @@ const cols2=()=>[{id:'c1',label:'ព្រឹក'},{id:'c3',label:'យប់'}];
 const MIDW={id:'midwife',name:'ឆ្មប',icon:'🤰',color:'#d6336c'};
 const DEF=()=>[{id:'doctor',name:'គ្រូពេទ្យ',icon:'🩺',color:'#2f6fed'},{id:'nurse',name:'គិលានុបដ្ឋាយិកា',icon:'💉',color:'#0f9d7a'},MIDW,{id:'eye',name:'ភ្នែក',icon:'👁️',color:'#8a4fd6'},{id:'dental',name:'ធ្មេញ',icon:'🦷',color:'#e07b00'}].map(d=>({...d,cols:cols2()}));
 const ord=c=>({c1:1,c2:2,c3:3}[c.id]||9);
-let S={v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null,fxm:{},fxMonths:[],fxs:{},pv:{},last:['Dr.Ka Seyla'],clinic:null};S.depts.forEach(d=>S.staff[d.id]=[]);
+let S={v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null,fxm:{},fxMonths:[],fxs:{},pv:{},last:['Dr.Ka Seyla'],clinic:null,imp:{map:{},auto:false}};S.depts.forEach(d=>S.staff[d.id]=[]);
 let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day',pDept=null,pName=null,pEdit=false,dayDept='all',bEdit=false,rEdit=null,E=null,pShow=false;
 const $=id=>document.getElementById(id),p2=n=>(n<10?'0':'')+n,ds=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -185,7 +185,7 @@ const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at
 function save(){if(CI)return;if(USE_FB)setDoc(ref,S).catch(e=>toast('⚠ '+e.message));else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
-function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],clinic:d.clinic||null};
+function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],clinic:d.clinic||null,imp:d.imp||{map:{},auto:false}};
   S.depts.forEach(x=>S.staff[x.id]=(S.staff[x.id]||[]).map(s=>typeof s==='string'?{n:s,r:''}:s));
   S.depts.forEach(D=>{D.roles=D.roles||[];(S.staff[D.id]||[]).forEach(s=>{if(s.r&&!D.roles.includes(s.r))D.roles.push(s.r)})});
   if(mig){
@@ -195,7 +195,7 @@ function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sc
   if(!dept(staffDept))staffDept=(S.depts[0]||{}).id;
   let rn=false;S.depts.forEach(D=>{if(D.id==='nurse'&&D.name==='Nurse'){D.name='គិលានុបដ្ឋាយិកា';rn=true}});if(rn&&!mig)save()}
 if(USE_FB){
-  onSnapshot(ref,snap=>{if(snap.exists())load(snap.data());else save();if(CI){renderCI();return}if(!editing)renderAll()},
+  onSnapshot(ref,snap=>{if(snap.exists())load(snap.data());else save();if(CI){renderCI();return}if(!editing)renderAll();spvAutoStart()},
     e=>{$('dGrid').innerHTML='<div>⚠ មិនអាចភ្ជាប់ Firestore: '+esc(e.message)+'</div>'});
 }else{
   try{const r=localStorage.getItem(LS);if(r)load(JSON.parse(r))}catch(e){}
@@ -483,6 +483,72 @@ function renderMonthStaff(){
   $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">'+D.icon+' '+esc(D.name)+' · <button class="nb no-p" data-pstep="-1" title="ឈ្មោះមុន">◀</button><b>'+esc(pName)+'</b><button class="nb no-p" data-pstep="1" title="ឈ្មោះបន្ទាប់">▶</button> · សរុប '+tot+' វេន</span><span><button class="nb no-p" data-pback="1">← ប្ដូរឈ្មោះ</button> <button class="nb no-p" data-grid="1">▦ កាឡោនដើម</button> '+noonBtn(D)+' <button class="nb no-p" data-pshow="1">'+(pShow?'🙈 លាក់ជួរព្រីន':'👁 បង្ហាញជួរព្រីន')+'</button> <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span></div>'+(pShow?pcBlock():'')+'<div class="tw"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
     D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+(pShow?pcols().map(x=>'<th class="pcx">'+esc(x)+'</th>').join(''):'')+'</tr></thead><tbody>'+rows+'</tbody><tfoot class="no-p"><tr><td colspan="'+(1+D.cols.length+(pShow?pcols().length:0))+'" style="text-align:left;font-weight:700;background:#f7f8fb;padding:10px 12px">សរុប '+tot+' វេន · '+hrsSum(tot,D.id,pName,my+'-'+p2(mm),A,n)+'</td></tr></tfoot></table></div></div>';
 }
+
+/* ===== ទាញវេនពីវេប SPV (Firebase project spv-schedule) ===== */
+let SPVDB=null,spvUnsub=null,SPVS=null;
+const SPV_CFG={apiKey:"AIzaSyBgGZVOh-dl3RphAhLCdkta_KWxZcT20aU",authDomain:"spv-schedule.firebaseapp.com",projectId:"spv-schedule",storageBucket:"spv-schedule.firebasestorage.app",messagingSenderId:"959707281743",appId:"1:959707281743:web:35cc99c80b4903defa2d3a"};
+const spvRef=()=>{if(!SPVDB)SPVDB=initializeFirestore(initializeApp(SPV_CFG,'spv'),{});return doc(SPVDB,'scheduleApp','main')};
+const spvNK=x=>String(x||'').toLowerCase().replace(/dr\.?\s*/g,'').replace(/[^a-z0-9ក-៿]/g,'');
+function spvLev(a,b){if(a===b)return 0;const m=a.length,n=b.length;if(!m||!n)return Math.max(m,n);let p=[...Array(n+1).keys()];for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+function spvMatch(v,dp){S.imp=S.imp||{map:{},auto:false};S.imp.map=S.imp.map||{};const m=S.imp.map[v];if(m!==undefined)return m||null;
+  const L=(S.staff[dp]||[]).map(x=>x.n),k=spvNK(v);let r=L.find(n=>n===v)||L.find(n=>spvNK(n)===k);if(r)return r;
+  r=L.filter(n=>{const q=spvNK(n);return k.length>=5&&q.length>=5&&(q.includes(k)||k.includes(q)||spvLev(q,k)<=2)});return r.length===1?r[0]:null}
+function spvCols(data,ym,D){const sc=(data.columnsByMonth||{})[ym]||data.columnsTemplate||[{id:'SPV_Day1',label:'ព្រឹក',type:'name'},{id:'SPV_Day2',label:'ព្រឹក',type:'name'},{id:'SPV_Day3',label:'ព្រឹក',type:'name'},{id:'SPV_Night',label:'យប់',type:'name'}];
+  return sc.filter(c=>c.type==='name').map(c=>{const t=D.cols.find(x=>String(x.label).trim()===String(c.label).trim());return t?{src:c.id,dst:t.id}:null}).filter(Boolean)}
+function spvMonths(data,sc){const all=[...new Set((data.scheduleAll||[]).map(r=>String(r.Date||'').slice(0,7)).filter(x=>/^\d{4}-\d{2}$/.test(x)))].sort();
+  if(sc==='cur')return [my+'-'+p2(mm)];const nw=new Date(),cu=nw.getFullYear()+'-'+p2(nw.getMonth()+1);return all.filter(x=>x>=cu)}
+function spvNames(data,dp,months){const D=dept(dp),set={};(data.scheduleAll||[]).forEach(r=>{const ym=String(r.Date||'').slice(0,7);if(!months.includes(ym))return;spvCols(data,ym,D).forEach(m=>{if(r[m.src])set[r[m.src]]=1})});return Object.keys(set).sort()}
+function spvRenameIn(dp,old,v){const pre=dp+'__';
+  Object.values(S.sched).forEach(o=>Object.keys(o).forEach(k=>{if(k.indexOf(pre)!==0)return;const a=o[k];o[k]=Array.isArray(a)?a.map(x=>x===old?v:x):(a===old?v:a)}));
+  Object.values(S.fxm||{}).forEach(o=>Object.keys(o).forEach(k=>{if(k.indexOf(pre)!==0)return;o[k]=o[k].map(x=>x===old?v:x)}));
+  Object.keys(S.pv||{}).forEach(k=>{const p2_=dp+'|'+old+'|';if(k.indexOf(p2_)===0){S.pv[dp+'|'+v+'|'+k.slice(p2_.length)]=S.pv[k];delete S.pv[k]}});
+  if(S.last)S.last=S.last.map(x=>String(x).trim().toLowerCase()===old.trim().toLowerCase()?v:x);
+  const st=(S.staff[dp]||[]).find(x=>x.n===old);if(st)st.n=v}
+function spvSyncStaff(data,dp){const src=[...new Set((data.doctors||[]).filter(d=>d&&d.Active!==false&&d.NameSPV).map(d=>String(d.NameSPV).trim()))];if(!src.length||!dept(dp))return 0;
+  S.staff[dp]=S.staff[dp]||[];S.imp=S.imp||{map:{},auto:false};S.imp.map=S.imp.map||{};let ch=0;const used=new Set(),keep=new Set();
+  src.forEach(v=>{let n=(S.staff[dp].find(x=>x.n===v)||{}).n;if(n){used.add(n);keep.add(v)}});
+  src.forEach(v=>{if(keep.has(v))return;const L=S.staff[dp].filter(x=>!used.has(x.n)).map(x=>x.n),k=spvNK(v);
+    const c=L.filter(n=>{const q=spvNK(n);return q===k||(k.length>=5&&q.length>=5&&(q.includes(k)||k.includes(q)||spvLev(q,k)<=2))});
+    if(c.length===1){spvRenameIn(dp,c[0],v);used.add(v);keep.add(v);ch++}});
+  src.forEach(v=>{if(keep.has(v))return;S.staff[dp].push({n:v,r:''});keep.add(v);ch++});
+  const before=S.staff[dp].length;S.staff[dp]=S.staff[dp].filter(x=>keep.has(x.n));ch+=before-S.staff[dp].length;
+  src.forEach(v=>{S.imp.map[v]=v});sortStaff();return ch}
+function spvApply(data,o){const D=dept(o.dp);if(!D)return 0;let ch=0;if(o.syncStaff!==false&&(D.id==='doctor'||D.name==='គ្រូពេទ្យ'))ch+=spvSyncStaff(data,o.dp);const rows=(data.scheduleAll||[]).filter(r=>o.months.includes(String(r.Date||'').slice(0,7)));
+  rows.forEach(r=>{const ym=r.Date.slice(0,7),cm=spvCols(data,ym,D),t={};
+    cm.forEach(m=>{const v=r[m.src];if(!v)return;const nm=spvMatch(v,o.dp);if(!nm)return;(t[m.dst]=t[m.dst]||[]).push(nm)});
+    [...new Set(cm.map(m=>m.dst))].forEach(c=>{const cur=get(r.Date,D.id,c),nw=t[c]||[];let res;
+      if(o.mode==='merge')res=[...new Set(cur.concat(nw))];else res=[...new Set(nw)];
+      if(res.length!==cur.length||res.some(x=>!cur.includes(x))){setL(r.Date,D.id,c,res);ch++}})});
+  return ch}
+function spvHash(d){const t=JSON.stringify(d.scheduleAll||[])+JSON.stringify(d.columnsByMonth||{});let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return h+':'+t.length}
+function spvAutoStart(){if(!USE_FB||CI||spvUnsub||!S.imp||!S.imp.auto)return;
+  spvUnsub=onSnapshot(spvRef(),snap=>{if(!snap.exists()||!S.imp||!S.imp.auto)return;const d=snap.data(),h=spvHash(d);if(S.imp.h===h)return;
+    const dp=S.imp.dp||'doctor',ch=spvApply(d,{dp,months:spvMonths(d,'fut'),mode:'replace'});S.imp.h=h;save();if(ch){renderAll();toast('⬇ បានធ្វើសមកាលកម្មវេនពី SPV ('+ch+' ក្រឡា)')}},()=>{})}
+async function openSpv(){
+  S.imp=S.imp||{map:{},auto:false};SPVS={dp:S.imp.dp||(dept('doctor')?'doctor':(S.depts[0]||{}).id),sc:S.imp.sc||'cur',mode:S.imp.mode||'replace',data:null,err:''};
+  $('dbox').innerHTML='<div class="dt1">⬇ ទាញវេនពីវេប SPV</div><div style="padding:14px">⏳ កំពុងភ្ជាប់ទៅវេប SPV…</div>';$('dlg').style.display='flex';
+  try{const sn=await getDoc(spvRef());if(!sn.exists())throw new Error('មិនមានទិន្នន័យក្នុងវេប SPV');SPVS.data=sn.data()}catch(e){SPVS.err=e.message}
+  spvRender()}
+function spvRender(){const X=SPVS;if(!X)return;let h='<div class="dt1">⬇ ទាញវេនពីវេប SPV</div><div style="padding:12px 14px;line-height:1.9;font-size:13.5px;max-height:75vh;overflow:auto">';
+  if(X.err){h+='<div class="note">⚠ មិនអាចអានវេប SPV៖ '+esc(X.err)+'<br>ពិនិត្យ Firestore Rules របស់ spv-schedule (allow read: if true) និងអ៊ីនធឺណិត។</div><div style="margin-top:10px"><button class="btn" data-spvx="close">បិទ</button></div></div>';$('dbox').innerHTML=h;return}
+  const months=spvMonths(X.data,X.sc),names=spvNames(X.data,X.dp,months);
+  h+='<label class="fl">ផ្នែកគោលដៅ<select data-spvx="dp">'+S.depts.map(d=>'<option value="'+d.id+'"'+(d.id===X.dp?' selected':'')+'>'+esc(d.icon+' '+d.name)+'</option>').join('')+'</select></label>'+
+    '<label class="fl">ខែដែលត្រូវទាញ<select data-spvx="sc"><option value="cur"'+(X.sc==='cur'?' selected':'')+'>ខែដែលកំពុងមើល ('+MN[mm-1]+' '+my+')</option><option value="fut"'+(X.sc==='fut'?' selected':'')+'>ពីខែបច្ចុប្បន្ន ទៅខែខាងមុខទាំងអស់</option></select></label>'+
+    '<label class="fl">របៀប<select data-spvx="mode"><option value="replace"'+(X.mode==='replace'?' selected':'')+'>ជំនួស — វេនក្នុងថ្ងៃដែល SPV មាន ធ្វើតាម SPV</option><option value="merge"'+(X.mode==='merge'?' selected':'')+'>បន្ថែម — រក្សាវេនចាស់ ហើយបន្ថែមឈ្មោះពី SPV</option></select></label>';
+  const dd=dept(X.dp),isDoc=dd&&(dd.id==='doctor'||dd.name==='គ្រូពេទ្យ'),un=isDoc?[]:names.filter(n=>!spvMatch(n,X.dp));
+  h+='<div style="margin:8px 0;color:var(--sub)">ឃើញឈ្មោះក្នុង SPV '+names.length+' · ត្រូវគ្នា '+(names.length-un.length)+(un.length?' · <b style="color:#e53935">មិនទាន់ត្រូវ '+un.length+'</b>':'')+(isDoc?'<br>👥 ឈ្មោះគ្រូពេទ្យទាំងអស់នឹងយកតាមបញ្ជី SPV (បន្ថែមឈ្មោះថ្មី ប្តូរអក្ខរាវិរុទ្ធតាម SPV និងដកឈ្មោះដែល SPV មិនមាន)':'')+'</div>';
+  if(un.length)h+='<div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px"><b>ផ្គូផ្គងឈ្មោះ៖</b>'+un.map(n=>'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="flex:1;min-width:120px">'+esc(n)+'</span><select data-spvmap="'+esc(n)+'"><option value="">— រំលង —</option>'+(S.staff[X.dp]||[]).map(x=>'<option value="'+esc(x.n)+'">'+esc(x.n)+'</option>').join('')+'<option value="__new">＋ បន្ថែមជាបុគ្គលិកថ្មី</option></select></div>').join('')+'</div>';
+  h+='<label style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" data-spvx="auto"'+(S.imp.auto?' checked':'')+'> 🔄 ធ្វើសមកាលកម្មស្វ័យប្រវត្តិ — ពេល SPV ប្តូរ កាលវិភាគនេះប្តូរតាម (ពីខែបច្ចុប្បន្នទៅមុខ)</label>'+
+    '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn p" data-spvx="go" style="flex:1">✅ បញ្ចូលវេន</button><button class="btn" data-spvx="close">បោះបង់</button></div></div>';
+  $('dbox').innerHTML=h}
+$('dbox').addEventListener('change',e=>{const t=e.target;if(!SPVS)return;
+  if(t.dataset.spvmap!==undefined){const v=t.value,src=t.dataset.spvmap;S.imp.map=S.imp.map||{};
+    if(v==='__new'){const L=S.staff[SPVS.dp]=S.staff[SPVS.dp]||[];if(!L.some(x=>x.n===src))L.push({n:src,r:''});S.imp.map[src]=src;sortStaff()}else S.imp.map[src]=v;save();spvRender();return}
+  const k=t.dataset.spvx;if(!k)return;if(k==='auto'){S.imp.auto=t.checked;if(t.checked){S.imp.dp=SPVS.dp;S.imp.h='';save();spvAutoStart()}else{save();if(spvUnsub){spvUnsub();spvUnsub=null}}return}
+  SPVS[k]=t.value;S.imp[k]=t.value;spvRender()});
+$('dbox').addEventListener('click',e=>{const t=e.target;if(!SPVS||!t.dataset||t.dataset.spvx===undefined)return;
+  if(t.dataset.spvx==='close'){SPVS=null;$('dlg').style.display='none';return}
+  if(t.dataset.spvx==='go'){const X=SPVS,ch=spvApply(X.data,{dp:X.dp,months:spvMonths(X.data,X.sc),mode:X.mode});S.imp.dp=X.dp;if(S.imp.auto)S.imp.h=spvHash(X.data);save();renderAll();SPVS=null;$('dlg').style.display='none';toast(ch?'✅ បានបញ្ចូលវេនពី SPV ('+ch+' ក្រឡា)':'គ្មានអ្វីត្រូវកែ — វេនដូចគ្នារួចហើយ')}});
 function closePop(){if(pop){pop.remove();pop=null}}
 function showPop(cell){
   closePop();const d=cell.dataset.d,dp=cell.dataset.dp,nm=cell.dataset.n,D=dept(dp);
@@ -533,6 +599,7 @@ document.addEventListener('click',e=>{const t=e.target;
   const ch=t.closest('#pChips .chip');if(ch){pDept=ch.dataset.dp;renderMonth();return}
   const pn=t.closest('[data-pn]');if(pn){pName=pn.dataset.pn;pEdit=false;renderMonth();return}
   const tg=t.closest('[data-tg]');if(tg){const l=get(tg.dataset.d,tg.dataset.dp,tg.dataset.tg);if(l.includes(pName))fxManualRemove(tg.dataset.d,tg.dataset.dp,tg.dataset.tg,pName);setL(tg.dataset.d,tg.dataset.dp,tg.dataset.tg,l.includes(pName)?l.filter(x=>x!==pName):l.concat(pName));save();renderAll();return}
+  if(t.dataset.spv){openSpv();return}
   if(t.dataset.noon){noon(t.dataset.noon);return}
   if(t.dataset.rm!==undefined){fxManualRemove(t.dataset.d,t.dataset.dp,t.dataset.c,t.dataset.rm);setL(t.dataset.d,t.dataset.dp,t.dataset.c,get(t.dataset.d,t.dataset.dp,t.dataset.c).filter(x=>x!==t.dataset.rm));save();renderAll();return}
   const nb=t.closest('[data-note]');if(nb){openDlg({mode:'note',d:nb.dataset.d,dp:nb.dataset.dp,c:nb.dataset.c});return}
