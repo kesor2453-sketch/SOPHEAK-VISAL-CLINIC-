@@ -685,7 +685,7 @@ const hrsM=m=>Math.floor(m/60)+':'+p2(m%60);const hrsF=ms=>hrsM(Math.round(ms/60
 const ATTM={},attSubs={};
 function watchAtt(y,m){if(!USE_FB)return;const ym=y+'-'+p2(m);if(attSubs[ym])return;const nx=new Date(y,m,1),pv=new Date(y,m-2,1);
   attSubs[ym]=onSnapshot(query(collection(DB,'deptCheckins'),where('d','>=',pv.getFullYear()+'-'+p2(pv.getMonth()+1)+'-20'),where('d','<=',nx.getFullYear()+'-'+p2(nx.getMonth()+1)+'-02')),
-    snap=>{ATTM[ym]=snap.docs.map(q=>{const x=q.data();return{t:x.t,d:x.d,dp:x.dp,n:x.n,ts:x.ts&&x.ts.toMillis?x.ts.toMillis():null}}).filter(x=>x.ts);if(mview==='staff'&&pShow)renderMonth()},()=>{})}
+    snap=>{ATTM[ym]=snap.docs.map(q=>{const x=q.data();return{t:x.t,d:x.d,dp:x.dp,n:x.n,ts:x.at||(x.ts&&x.ts.toMillis?x.ts.toMillis():null)}}).filter(x=>x.ts);if(mview==='staff'&&pShow)renderMonth()},()=>{})}
 const PPOFF=7*36e5,ppDate=ms=>{const t=new Date(ms+PPOFF);return t.getUTCFullYear()+'-'+p2(t.getUTCMonth()+1)+'-'+p2(t.getUTCDate())};
 const dayMs=d=>{const q=d.split('-');return Date.UTC(+q[0],+q[1]-1,+q[2])-PPOFF},nextD=d=>ppDate(dayMs(d)+864e5);
 const stOf=(dp,nm)=>((S.staff[dp]||[]).find(x=>x.n===nm)||{}).st||'07:00';
@@ -732,39 +732,44 @@ function ciRemember(){try{if($('ciAuto').checked){let dpv=$('ciDept').value,n=$(
 $('ciAuto').onchange=()=>{ciRemember();if(!$('ciAuto').checked){clearInterval(ciTimer);if(ciW!==null){navigator.geolocation.clearWatch(ciW);ciW=null;$('ciBell').innerHTML=''}}else ciWatchStart()};
 const ciSel=()=>{let dpv=$('ciDept').value,n=$('ciName').value;if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}return{dpv,n,s:(S.staff[dpv]||[]).find(x=>x.n===n)}};
 const ciBound=st=>{const me=ciMeGet();return !!(me&&st&&me.n&&(me.k||'')===(st.k||'')&&(me.n===st.n||me.n.endsWith('|'+st.n)))};
-function ciShowCode(){const o=ciSel();$('ciCodeBox').style.display=(o.s&&o.s.k&&!ciBound(o.s))?'':'none'}
+function ciShowCode(){const o=ciSel();$('ciCodeBox').style.display='none'}
 $('ciName').addEventListener('change',ciShowCode);
 function ciLinkBind(){const q=new URLSearchParams(location.search),me=q.get('me'),k=(q.get('k')||'').toUpperCase();if(!me||!k)return;
   const x=me.indexOf('|'),dpv=me.slice(0,x),n=me.slice(x+1),st=(S.staff[dpv]||[]).find(a=>a.n===n);
   if(st&&st.k===k){try{localStorage.setItem('deptCiMe',JSON.stringify({dp:dpv,n:(S.depts.filter(D=>(q.get('dp')||'').split(',').length>1).length?dpv+'|'+n:n),k}))}catch(e){}$('ciAuto').checked=true;history.replaceState(null,'',location.pathname+'?ci=1'+(q.get('dp')?'&dp='+encodeURIComponent(q.get('dp')):''))}
   else $('ciMsg').innerHTML='<b style="color:#e53935">⚠ តំណនេះផុតសុពលភាព សូមសុំតំណថ្មី</b>'}
 async function ciFetchLast(dpv,n){const nw=new Date(),yd=new Date(nw.getTime()-864e5),f=x=>x.getFullYear()+'-'+p2(x.getMonth()+1)+'-'+p2(x.getDate());let L=[];
-  for(const d of [f(yd),f(nw)]){const sn=await getDocs(query(collection(DB,'deptCheckins'),where('d','==',d)));sn.forEach(x=>{const v=x.data();if(v.dp===dpv&&v.n===n&&v.ts&&v.ts.toMillis)L.push({t:v.t,ms:v.ts.toMillis()})})}
+  for(const d of [f(yd),f(nw)]){const sn=await getDocs(query(collection(DB,'deptCheckins'),where('d','==',d)));sn.forEach(x=>{const v=x.data();if(v.dp===dpv&&v.n===n&&(v.at||(v.ts&&v.ts.toMillis)))L.push({t:v.t,ms:v.at||v.ts.toMillis()})})}
   L.sort((a,b)=>a.ms-b.ms);return L[L.length-1]||null}
 function ciNotify(title,body){try{if(navigator.vibrate)navigator.vibrate([200,100,200])}catch(e){}
   try{if('Notification' in window&&Notification.permission==='granted'){const n=new Notification(title,{body});n.onclick=()=>{focus();n.close()};return}}catch(e){}
   $('ciBell').innerHTML='<div class="note">🔔 <b>'+esc(title)+'</b> '+esc(body)+'</div>'}
 const geoD=c=>{const k=S.clinic,R=6371000,r=x=>x*Math.PI/180,a=Math.sin(r(c.latitude-k.lat)/2)**2+Math.cos(r(k.lat))*Math.cos(r(c.latitude))*Math.sin(r(c.longitude-k.lng)/2)**2;return Math.round(2*R*Math.asin(Math.sqrt(a)))};
-let ciW=null,ciBusyW=false,ciOutN=0,ciChk=0;
+let ciW=null,ciBusyW=false,ciChk=0;
+const LSN=()=>{try{return JSON.parse(localStorage.getItem('deptCiGeo')||'{}')}catch(e){return{}}},LSS=o=>{try{localStorage.setItem('deptCiGeo',JSON.stringify(o))}catch(e){}};
+async function ciPosHandler(p){
+  if(ciBusy||ciBusyW||!S.clinic)return;const c=p.coords,dist=geoD(c),eff=dist-Math.min(c.accuracy||0,100),r=S.clinic.r||150,o=ciSel();if(!o.s)return;
+  const inside=eff<=r,far=eff>r*1.5+50,now=Date.now(),G=LSN();
+  if(inside){G.seen=now;G.out=0;LSS(G)}else if(far&&!G.out){G.out=now;LSS(G)}
+  if(!inside&&!far)return;if(now-ciChk<45000)return;ciBusyW=true;
+  try{const last=await ciFetchLast(o.dpv,o.n);ciChk=Date.now();const st=(last&&last.t==='in'&&now-last.ms<20*36e5)?'in':'out';
+    if(inside&&st==='out'&&!(last&&now-last.ms<120000)){ciNotify('📍 មកដល់គ្លីនិក ម៉ោង '+hhmm(now),'កំពុងកត់ម៉ោងចូល…');await ciGo('in',true)}
+    else if(far&&st==='in'){const ref=(G.seen&&G.seen>last.ms)?G.seen:(G.out&&G.out>last.ms?G.out:0);
+      if(ref&&now-ref>=30*60000&&ref>last.ms+60000){ciNotify('🚪 ចាកចេញពីគ្លីនិក ម៉ោង '+hhmm(ref),'កត់ម៉ោងចេញពិត (ក្រោយ ៣០នាទី)');await ciGo('out',true,ref)}}}
+  catch(e){}ciBusyW=false}
 function ciWatchStart(){
   if(ciW!==null||!S.clinic||!navigator.geolocation)return;
   try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(e){}
-  $('ciBell').innerHTML='<div class="note" style="background:#e8f7f1">📍 កំពុងតាមដានទីតាំង — ត្រូវបើកទំព័រនេះទុក (កុំបិទកម្មវិធី)។ ពេលមកដល់គ្លីនិកវានឹងជូនដំណឹង ហើយកត់ម៉ោងចូលដោយស្វ័យប្រវត្តិ។</div>';
-  ciW=navigator.geolocation.watchPosition(async p=>{
-    if(ciBusyW||ciBusy)return;const c=p.coords,dist=geoD(c),eff=dist-Math.min(c.accuracy||0,100),r=S.clinic.r||150,o=ciSel();if(!o.s)return;
-    const inside=eff<=r,far=eff>r*1.5+50;if(!inside&&!far){ciOutN=0;return}
-    if(Date.now()-ciChk<45000)return;ciBusyW=true;
-    try{const last=await ciFetchLast(o.dpv,o.n);ciChk=Date.now();const st=(last&&last.t==='in'&&Date.now()-last.ms<20*36e5)?'in':'out';
-      if(inside&&st==='out'&&!(last&&Date.now()-last.ms<120000)){ciOutN=0;ciNotify('📍 មកដល់គ្លីនិក','កំពុងកត់ម៉ោងចូល…');await ciGo('in',true)}
-      else if(far&&st==='in'&&Date.now()-last.ms>30*60000){ciOutN++;if(ciOutN>=2){ciOutN=0;ciNotify('🚪 ចាកចេញពីគ្លីនិក','កំពុងកត់ម៉ោងចេញ…');await ciGo('out',true)}}else if(inside)ciOutN=0}
-    catch(e){}ciBusyW=false},()=>{},{enableHighAccuracy:true,maximumAge:15000,timeout:30000})}
+  $('ciBell').innerHTML='<div class="note" style="background:#e8f7f1">📍 កំពុងតាមដានទីតាំង — ត្រូវបើកទំព័រនេះទុក (កុំបិទកម្មវិធី)។ ពេលមកដល់គ្លីនិកវាជូនដំណឹង ហើយកត់ម៉ោងចូល។ ពេលចាកចេញលើស ៣០នាទី វាកត់ម៉ោងចេញជាម៉ោងដែលអ្នកចាកចេញពិត។</div>';
+  ciW=navigator.geolocation.watchPosition(ciPosHandler,()=>{},{enableHighAccuracy:true,maximumAge:15000,timeout:30000});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ciW!==null)navigator.geolocation.getCurrentPosition(ciPosHandler,()=>{},{enableHighAccuracy:true,timeout:20000})})}
 async function ciAutoStart(){
   if(ciAutoDone||!CI||!USE_FB)return;if(!S.depts.length)return;ciLinkBind();const me=ciMeGet();if(!me)return;
   const dp=$('ciDept'),nm=$('ciName');ciAutoDone=true;
   if([...dp.options].some(o=>o.value===me.dp))dp.value=me.dp;renderCI();
   if(![...nm.options].some(o=>o.value===me.n))return;
   nm.value=me.n;$('ciAuto').checked=true;ciShowCode();
-  const o=ciSel(),dpv=o.dpv,n=o.n;if(o.s&&o.s.k&&(me.k||'')!==o.s.k){$('ciMsg').innerHTML='<b style="color:#e53935">🔑 កូដបានប្ដូរ — សូមបញ្ចូលកូដថ្មី ឬបើកតំណថ្មី</b>';ciShowCode();return}
+  const o=ciSel(),dpv=o.dpv,n=o.n;if(false){$('ciMsg').innerHTML='<b style="color:#e53935">🔑 កូដបានប្ដូរ — សូមបញ្ចូលកូដថ្មី ឬបើកតំណថ្មី</b>';ciShowCode();return}
   const msg=$('ciMsg');msg.textContent='…';ciWatchStart();
   let t='in',recent=false;
   try{const last=await ciFetchLast(dpv,n);
@@ -777,10 +782,10 @@ async function ciAutoStart(){
     $('ciCancel').onclick=()=>{clearInterval(ciTimer);msg.textContent='បានបោះបង់ — ចុចប៊ូតុងខាងលើដោយខ្លួនឯង'};
     $('ciFlip').onclick=()=>{t=t==='in'?'out':'in';show()}};
   show();clearInterval(ciTimer);ciTimer=setInterval(()=>{c--;if(c<=0){clearInterval(ciTimer);ciGo(t,true)}else if($('ciCancel'))show()},1000)}
-async function ciGo(t,skip){const msg=$('ciMsg');let dpv=$('ciDept').value,n=$('ciName').value;if(ciBusy)return;
+async function ciGo(t,skip,at){const msg=$('ciMsg');let dpv=$('ciDept').value,n=$('ciName').value;if(ciBusy)return;
   if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}
   const s=(S.staff[dpv]||[]).find(x=>x.n===n);if(!s){msg.textContent='⚠ សូមជ្រើសឈ្មោះ';return}
-  if(s.k&&!ciBound(s)){if(($('ciCode').value||'').trim().toUpperCase()!==s.k){msg.innerHTML='<b style="color:#e53935">🔑 សូមបញ្ចូលកូដផ្ទាល់ខ្លួនត្រឹមត្រូវ</b> (សុំពីអ្នកគ្រប់គ្រង)';$('ciCodeBox').style.display='';return}$('ciAuto').checked=true}
+  if(false){if(($('ciCode').value||'').trim().toUpperCase()!==s.k){msg.innerHTML='<b style="color:#e53935">🔑 សូមបញ្ចូលកូដផ្ទាល់ខ្លួនត្រឹមត្រូវ</b> (សុំពីអ្នកគ្រប់គ្រង)';$('ciCodeBox').style.display='';return}$('ciAuto').checked=true}
   if(!skip&&!confirm('ចុះឈ្មោះ "'+n+'" '+(t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+' ឥឡូវនេះ?'))return;
   ciBusy=true;msg.textContent='…';
   let geo=null;
@@ -788,11 +793,11 @@ async function ciGo(t,skip){const msg=$('ciMsg');let dpv=$('ciDept').value,n=$('
     if(S.clinic){msg.textContent='📍 កំពុងពិនិត្យទីតាំង…';
       const pos=await new Promise((ok,no)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(ok,no,{enableHighAccuracy:true,timeout:15000,maximumAge:0}):no({message:'ទូរស័ព្ទមិនគាំទ្រទីតាំង'}));
       const c=pos.coords,R=6371000,rad=x=>x*Math.PI/180,a=Math.sin(rad(c.latitude-S.clinic.lat)/2)**2+Math.cos(rad(S.clinic.lat))*Math.cos(rad(c.latitude))*Math.sin(rad(c.longitude-S.clinic.lng)/2)**2,dist=Math.round(2*R*Math.asin(Math.sqrt(a)));
-      if(dist-Math.min(c.accuracy||0,100)>(S.clinic.r||150)){msg.innerHTML='<b style="color:#e53935">⛔ អ្នកនៅក្រៅគ្លីនិក</b> (ឆ្ងាយ ~'+dist+' ម៉ែត្រ) — មិនអាចកត់ត្រាបានទេ';ciBusy=false;return}
+      if(t==='in'&&dist-Math.min(c.accuracy||0,100)>(S.clinic.r||150)){msg.innerHTML='<b style="color:#e53935">⛔ អ្នកនៅក្រៅគ្លីនិក</b> (ឆ្ងាយ ~'+dist+' ម៉ែត្រ) — មិនអាចកត់ត្រាបានទេ';ciBusy=false;return}
       geo={lat:+c.latitude.toFixed(5),lng:+c.longitude.toFixed(5),acc:Math.round(c.accuracy||0),dist}}
-    const nw=new Date(),d=nw.getFullYear()+'-'+p2(nw.getMonth()+1)+'-'+p2(nw.getDate());
-    const r2=await addDoc(collection(DB,'deptCheckins'),Object.assign({t,d,dp:dpv,n,ts:serverTimestamp(),dev:(navigator.userAgent||'').slice(0,80)},geo?{geo}:{}));
-    let ms=Date.now();try{const q=await getDoc(r2),ts=q.data().ts;if(ts&&ts.toMillis)ms=ts.toMillis()}catch(x){}
+    const nw=new Date(at||Date.now()),d=nw.getFullYear()+'-'+p2(nw.getMonth()+1)+'-'+p2(nw.getDate());
+    const r2=await addDoc(collection(DB,'deptCheckins'),Object.assign({t,d,dp:dpv,n,ts:serverTimestamp(),dev:(navigator.userAgent||'').slice(0,80)},at?{at}:{},geo?{geo}:{}));
+    let ms=Date.now();if(at)ms=at;else try{const q=await getDoc(r2),ts=q.data().ts;if(ts&&ts.toMillis)ms=ts.toMillis()}catch(x){}
     msg.innerHTML='<b style="color:#0f9d7a">✅ '+(t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+' · '+esc(n)+'</b><br>ម៉ោង '+hhmm(ms)+' ('+d.split('-').reverse().join('/')+')'}
   catch(e){msg.textContent=e.code===1?'⚠ សូមអនុញ្ញាតទីតាំង (Location) សម្រាប់គេហទំព័រនេះ ដើម្បីកត់ត្រា':'⚠ មិនអាចកត់ត្រា៖ '+e.message}
   ciBusy=false}
@@ -806,7 +811,7 @@ function renderQR(){const b=$('qrBox');if(!b)return;const L=qrList(),k=JSON.stri
   const bad=location.protocol==='file:'||!USE_FB;
   b.innerHTML='<div style="font-size:12.5px;color:var(--sub);margin-bottom:8px;line-height:1.7">QR ទាំងអស់ (ជ្រើសផ្នែកលើទូរស័ព្ទ) ឬ QR តាមផ្នែក (💉 គិលានុបដ្ឋាយិកា + 🤰 ឆ្មប ជា QR តែមួយ)៖ បុគ្គលិកស្កេនដោយទូរស័ព្ទ → ជ្រើសឈ្មោះ → ចុច «ចូលធ្វើការ» ឬ «ចេញ»។ ម៉ោងចូល / ចេញ / ចំនួនម៉ោង បំពេញស្វ័យប្រវត្តិ (កែបានក្នុងតារាង «បំពេញវេន»)។</div>'+
     '<div style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px;font-size:13px;line-height:1.8">📍 <b>ទីតាំងគ្លីនិក (បញ្ជាក់ថានៅគ្លីនិកពិត)</b><br>'+(S.clinic?'<span style="color:#0f9d7a">បានកំណត់ ✓ ('+S.clinic.lat.toFixed(5)+', '+S.clinic.lng.toFixed(5)+')</span> · រង្វង់ <input id="geoR" type="number" min="30" max="2000" value="'+(S.clinic.r||150)+'" style="width:70px"> ម៉ែត្រ ':'<span style="color:var(--sub)">មិនទាន់កំណត់ — បុគ្គលិកអាចចុះវត្តមានពីកន្លែងណាក៏បាន</span> ')+'<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="geoSet">📍 ប្រើទីតាំងបច្ចុប្បន្នរបស់ឧបករណ៍នេះ (ត្រូវនៅក្នុងគ្លីនិក)</button>'+(S.clinic?'<button class="btn" id="geoOff">បិទការបញ្ជាក់ទីតាំង</button>':'')+'</div></div>'+
-    '<details style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:10px"><summary style="cursor:pointer;font-size:13px"><b>🔑 តំណ/កូដផ្ទាល់ខ្លួនបុគ្គលិក</b> (សម្គាល់ខ្លួនបានទោះដូរទូរស័ព្ទ)</summary><div style="font-size:12px;color:var(--sub);margin:6px 0;line-height:1.7">ចុច «ចម្លងតំណ» ហើយផ្ញើទៅបុគ្គលិកតាម Telegram ។ បើកតំណម្តងលើទូរស័ព្ទណាក៏ដោយ ទូរស័ព្ទនោះចាំឈ្មោះ។ ឬផ្ដល់កូដឲគេបញ្ចូលដោយខ្លួនឯង។ «ប្ដូរកូដ» ធ្វើឲឧបករណ៍ចាស់ត្រូវបញ្ចូលកូដម្ដងទៀត។</div>'+blocks().map(bk=>bk.ds.map(D=>'<div style="font-weight:700;margin-top:6px;color:'+D.color+'">'+D.icon+' '+esc(D.name)+'</div>'+(S.staff[D.id]||[]).map(x=>'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:3px 0;font-size:13px"><span style="flex:1;min-width:120px">'+esc(x.n)+'</span><code>'+(x.k||'—')+'</code><button class="btn" data-kl="'+esc(D.id+'|'+x.n)+'">📋 ចម្លងតំណ</button><button class="btn" data-kn="'+esc(D.id+'|'+x.n)+'">🔄 ប្ដូរកូដ</button></div>').join('')).join('')).join('')+'</details>'+
+    
     (bad?'<div class="note" style="margin-bottom:8px">⚠ QR ដំណើរការបានតែពេលគេហទំព័រនេះនៅលើអ៊ីនធឺណិត (https) និងភ្ជាប់ Firebase។</div>':'')+
     '<div style="margin-bottom:6px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="qrGen">🖨️ ព្រីន QR ទាំងអស់</button><button class="btn" id="qrAll">🖨️ ព្រីន QR តាមផ្នែកទាំងអស់ (១ ផ្នែក = ១ ទំព័រ)</button></div>'+
     L.map(it=>'<div style="border-top:1px solid var(--line);padding:8px 0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="flex:1;min-width:130px;color:'+it.color+'">'+it.html+'</b><button class="btn" data-qs="'+it.id+'">'+(qrOn[it.id]?'លាក់ QR':'បង្ហាញ QR')+'</button>'+(qrOn[it.id]?'<button class="btn" data-qp="'+it.id+'">🖨️ ព្រីន</button><button class="btn" data-qc="'+it.id+'">📋 ចម្លងតំណ</button>':'')+'</div>'+(qrOn[it.id]?'<div data-qi="'+it.id+'" style="margin:10px 0"></div><div style="font-size:12px;word-break:break-all;color:var(--sub)">'+esc(it.url)+'</div>':'')+'</div>').join('');
