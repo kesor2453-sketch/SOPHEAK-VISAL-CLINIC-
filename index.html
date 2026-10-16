@@ -712,6 +712,7 @@ function effVals(dp,nm,d,A,nts){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{},a=A&&A[d
   let h=o['ចំនួនម៉ោង'];
   if(h===undefined){h='';const ov=o['ម៉ោងចូល']!==undefined||o['ម៉ោងចេញ']!==undefined;
     if(!ov&&a&&a.in!=null&&a.out!=null)h=hrsF(Math.max(0,a.out-a.in));else if(inn&&out){let m=hmN(out)-hmN(inn);if(m<0)m+=1440;if(m<60)m+=1440;h=hrsM(m)}}
+  if(typeof h==='string'){const q=/^\s*(\d+)\s*[:hH]\s*(\d{1,2})\s*$/.exec(h);if(q)h=q[1]+'h'+p2(+q[2])}
   return lbl=>lbl==='ម៉ោងចូល'?inn:lbl==='ម៉ោងចេញ'?out:lbl==='ចំនួនម៉ោង'?h:(o[lbl]!==undefined?o[lbl]:(lbl==='ផ្សេងៗ'?(nts||''):''))}
 function tcCls(dp,nm,d,x,A,nts){if(x!=='ម៉ោងចូល'&&x!=='ម៉ោងចេញ')return '';const g=effVals(dp,nm,d,A,nts),a=g('ម៉ោងចូល'),b=g('ម៉ោងចេញ'),ok=v=>/^\d{1,2}:\d{2}$/.test(v||'');
   if(x==='ម៉ោងចូល'){if(!ok(a))return '';let df=(hmN(a)-hmN(stOf(dp,nm))+1440)%1440;if(df>720)df-=1440;return df<=0?' tcb':' tcr'}
