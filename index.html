@@ -804,9 +804,11 @@ function effVals(dp,nm,d,A,nts){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{},a=A&&A[d
   if(typeof h==='string'){const q=/^\s*(\d+)\s*[:hH]\s*(\d{1,2})\s*$/.exec(h);if(q)h=q[1]+'h'+p2(+q[2])}
   return lbl=>lbl==='ម៉ោងចូល'?inn:lbl==='ម៉ោងចេញ'?out:lbl==='ចំនួនម៉ោង'?h:(o[lbl]!==undefined?o[lbl]:(lbl==='ផ្សេងៗ'?(nts||''):''))}
 function tcCls(dp,nm,d,x,A,nts){if(x!=='ម៉ោងចូល'&&x!=='ម៉ោងចេញ')return '';const g=effVals(dp,nm,d,A,nts),a=g('ម៉ោងចូល'),b=g('ម៉ោងចេញ'),ok=v=>/^\d{1,2}:\d{2}$/.test(v||'');
-  if(x==='ម៉ោងចូល'){if(!ok(a))return '';let df=(hmN(a)-hmN(stOf(dp,nm))+1440)%1440;if(df>720)df-=1440;return df<=0?' tcb':' tcr'}
-  if(!ok(b))return '';const T=hmN(stOf(dp,nm));let o=((hmN(b)-T)%1440+1440)%1440;if(o===0)o=1440;if(o<=240)o+=1440;
+  if(x==='ម៉ោងចូល'){if(!ok(a))return '';let df=(hmN(a)-shStart(dp,nm,d)+1440)%1440;if(df>720)df-=1440;return df<=0?' tcb':' tcr'}
+  if(!ok(b))return '';const T=shStart(dp,nm,d);let o=((hmN(b)-T)%1440+1440)%1440;if(o===0)o=1440;if(o<=240)o+=1440;
   return o>=expH(dp,nm,d)*60?' tcb':' tcr'}
+/* night-only shift (យប់ without ព្រឹក) starts 12 h after the normal start, e.g. 19:00 → 07:00 */
+function shStart(dp,nm,d){const D=dept(dp),T=hmN(stOf(dp,nm));if(!D)return T;const day=get(d,dp,'c1').includes(nm),nt=get(d,dp,'c3').includes(nm);return(nt&&!day)?(T+720)%1440:T}
 /* required hours that day: 12 h per ព្រឹក/យប់ shift assigned (both = 24 h) */
 function expH(dp,nm,d){const D=dept(dp);if(!D)return 12;const n=D.cols.filter(c=>c.id!=='c2'&&get(d,dp,c.id).includes(nm)).length;return 12*Math.max(1,n)}
 const SHIFT_H=12;
