@@ -805,7 +805,10 @@ function effVals(dp,nm,d,A,nts){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{},a=A&&A[d
   return lbl=>lbl==='ម៉ោងចូល'?inn:lbl==='ម៉ោងចេញ'?out:lbl==='ចំនួនម៉ោង'?h:(o[lbl]!==undefined?o[lbl]:(lbl==='ផ្សេងៗ'?(nts||''):''))}
 function tcCls(dp,nm,d,x,A,nts){if(x!=='ម៉ោងចូល'&&x!=='ម៉ោងចេញ')return '';const g=effVals(dp,nm,d,A,nts),a=g('ម៉ោងចូល'),b=g('ម៉ោងចេញ'),ok=v=>/^\d{1,2}:\d{2}$/.test(v||'');
   if(x==='ម៉ោងចូល'){if(!ok(a))return '';let df=(hmN(a)-hmN(stOf(dp,nm))+1440)%1440;if(df>720)df-=1440;return df<=0?' tcb':' tcr'}
-  if(!ok(a)||!ok(b))return '';return (hmN(b)-hmN(a)+1440)%1440>=720?' tcb':' tcr'}
+  if(!ok(b))return '';const T=hmN(stOf(dp,nm));let o=((hmN(b)-T)%1440+1440)%1440;if(o===0)o=1440;if(o<=240)o+=1440;
+  return o>=expH(dp,nm,d)*60?' tcb':' tcr'}
+/* required hours that day: 12 h per ព្រឹក/យប់ shift assigned (both = 24 h) */
+function expH(dp,nm,d){const D=dept(dp);if(!D)return 12;const n=D.cols.filter(c=>c.id!=='c2'&&get(d,dp,c.id).includes(nm)).length;return 12*Math.max(1,n)}
 const SHIFT_H=12;
 function hrsSum(shifts,ds0,dp,nm,ym,A,nd){const done=ds0*SHIFT_H*60,need=shifts*SHIFT_H*60,left=need-done;
   return 'ត្រូវធ្វើ '+hrsM(need)+' · បានធ្វើ '+hrsM(done)+' ('+ds0+' វេន) · '+(left>=0?'សល់ '+hrsM(left):'លើស '+hrsM(-left))}
