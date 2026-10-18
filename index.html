@@ -7,7 +7,7 @@
 :root{--bg:#f4f6f9;--ink:#1c2430;--sub:#6b7686;--line:#e6e9ef;--brand:#2f6fed;--r:14px;--sh:0 1px 2px rgba(20,25,40,.04),0 8px 24px rgba(20,25,40,.06)}
 *{box-sizing:border-box}body{margin:0;font-family:'Noto Sans Khmer',sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
 #app{max-width:1280px;margin:0 auto;padding:16px 14px 60px}
-h1{font-size:19px;margin:0}.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;position:sticky;top:0;z-index:30;background:var(--bg);padding:6px 0}#mVBar{position:sticky;top:var(--tt,0px);z-index:25;background:#fff;padding:6px 0;margin-bottom:6px}
+h1{font-size:19px;margin:0}.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;position:sticky;top:0;z-index:30;background:var(--bg);padding:6px 0}#mNav{position:sticky;top:var(--tt,0px);z-index:26;background:#fff;padding:6px 0;margin-bottom:6px}#mVBar{position:sticky;top:var(--tn,0px);z-index:25;background:#fff;padding:6px 0;margin-bottom:6px}
 .tabs{display:flex;gap:5px;overflow-x:auto;max-width:100%;background:#fff;padding:5px;border-radius:12px;box-shadow:var(--sh)}
 .tab{padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;color:var(--sub);white-space:nowrap}.tab.on{background:var(--brand);color:#fff}
 .card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:14px}
@@ -32,7 +32,7 @@ table{border-collapse:collapse;font-size:12.5px}
 .mt{width:100%}.mt th{background:#f7f8fb;color:var(--sub);padding:6px 2px;border-bottom:1px solid var(--line);min-width:30px;font-weight:600}
 .mt td{padding:2px;border-bottom:1px solid var(--line);text-align:center}
 .mt .nmc{text-align:left;white-space:nowrap;position:sticky;left:0;background:#fff;padding:5px 8px;font-weight:600;min-width:130px;z-index:1;border-right:1px solid var(--line)}
-.mt th.nmc{background:#f7f8fb}.mt .we{background:#fdf0f0;color:#e05252}.mt .td{background:#dbe9ff}
+.mt th.nmc{background:#f7f8fb}.mt .we{background:#fdf0f0;color:#e05252}.mt .td{background:#9ccaff;background:color-mix(in srgb,var(--td,#0d6efd) 40%,#fff)}
 .pp{color:var(--ink)}
 .dlist{display:flex;flex-direction:column;gap:12px}.dr{display:flex;align-items:stretch}
 .dr .dh{width:190px;flex-shrink:0;justify-content:flex-start;gap:8px}.grip{cursor:grab;opacity:.85}
@@ -43,15 +43,15 @@ table{border-collapse:collapse;font-size:12.5px}
 .tg{min-height:30px;min-width:70px;border-radius:8px;border:1px dashed #c3c9d3;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}.tg:hover{background:#f0f2f6}
 .fitp .nop,.fitp .no-p{display:none!important}.mvs{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center}.mvs [data-v]{cursor:grab}.tg.lk{cursor:default;border-style:dotted}
 .mt tr.we td,.mt td.we{background:#ffeaea}
-.mt tr.td td,.mt td.td{background:#cfe3ff}
-.mt th.td{background:#4f8df5;color:#fff}
+.mt tr.td td,.mt td.td{background:#9ccaff;background:color-mix(in srgb,var(--td,#0d6efd) 40%,#fff)}
+.mt th.td{background:var(--td,#0d6efd);color:var(--tdi,#fff)}
 .mt th.we{background:#f27b7b;color:#fff}
-.mt td.nmc.td{background:#bcd7ff;font-weight:800;box-shadow:inset 5px 0 0 #1565c0}
+.mt td.nmc.td{background:#5aa7ff;background:color-mix(in srgb,var(--td,#0d6efd) 65%,#fff);font-weight:800;box-shadow:inset 5px 0 0 var(--td,#0b4fb8)}
 .mt td.nmc.we{background:#f27b7b;color:#fff}.mt td.nmc.we small{color:#fff;opacity:.85}
 .ef{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.eg{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}.eg>b{display:block;margin-bottom:8px}
 .fl{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--sub);font-weight:600}.fl select,.fl input{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;color:var(--ink);background:#fff}
 select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid var(--line)}
-.tb{background:#1565c0;color:#fff;border-radius:6px;padding:1px 6px;font-size:10px;margin-left:5px;font-weight:700}
+.tb{background:var(--td,#0d6efd);color:var(--tdi,#fff);border-radius:6px;padding:1px 6px;font-size:10px;margin-left:5px;font-weight:700}
 .ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .dt .pp{justify-content:space-between;box-sizing:border-box;white-space:nowrap}
 .dlg{position:fixed;inset:0;background:rgba(20,25,40,.45);z-index:100;align-items:center;justify-content:center;padding:14px}
@@ -124,7 +124,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <div class="dlist" id="dGrid"></div></div></div>
 
 <div class="pn" id="p-month"><div class="card">
-<div class="nav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
+<div class="nav" id="mNav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
 <button class="btn" id="mToday">ខែនេះ</button><button class="btn no-p" data-spv="1">⬇ ទាញវេនពីវេប SPV</button><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
 </div><div id="mVBar" class="no-p"><span id="mViews" class="mvs"><button class="btn" id="mv1" data-v="day" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">មើលតាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2" data-v="staff" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">បំពេញវេន (តាមបុគ្គលិក)</button><button class="btn" id="mv3" data-v="grid" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">កាឡោនដើម (ទាំងអស់)</button><span id="mvArrows" class="no-p"><button class="btn" data-vmove="-1" title="រំកិលទៅមុខ">◀</button><button class="btn" data-vmove="1" title="រំកិលទៅក្រោយ">▶</button></span></span></div>
 <div id="mWrap"></div></div></div>
@@ -138,7 +138,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <form class="add" id="sForm"><input id="sNew" placeholder="ឈ្មោះ — ឧ. Dr.Sok Dara"><select id="sRole" class="btn" title="តួនាទី (ស្រេចចិត្ត)"></select><input type="color" id="sColor" value="#4f8df5" title="ព័ណ៌ប្រអប់ឈ្មោះ" style="flex:0 0 46px;padding:2px;min-width:46px"><button class="btn p">+ បន្ថែម</button></form></div><div class="card"><div class="ch"><b>ម៉ោងធ្វើការ (ថ្ងៃថេរ) <small id="fxHint"></small></b><button class="btn" type="button" id="fxEditBtn"></button></div>
 <div class="chips" id="fxChips" style="margin-bottom:8px"></div><div id="fxList"></div>
 <div class="nav" style="margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line)"><button class="btn" id="fxPrev">‹</button><div class="lbl" id="fxLbl"></div><button class="btn" id="fxNext">›</button><button class="btn p" id="fxApply">⚡ បំពេញខែនេះតាមម៉ោងធ្វើការ</button></div>
-<small>បំពេញតែវេនដែលនៅទំនេរ មិនលុបឬប៉ះពាល់វេនដែលមានស្រាប់ទេ។</small></div>
+<small>បំពេញតែវេនដែលនៅទំនេរ មិនលុបឬប៉ះពាល់វេនដែលមានស្រាប់ទេ។</small></div><div class="card"><div class="ch"><b>🎨 ព័ណ៌ «ថ្ងៃនេះ» <small>(ក្នុងតារាងប្រចាំខែ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input type="color" id="tdPick" title="ជ្រើសព័ណ៌ថ្ងៃនេះ" value="#0d6efd" style="width:42px;height:34px;padding:2px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer"><button class="btn" type="button" id="tdReset">↺ ព័ណ៌ដើម (ខៀវ)</button><small style="color:var(--sub)">ចាំលើឧបករណ៍នេះ</small></div></div>
 </div>
 
 
@@ -433,7 +433,9 @@ function renderMonthDay(){
   document.addEventListener('mouseup',()=>{if(el)el.classList.remove('dragging');el=null});
   ['touchstart','wheel'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true},{passive:true}));document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true});
 })();
-function stk(){const r=document.documentElement.style,t=document.querySelector('.top'),v=$('mVBar'),th=t?t.offsetHeight+14:0,vh=(v&&v.offsetParent)?v.offsetHeight+6:0;r.setProperty('--tt',(t?t.offsetHeight:0)+'px');r.setProperty('--b',(th-14+vh)+'px')}
+function tdApply(c){const r=document.documentElement.style,n=parseInt(c.slice(1),16),L=(.299*(n>>16)+.587*((n>>8)&255)+.114*(n&255));r.setProperty('--td',c);r.setProperty('--tdi',L>160?'#1c2430':'#fff')}
+(function(){let c='#0d6efd';try{c=localStorage.getItem('deptTodayColor')||c}catch(e){}if(!/^#[0-9a-f]{6}$/i.test(c))c='#0d6efd';tdApply(c);const e=$('tdPick');if(e){e.value=c;const rs=$('tdReset');if(rs)rs.onclick=()=>{e.value='#0d6efd';tdApply('#0d6efd');try{localStorage.removeItem('deptTodayColor')}catch(x){}};e.oninput=()=>{tdApply(e.value);try{localStorage.setItem('deptTodayColor',e.value)}catch(x){}}}})();
+function stk(){const r=document.documentElement.style,t=document.querySelector('.top'),nv=$('mNav'),v=$('mVBar'),tt=t?t.offsetHeight:0,nh=(nv&&nv.offsetParent)?nv.offsetHeight+6:0,vh=(v&&v.offsetParent)?v.offsetHeight+6:0;r.setProperty('--tt',tt+'px');r.setProperty('--tn',(tt+nh)+'px');r.setProperty('--b',(tt+nh+vh)+'px')}
 addEventListener('resize',stk);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(stk);
 function renderMonth(){
   $('mLbl').textContent=MN[mm-1]+' '+my;$('mWrap').className=(mview==='staff'?'':'wchips')+(mview==='grid'?' gridv':'');$('mv1').className='btn'+(mview==='day'?' p':'');$('mv2').className='btn'+(mview==='staff'?' p':'');$('mv3').className='btn'+(mview==='grid'?' p':'');
@@ -442,7 +444,8 @@ function renderMonth(){
   const k=my+'-'+mm+'|'+mview+'|'+(mview==='staff'?pDept+'|'+pName:dayDept),same=k===scrollKey,W=$('mWrap'),keep=(mview==='grid'&&same)?[...W.querySelectorAll('.tw')].map(e=>e.scrollLeft):null;
   $('mVBar').appendChild($('mViews'));
   const r=mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
-  {const ch=[...$('mWrap').children].find(e=>e.classList&&e.classList.contains('chips')&&e.classList.contains('no-p'));if(ch&&!$('mWrap').querySelector('#pChips'))ch.insertBefore($('mViews'),ch.firstChild);$('mVBar').style.display=$('mVBar').contains($('mViews'))?'':'none'}
+  if(mview==='staff')$('mWrap').insertAdjacentHTML('afterbegin','<div class="chips no-p" id="pChips" style="margin-bottom:12px;position:sticky;top:var(--b,0px);z-index:5;background:#fff;padding:6px 0">'+chips(pDept)+'</div>');
+  {const ch=[...$('mWrap').children].find(e=>e.classList&&e.classList.contains('chips')&&e.classList.contains('no-p'));if(ch)ch.appendChild($('mViews'));$('mVBar').style.display=$('mVBar').contains($('mViews'))?'':'none'}
   fixSt();requestAnimationFrame(fixSt);setTimeout(fixSt,400);
   if(keep)W.querySelectorAll('.tw').forEach((e,i)=>{if(keep[i])e.scrollLeft=keep[i]});
   if(!noToday&&!same){scrollKey=k;requestAnimationFrame(()=>{
@@ -480,7 +483,7 @@ function renderMonthGrid(){
 function renderMonthStaff(){
   if(!dept(pDept))pDept=(S.depts[0]||{}).id;
   if(!pName||!dept(pDept)){
-    $('mWrap').innerHTML='<div class="mdept" style="padding:14px"><div style="font-weight:700;margin-bottom:8px">ជ្រើសរើសឈ្មោះបុគ្គលិក</div><div class="chips" id="pChips" style="margin-bottom:10px">'+chips(pDept)+'</div><div class="names">'+
+    $('mWrap').innerHTML='<div class="mdept" style="padding:14px"><div style="font-weight:700;margin-bottom:8px">ជ្រើសរើសឈ្មោះបុគ្គលិក</div><div class="names">'+
       ((S.staff[pDept]||[]).map(s=>'<span class="nm" data-pn="'+esc(s.n)+'" style="'+nmSt(pDept,s.n)+'">'+lab(pDept,s.n)+'</span>').join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ — បន្ថែមនៅផ្ទាំង «បុគ្គលិក»</span>')+'</div></div>';
     return}
   const D=dept(pDept),n=new Date(my,mm,0).getDate(),t=noToday?'':ds(new Date()),r=role(D.id,pName),pc=col(D.id,pName)||D.color;let tot=0,dn=0,rows='';const tdy=ds(new Date());watchAtt(my,mm);const A=attCalc(D.id,pName,my+'-'+p2(mm));
@@ -604,7 +607,7 @@ document.addEventListener('click',e=>{const t=e.target;
   if(t.dataset.pstep){const L=(S.staff[pDept]||[]).map(x=>x.n).sort(nameCmp),i=L.indexOf(pName);if(L.length){pName=L[(i+(+t.dataset.pstep)+L.length)%L.length];pEdit=false;renderMonth();scrollTo(0,0)}return}
   if(t.dataset.pback){pName=null;pEdit=false;renderMonth();return}
   if(t.dataset.grid){mview='grid';renderMonth();return}
-  const ch=t.closest('#pChips .chip');if(ch){pDept=ch.dataset.dp;renderMonth();return}
+  const ch=t.closest('#pChips .chip');if(ch){pDept=ch.dataset.dp;pName=null;pEdit=false;renderMonth();return}
   const pn=t.closest('[data-pn]');if(pn){pName=pn.dataset.pn;pEdit=false;renderMonth();return}
   const tg=t.closest('[data-tg]');if(tg){const l=get(tg.dataset.d,tg.dataset.dp,tg.dataset.tg);if(l.includes(pName))fxManualRemove(tg.dataset.d,tg.dataset.dp,tg.dataset.tg,pName);setL(tg.dataset.d,tg.dataset.dp,tg.dataset.tg,l.includes(pName)?l.filter(x=>x!==pName):l.concat(pName));save();renderAll();return}
   if(t.dataset.spv){openSpv();return}
