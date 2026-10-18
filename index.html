@@ -61,7 +61,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .dbox select,.dbox textarea,.dbox input[type=text]{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;width:100%;background:#fff;color:var(--ink)}
 .dt1{font-weight:700;margin-bottom:10px}.nt2{background:#fff8e1;border-radius:8px;padding:5px 9px;margin:4px 0;font-size:13px}
 .nt{font-size:11.5px;color:#6b4e00;background:#fff8e1;border-radius:6px;padding:2px 7px;margin-top:4px}
-.nb2{cursor:pointer;opacity:.4;font-size:12px}.nb2.has{opacity:1;background:#fff3b0;border-radius:6px;padding:1px 6px;font-weight:700;font-size:11.5px}.nb2:hover{opacity:1}.pp[data-pk]{cursor:pointer}
+.nb2{cursor:pointer;opacity:.4;font-size:12px}.nb2.has{opacity:1;background:#fff3b0;border-radius:6px;padding:1px 6px;font-weight:700;font-size:11.5px}.nb2:hover{opacity:1}.pp[data-pk]{cursor:pointer}.gpk{cursor:pointer;text-decoration:underline dotted;padding:0 2px}
 .xg{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}.xf{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:4px;min-width:160px;margin-bottom:6px}
 .xf select,.xf input,.xf textarea{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
 #psheet{display:none}body.psp #app,body.psp .toast,body.psp .dlg{display:none!important}body.psp #psheet{display:block}
@@ -148,7 +148,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <label class="fl" id="ciDeptLbl">ផ្នែក<select id="ciDept"></select></label><label class="fl">ឈ្មោះ<select id="ciName"></select></label>
 <div id="ciCodeBox" style="display:none;margin-top:10px"><label class="fl">🔑 កូដផ្ទាល់ខ្លួន (បញ្ចូលតែលើឧបករណ៍ថ្មី)<input id="ciCode" autocomplete="off" style="text-transform:uppercase"></label></div>
 <div id="ciBell" style="margin-top:10px"></div>
-<label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:13px"><input type="checkbox" id="ciAuto"> 📱 ចងចាំខ្ញុំលើទូរស័ព្ទនេះ — ស្កេនម្ដងទៀតកត់ម៉ោងស្វ័យប្រវត្តិ (ចូល/ចេញ)</label>
+<div style="margin-top:12px;font-size:13px;color:var(--sub)"><input type="checkbox" id="ciAuto" checked style="display:none">📱 ទូរស័ព្ទនេះនឹងចងចាំអ្នក — ស្កេនលើកក្រោយកត់ម៉ោងស្វ័យប្រវត្តិ · <a href="#" id="ciForget" style="color:var(--brand)">មិនមែនខ្ញុំ? ប្ដូរ</a></div>
 <div style="display:flex;gap:10px;margin-top:14px"><button class="btn p" id="ciIn" style="flex:1;padding:12px">✅ ចូលធ្វើការ</button><button class="btn" id="ciOut" style="flex:1;padding:12px">🚪 ចេញ</button></div>
 <div id="ciMsg" style="margin-top:14px;line-height:1.7"></div></div></div>
 <div id="psheet"></div><div class="dlg" id="dlg" style="display:none"><div class="dbox" id="dbox"></div></div><div class="toast" id="toast"></div>
@@ -454,10 +454,10 @@ const nameCmp=(a,b)=>{const la=isLast(a),lb=isLast(b);if(la!==lb)return la?1:-1;
 const nsort=a=>a.slice().sort(nameCmp);
 function sortStaff(){S.depts.forEach(D=>{if(S.staff[D.id])S.staff[D.id].sort((a,b)=>nameCmp(a.n,b.n))})}
 function renderMonthGrid(){
-  const n=new Date(my,mm,0).getDate(),t=noToday?'':ds(new Date()),days=[];
+  const n=new Date(my,mm,0).getDate(),t=noToday?'':ds(new Date()),days=[],nw0=new Date(),started=my*12+mm<=nw0.getFullYear()*12+nw0.getMonth()+1,ge=started&&bEdit;
   for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();days.push({i,d,c:(w==0||w==6?'we ':'')+(d===t?'td':'')})}
   const hf=Math.ceil(n/2),parts=gridSplit?[days.slice(0,hf),days.slice(hf)]:[days];
-  $('mWrap').innerHTML=dChips()+'<div class="no-p" style="color:var(--sub);font-size:12px;margin-bottom:8px">សម្រាប់មើលប៉ុណ្ណោះ — បំពេញវេននៅ «មើលតាមថ្ងៃ (រាយឈ្មោះ)»</div>'+blocks().filter(b=>dayDept==='all'||inBlock(b,dayDept)).map(b=>{
+  $('mWrap').innerHTML=dChips()+'<div class="no-p" style="color:var(--sub);font-size:12px;margin-bottom:8px">'+(started?(bEdit?'ចុចលើវេនរបស់គ្រូពេទ្យ ដើម្បីជំនួស / ដូរវេន / វេនយាមខ្លួនឯង / ផ្សេងៗ':'ចុច ✏️ កែប្រែ ដើម្បីជំនួស / ដូរវេន'):'សម្រាប់មើលប៉ុណ្ណោះ — បំពេញវេននៅ «មើលតាមថ្ងៃ (រាយឈ្មោះ)»')+'</div>'+blocks().filter(b=>dayDept==='all'||inBlock(b,dayDept)).map(b=>{
     const g=b.ds.length>1,D0=b.ds[0];
     const data=b.ds.map(D=>{const names=(S.staff[D.id]||[]).map(s=>s.n);
       days.forEach(x=>D.cols.forEach(c=>get(x.d,D.id,c.id).forEach(nm=>{if(!names.includes(nm))names.push(nm)})));names.sort(nameCmp);return{D,names}});
@@ -466,10 +466,10 @@ function renderMonthGrid(){
         if(g)h+='<tr><td class="nmc subh" colspan="'+(sub.length+1)+'" style="color:'+D.color+'">'+D.icon+' '+esc(D.name)+'</td></tr>';
         o.names.forEach(nm=>{const pc=col(D.id,nm)||D.color;h+='<tr><td class="nmc" style="'+nmSt(D.id,nm)+'">'+lab(D.id,nm)+'</td>'+sub.map(x=>{
           const cs=D.cols.filter(c=>get(x.d,D.id,c.id).includes(nm));
-          return '<td class="'+x.c+'"><div class="gc"'+(cs.length?' style="background:'+pc+';color:'+ink(pc)+'"':'')+'>'+cs.map(c=>esc(c.label)).join('/')+'</div></td>'}).join('')+'</tr>'});
+          return '<td class="'+x.c+'"><div class="gc"'+(cs.length?' style="background:'+pc+';color:'+ink(pc)+'"':'')+'>'+cs.map(c=>ge?'<span class="gpk" data-pk="1" data-n="'+esc(nm)+'" data-d="'+x.d+'" data-dp="'+D.id+'" data-c="'+c.id+'">'+esc(c.label)+'</span>':esc(c.label)).join('/')+'</div></td>'}).join('')+'</tr>'});
         if(!o.names.length)h+='<tr><td class="nmc" colspan="'+(sub.length+1)+'" style="color:var(--sub)">មិនទាន់មានឈ្មោះ — បន្ថែមនៅផ្ទាំង «បុគ្គលិក»</td></tr>'});
       return h+'</tbody></table>'};
-    const dh='<div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span></div>';
+    const dh='<div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span>'+(started?'<span><button class="nb no-p" data-bedit="1">'+(bEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span>':'')+'</div>';
     return parts.map((sub,k)=>(k?'<div class="cut" style="height:'+GAPPX+'px"><div style="border-top:2px dashed #9aa7bd;position:relative;top:50%"></div></div>':'')+'<div class="mdept" data-id="'+b.key+'">'+dh+'<div class="tw">'+tbl(sub)+'</div></div>').join('')}).join('');
 }
 
@@ -819,7 +819,8 @@ function renderCI(){if(!CI)return;const dp=$('ciDept'),nm=$('ciName'),fx=(new UR
   if([...nm.options].some(o=>o.value===nv))nm.value=nv;$('ciNow').textContent=new Date().toLocaleDateString('en-GB',{timeZone:'Asia/Phnom_Penh'});if(!ciAutoDone&&!ciBusy)ciAutoStart()}
 let ciBusy=false,ciAutoDone=false,ciTimer=null;
 const ciMeGet=()=>{try{return JSON.parse(localStorage.getItem('deptCiMe')||'null')}catch(e){return null}};
-function ciRemember(){try{if($('ciAuto').checked){let dpv=$('ciDept').value,n=$('ciName').value;if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}const st=(S.staff[dpv]||[]).find(x=>x.n===n);localStorage.setItem('deptCiMe',JSON.stringify({dp:$('ciDept').value,n:$('ciName').value,k:(st&&st.k)||''}))}else localStorage.removeItem('deptCiMe')}catch(e){}}
+function ciRemember(){try{if(true){let dpv=$('ciDept').value,n=$('ciName').value;if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}const st=(S.staff[dpv]||[]).find(x=>x.n===n);localStorage.setItem('deptCiMe',JSON.stringify({dp:$('ciDept').value,n:$('ciName').value,k:(st&&st.k)||''}))}else localStorage.removeItem('deptCiMe')}catch(e){}}
+$('ciForget').onclick=e=>{e.preventDefault();try{localStorage.removeItem('deptCiMe')}catch(x){}location.reload()};
 $('ciAuto').onchange=()=>{ciRemember();if(!$('ciAuto').checked){clearInterval(ciTimer);if(ciW!==null){navigator.geolocation.clearWatch(ciW);ciW=null;$('ciBell').innerHTML=''}}else ciWatchStart()};
 const ciSel=()=>{let dpv=$('ciDept').value,n=$('ciName').value;if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}return{dpv,n,s:(S.staff[dpv]||[]).find(x=>x.n===n)}};
 const ciBound=st=>{const me=ciMeGet();return !!(me&&st&&me.n&&(me.k||'')===(st.k||'')&&(me.n===st.n||me.n.endsWith('|'+st.n)))};
@@ -864,16 +865,14 @@ async function ciAutoStart(){
   const msg=$('ciMsg');msg.textContent='…';ciWatchStart();
   let t='in',recent=false;
   try{const last=await ciFetchLast(dpv,n);
-    if(last){if(Date.now()-last.ms<120000){recent=true;msg.innerHTML='<b style="color:#0f9d7a">✅ បានកត់រួចហើយ</b> · '+(last.t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+' ម៉ោង '+hhmm(last.ms)}
-      else if(last.t==='in'&&Date.now()-last.ms<20*36e5)t='out'}}
+    if(last&&last.t==='in'&&Date.now()-last.ms<20*36e5)t='out'}
   catch(e){msg.textContent='⚠ '+e.message;return}
-  if(recent)return;
   ciGo(t,true)}
 async function ciGo(t,skip,at){const msg=$('ciMsg');let dpv=$('ciDept').value,n=$('ciName').value;if(ciBusy)return;
   if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}
   const s=(S.staff[dpv]||[]).find(x=>x.n===n);if(!s){msg.textContent='⚠ សូមជ្រើសឈ្មោះ';return}
   if(false){if(($('ciCode').value||'').trim().toUpperCase()!==s.k){msg.innerHTML='<b style="color:#e53935">🔑 សូមបញ្ចូលកូដផ្ទាល់ខ្លួនត្រឹមត្រូវ</b> (សុំពីអ្នកគ្រប់គ្រង)';$('ciCodeBox').style.display='';return}$('ciAuto').checked=true}
-  if(!skip&&!confirm('ចុះឈ្មោះ "'+n+'" '+(t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+' ឥឡូវនេះ?'))return;
+  
   ciBusy=true;msg.textContent='…';
   let geo=null;
   try{ciRemember();
