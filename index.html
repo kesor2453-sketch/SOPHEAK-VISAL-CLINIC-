@@ -7,8 +7,8 @@
 :root{--bg:#f4f6f9;--ink:#1c2430;--sub:#6b7686;--line:#e6e9ef;--brand:#2f6fed;--r:14px;--sh:0 1px 2px rgba(20,25,40,.04),0 8px 24px rgba(20,25,40,.06)}
 *{box-sizing:border-box}body{margin:0;font-family:'Noto Sans Khmer',sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
 #app{max-width:1280px;margin:0 auto;padding:16px 14px 60px}
-h1{font-size:19px;margin:0}.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
-.tabs{display:flex;gap:5px;background:#fff;padding:5px;border-radius:12px;box-shadow:var(--sh)}
+h1{font-size:19px;margin:0}.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;position:sticky;top:0;z-index:30;background:var(--bg);padding:6px 0}#mVBar{position:sticky;top:var(--tt,0px);z-index:25;background:#fff;padding:6px 0;margin-bottom:6px}
+.tabs{display:flex;gap:5px;overflow-x:auto;max-width:100%;background:#fff;padding:5px;border-radius:12px;box-shadow:var(--sh)}
 .tab{padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;color:var(--sub);white-space:nowrap}.tab.on{background:var(--brand);color:#fff}
 .card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:14px}
 .nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
@@ -72,12 +72,12 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 @media print{.psd{break-after:page}.psd:last-child{break-after:auto}.pst thead{display:table-header-group}.pst tr{break-inside:avoid}}
 .ppl .pp{padding:8px 15px;font-size:14px}
 .tw{overflow-x:visible}@media(max-width:900px){.tw{overflow-x:auto}}
-.mdept>.dh{position:sticky;top:var(--t1,0px);z-index:6}
-.mt thead th{position:sticky;top:var(--t2,40px);z-index:3}.mt thead th.nmc{left:0;z-index:7}
+.mdept>.dh{position:sticky;top:calc(var(--b,0px) + var(--t1,0px));z-index:6}
+.mt thead th{position:sticky;top:calc(var(--b,0px) + var(--t2,40px));z-index:3}.mt thead th.nmc{left:0;z-index:7}
 #mWrap.wchips{--t1:48px;--t2:90px}
 .mdept>.dh{box-shadow:0 2px 6px rgba(20,25,40,.18)}
 .dhd{position:sticky;top:0;z-index:5;background:#fff;padding:4px 0}
-.gridv .tw{overflow:auto;max-height:calc(100vh - 150px);cursor:grab;-webkit-overflow-scrolling:touch}.gridv .tw.dragging{cursor:grabbing;user-select:none}.gridv .mt thead th{top:0}.gridv .mt{width:max-content;min-width:100%}
+.gridv .tw{overflow:auto;max-height:calc(100vh - 150px - var(--b,0px));cursor:grab;-webkit-overflow-scrolling:touch}.gridv .tw.dragging{cursor:grabbing;user-select:none}.gridv .mt thead th{top:0}.gridv .mt{width:max-content;min-width:100%}
 @media print{.gridv .tw{overflow:visible!important;max-height:none!important}}.fitp .gridv .tw,.fitp.gridv .tw{overflow:visible!important;max-height:none!important}
 .tcb{color:#1565c0!important;font-weight:700}.tcr{color:#e53935!important;font-weight:700}.mt th.pcx,.mt td.pcx{text-align:center}.pst th,.pst td{text-align:center}
 .dhd{display:flex;align-items:stretch}.dhsp{width:190px;flex-shrink:0}.dhd .dcols{flex:1}.dhd .dhc{font-weight:700;text-align:center;background:#fff;border:0;border-radius:10px;padding:8px;box-shadow:var(--sh);margin:0 4px}
@@ -116,7 +116,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 @media print{.mdept>.dh,.mt thead th,.dhd,.mt th.nmc{position:static!important}.mt thead{display:table-header-group}.mt tr{break-inside:avoid}.nop{display:none!important}.dr,.mdept{break-inside:avoid}@page{size:landscape;margin:8mm}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}.top,.nav,.toast,.chips,.no-p,.pop{display:none!important}.card{box-shadow:none;padding:0;margin:0}#app{max-width:none;padding:0}thead{display:table-header-group}.tb{display:none!important}.mt tr.td td,.mt td.td{background:transparent!important}.mt th.td{background:#f7f8fb!important;color:var(--sub)!important}.mt td.nmc.td{background:#fff!important;box-shadow:none!important;font-weight:700}.mt tr.td.we td,.mt td.td.we{background:#ffeaea!important}.mt td.nmc.we{background:#f27b7b!important;color:#fff!important}.mt th.we{background:#f27b7b!important;color:#fff!important}.mdept>.dh,.mt thead th,.mt .nmc,.dhd{position:static!important}.mt thead{display:table-header-group}}
 </style></head><body><div id="app">
 <div class="top"><h1>កាលវិភាគតាមផ្នែក</h1>
-<div class="tabs"><div class="tab on" data-p="day">ប្រចាំថ្ងៃ</div><div class="tab" data-p="month">ប្រចាំខែ</div><div class="tab" data-p="staff">បុគ្គលិក</div><div class="tab" data-p="count">ចំនួនវេន</div><div class="tab" data-p="edit">កែប្រែ</div></div></div>
+<div class="tabs"><div class="tab on" data-p="day">ប្រចាំថ្ងៃ</div><div class="tab" data-p="month">ប្រចាំខែ</div><div class="tab" data-p="staff">បុគ្គលិក</div><div class="tab" data-p="count">ចំនួនវេន</div><div class="tab" data-p="edit">កែប្រែ</div><div class="tab" data-p="qr">📲 QR</div></div></div>
 
 <div class="pn on" id="p-day"><div class="card">
 <div class="nav"><button class="btn" id="dPrev">‹</button><div class="lbl" id="dLbl"></div><button class="btn" id="dNext">›</button>
@@ -126,7 +126,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <div class="pn" id="p-month"><div class="card">
 <div class="nav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
 <button class="btn" id="mToday">ខែនេះ</button><button class="btn no-p" data-spv="1">⬇ ទាញវេនពីវេប SPV</button><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
-<span id="mViews" class="mvs"><button class="btn" id="mv1" data-v="day" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">មើលតាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2" data-v="staff" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">បំពេញវេន (តាមបុគ្គលិក)</button><button class="btn" id="mv3" data-v="grid" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">កាឡោនដើម (ទាំងអស់)</button><span id="mvArrows" class="no-p"><button class="btn" data-vmove="-1" title="រំកិលទៅមុខ">◀</button><button class="btn" data-vmove="1" title="រំកិលទៅក្រោយ">▶</button></span></span></div>
+</div><div id="mVBar" class="no-p"><span id="mViews" class="mvs"><button class="btn" id="mv1" data-v="day" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">មើលតាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2" data-v="staff" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">បំពេញវេន (តាមបុគ្គលិក)</button><button class="btn" id="mv3" data-v="grid" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">កាឡោនដើម (ទាំងអស់)</button><span id="mvArrows" class="no-p"><button class="btn" data-vmove="-1" title="រំកិលទៅមុខ">◀</button><button class="btn" data-vmove="1" title="រំកិលទៅក្រោយ">▶</button></span></span></div>
 <div id="mWrap"></div></div></div>
 
 <div class="pn" id="p-staff"><div class="card"><div class="ch"><b>គ្រប់គ្រងផ្នែក</b><button class="btn" type="button" id="depEditBtn"></button></div>
@@ -138,13 +138,13 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <form class="add" id="sForm"><input id="sNew" placeholder="ឈ្មោះ — ឧ. Dr.Sok Dara"><select id="sRole" class="btn" title="តួនាទី (ស្រេចចិត្ត)"></select><input type="color" id="sColor" value="#4f8df5" title="ព័ណ៌ប្រអប់ឈ្មោះ" style="flex:0 0 46px;padding:2px;min-width:46px"><button class="btn p">+ បន្ថែម</button></form></div><div class="card"><div class="ch"><b>ម៉ោងធ្វើការ (ថ្ងៃថេរ) <small id="fxHint"></small></b><button class="btn" type="button" id="fxEditBtn"></button></div>
 <div class="chips" id="fxChips" style="margin-bottom:8px"></div><div id="fxList"></div>
 <div class="nav" style="margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line)"><button class="btn" id="fxPrev">‹</button><div class="lbl" id="fxLbl"></div><button class="btn" id="fxNext">›</button><button class="btn p" id="fxApply">⚡ បំពេញខែនេះតាមម៉ោងធ្វើការ</button></div>
-<small>បំពេញតែវេនដែលនៅទំនេរ មិនលុបឬប៉ះពាល់វេនដែលមានស្រាប់ទេ។</small></div><div class="card"><div class="ch"><b>📲 QR ចុះវត្តមាន <small>(ម៉ោងចូល / ចេញ)</small></b></div><div id="qrBox"></div></div>
+<small>បំពេញតែវេនដែលនៅទំនេរ មិនលុបឬប៉ះពាល់វេនដែលមានស្រាប់ទេ។</small></div>
 </div>
 
 
 
 <div class="pn" id="p-count"><div class="card"><div class="nav"><button class="btn" id="cPrev">‹</button><div class="lbl" id="cLbl"></div><button class="btn" id="cNext">›</button></div><div id="cWrap"></div></div></div>
-<div class="pn" id="p-edit"><div class="card" id="eCard"></div></div></div><div id="ciApp"><div class="cibox"><h2 style="margin:0 0 4px" id="ciTitle">⏱️ ចុះវត្តមាន</h2><div style="color:var(--sub);font-size:12.5px;margin-bottom:12px" id="ciNow"></div>
+<div class="pn" id="p-edit"><div class="card" id="eCard"></div></div><div class="pn" id="p-qr"><div class="card"><div class="ch"><b>📲 QR ចុះវត្តមាន <small>(ម៉ោងចូល / ចេញ)</small></b></div><div id="qrBox"></div></div></div></div><div id="ciApp"><div class="cibox"><h2 style="margin:0 0 4px" id="ciTitle">⏱️ ចុះវត្តមាន</h2><div style="color:var(--sub);font-size:12.5px;margin-bottom:12px" id="ciNow"></div>
 <label class="fl" id="ciDeptLbl">ផ្នែក<select id="ciDept"></select></label><label class="fl">ឈ្មោះ<select id="ciName"></select></label>
 <div id="ciCodeBox" style="display:none;margin-top:10px"><label class="fl">🔑 កូដផ្ទាល់ខ្លួន (បញ្ចូលតែលើឧបករណ៍ថ្មី)<input id="ciCode" autocomplete="off" style="text-transform:uppercase"></label></div>
 <div id="ciBell" style="margin-top:10px"></div>
@@ -331,7 +331,7 @@ $('mViews').addEventListener('dragover',e=>{if(vDrag)e.preventDefault()});
 $('mViews').addEventListener('drop',e=>{e.preventDefault();const b=e.target.closest('[data-v]');if(!b||!vDrag||b.dataset.v===vDrag){vDrag=null;return}
   const f=vOrd.indexOf(vDrag),t=vOrd.indexOf(b.dataset.v);vOrd.splice(f,1);vOrd.splice(t,0,vDrag);vDrag=null;saveV();applyVOrd()});
 applyVOrd();
-const dChips=()=>'<div class="chips no-p" style="margin-bottom:12px;position:sticky;top:0;z-index:5;background:#fff;padding:6px 0"><div class="chip" data-dd="all" style="'+(dayDept==='all'?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">ទាំងអស់</div>'+blocks().map(b=>'<div class="chip" data-dd="'+b.key+'" style="'+(dayDept!=='all'&&inBlock(b,dayDept)?'background:'+b.ds[0].color+';color:#fff;border-color:'+b.ds[0].color:'')+'">'+bName(b)+'</div>').join('')+'</div>';
+const dChips=()=>'<div class="chips no-p" style="margin-bottom:12px;position:sticky;top:var(--b,0px);z-index:5;background:#fff;padding:6px 0"><div class="chip" data-dd="all" style="'+(dayDept==='all'?'background:var(--brand);color:#fff;border-color:var(--brand)':'')+'">ទាំងអស់</div>'+blocks().map(b=>'<div class="chip" data-dd="'+b.key+'" style="'+(dayDept!=='all'&&inBlock(b,dayDept)?'background:'+b.ds[0].color+';color:#fff;border-color:'+b.ds[0].color:'')+'">'+bName(b)+'</div>').join('')+'</div>';
 const getN=(d,dp,c)=>((S.notes||{})[d]||{})[key(dp,c)]||[];
 const addN=(d,dp,c,x)=>{S.notes=S.notes||{};const o=S.notes[d]=S.notes[d]||{},k=key(dp,c);const ar=o[k]=o[k]||[];if(ar.some(q=>q.x===x))return;ar.push({t:Date.now(),x})};
 const noteBadge=(d,dp,c)=>{const L=getN(d,dp,c);return L.length?'<span class="nb2 has no-p" data-note="1" data-d="'+d+'" data-dp="'+dp+'" data-c="'+c+'" title="'+esc(L.map(x=>x.x).join('\n'))+'">📝'+L.length+'</span>':''};
@@ -433,10 +433,12 @@ function renderMonthDay(){
   document.addEventListener('mouseup',()=>{if(el)el.classList.remove('dragging');el=null});
   ['touchstart','wheel'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true},{passive:true}));document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true});
 })();
+function stk(){const r=document.documentElement.style,t=document.querySelector('.top'),v=$('mVBar'),th=t?t.offsetHeight+14:0,vh=(v&&v.offsetParent)?v.offsetHeight+6:0;r.setProperty('--tt',(t?t.offsetHeight:0)+'px');r.setProperty('--b',(th-14+vh)+'px')}
+addEventListener('resize',stk);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(stk);
 function renderMonth(){
   $('mLbl').textContent=MN[mm-1]+' '+my;$('mWrap').className=(mview==='staff'?'':'wchips')+(mview==='grid'?' gridv':'');$('mv1').className='btn'+(mview==='day'?' p':'');$('mv2').className='btn'+(mview==='staff'?' p':'');$('mv3').className='btn'+(mview==='grid'?' p':'');
   if(dayDept!=='all'&&!dept(dayDept))dayDept='all';
-  const fixSt=()=>{const W=$('mWrap'),c=[...W.children].find(e=>e.classList&&e.classList.contains('chips')),h1=c?c.offsetHeight:0,dh=W.querySelector('.mdept>.dh');W.style.setProperty('--t1',h1+'px');W.style.setProperty('--t2',(h1+(dh?dh.offsetHeight:0))+'px')};
+  const fixSt=()=>{stk();const W=$('mWrap'),c=[...W.children].find(e=>e.classList&&e.classList.contains('chips')),h1=c?c.offsetHeight:0,dh=W.querySelector('.mdept>.dh');W.style.setProperty('--t1',h1+'px');W.style.setProperty('--t2',(h1+(dh?dh.offsetHeight:0))+'px')};
   const k=my+'-'+mm+'|'+mview+'|'+(mview==='staff'?pDept+'|'+pName:dayDept),same=k===scrollKey,W=$('mWrap'),keep=(mview==='grid'&&same)?[...W.querySelectorAll('.tw')].map(e=>e.scrollLeft):null;
   const r=mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
   fixSt();requestAnimationFrame(fixSt);setTimeout(fixSt,400);
@@ -479,13 +481,13 @@ function renderMonthStaff(){
     $('mWrap').innerHTML='<div class="mdept" style="padding:14px"><div style="font-weight:700;margin-bottom:8px">ជ្រើសរើសឈ្មោះបុគ្គលិក</div><div class="chips" id="pChips" style="margin-bottom:10px">'+chips(pDept)+'</div><div class="names">'+
       ((S.staff[pDept]||[]).map(s=>'<span class="nm" data-pn="'+esc(s.n)+'" style="'+nmSt(pDept,s.n)+'">'+lab(pDept,s.n)+'</span>').join('')||'<span style="color:var(--sub)">មិនទាន់មានឈ្មោះ — បន្ថែមនៅផ្ទាំង «បុគ្គលិក»</span>')+'</div></div>';
     return}
-  const D=dept(pDept),n=new Date(my,mm,0).getDate(),t=noToday?'':ds(new Date()),r=role(D.id,pName),pc=col(D.id,pName)||D.color;let tot=0,rows='';watchAtt(my,mm);const A=attCalc(D.id,pName,my+'-'+p2(mm));
+  const D=dept(pDept),n=new Date(my,mm,0).getDate(),t=noToday?'':ds(new Date()),r=role(D.id,pName),pc=col(D.id,pName)||D.color;let tot=0,dn=0,rows='';const tdy=ds(new Date());watchAtt(my,mm);const A=attCalc(D.id,pName,my+'-'+p2(mm));
   for(let i=1;i<=n;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),cl=(w==0||w==6?'we ':'')+(d===t?'td':'');
-    const on=D.cols.filter(c=>get(d,D.id,c.id).includes(pName));tot+=on.length;
+    const on=D.cols.filter(c=>get(d,D.id,c.id).includes(pName));tot+=on.length;if(d<=tdy)dn+=on.length;
     rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
       return '<td><div class="tg'+(pEdit?'':' lk')+'"'+(pEdit?' data-tg="'+c.id+'" data-d="'+d+'" data-dp="'+D.id+'"':'')+(a?' style="background:'+pc+';color:'+ink(pc)+';border:1px solid '+pc+'">✓':'>')+'</div></td>'}).join('')+(pShow?pcols().map(x=>pcCell(D.id,pName,d,x,A,on.map(c=>getN(d,D.id,c.id).map(y=>y.x).join(' ; ')).filter(Boolean).join(' ; '),pEdit)).join(''):'')+'</tr>'}
   $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">'+D.icon+' '+esc(D.name)+' · <button class="nb no-p" data-pstep="-1" title="ឈ្មោះមុន">◀</button><b>'+esc(pName)+'</b><button class="nb no-p" data-pstep="1" title="ឈ្មោះបន្ទាប់">▶</button> · សរុប '+tot+' វេន</span><span>'+noonBtn(D)+' <button class="nb no-p" data-pshow="1">'+(pShow?'🙈 លាក់ជួរព្រីន':'👁 បង្ហាញជួរព្រីន')+'</button> <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span></div>'+(pShow?pcBlock():'')+'<div class="tw"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
-    D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+(pShow?pcols().map(x=>'<th class="pcx">'+esc(x)+'</th>').join(''):'')+'</tr></thead><tbody>'+rows+'</tbody><tfoot class="no-p"><tr><td colspan="'+(1+D.cols.length+(pShow?pcols().length:0))+'" style="text-align:left;font-weight:700;background:#f7f8fb;padding:10px 12px">សរុប '+tot+' វេន · '+hrsSum(tot,D.id,pName,my+'-'+p2(mm),A,n)+'</td></tr></tfoot></table></div></div>';
+    D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+(pShow?pcols().map(x=>'<th class="pcx">'+esc(x)+'</th>').join(''):'')+'</tr></thead><tbody>'+rows+'</tbody><tfoot class="no-p"><tr><td colspan="'+(1+D.cols.length+(pShow?pcols().length:0))+'" style="text-align:left;font-weight:700;background:#f7f8fb;padding:10px 12px">សរុប '+tot+' វេន · '+hrsSum(tot,dn,D.id,pName,my+'-'+p2(mm),A,n)+'</td></tr><tr><td colspan="'+(1+D.cols.length+(pShow?pcols().length:0))+'" style="text-align:left;background:#f7f8fb;padding:6px 12px;color:var(--sub)">⏱ ម៉ោងពីការស្កេន (ចំនួនម៉ោង) សរុប៖ <b>'+monthHrs(D.id,pName,my+'-'+p2(mm),A,n)+'</b></td></tr></tfoot></table></div></div>';
 }
 
 /* ===== ទាញវេនពីវេប SPV (Firebase project spv-schedule) ===== */
@@ -778,7 +780,7 @@ const stOf=(dp,nm)=>((S.staff[dp]||[]).find(x=>x.n===nm)||{}).st||'07:00';
    (in = the person's standard start time, out = the same time next day, i.e. a 24 h work-day) */
 function attCalc(dp,nm,ym){const T=stOf(dp,nm),tOff=(+T.split(':')[0]*60+(+T.split(':')[1]||0))*60000,all=[],seen={};
   Object.keys(ATTM).forEach(k=>(ATTM[k]||[]).forEach(x=>{if(x.dp===dp&&x.n===nm&&!seen[x.t+x.ts]){seen[x.t+x.ts]=1;all.push(x)}}));
-  all.sort((a,b)=>a.ts-b.ts);const ss=[];let op=null;
+  all.sort((a,b)=>a.ts-b.ts);for(let i=all.length-2;i>=0;i--){if(all[i].t===all[i+1].t&&all[i+1].ts-all[i].ts<12*36e5)all.splice(i,1)}const ss=[];let op=null;
   all.forEach(x=>{if(x.t==='in'){if(op)ss.push(op);op={i:x.ts,o:null}}else if(op&&x.ts-op.i<=5*864e5){op.o=x.ts;ss.push(op);op=null}else ss.push({i:null,o:x.ts})});if(op)ss.push(op);
   const m={},put=(d,inS,outS,ms,inMs,outMs)=>{const o=m[d]=m[d]||{inS:null,outS:null,ms:0,in:null,out:null};
     if(inS&&(o.in==null||inMs<o.in)){o.inS=inS;o.in=inMs}if(outS&&(o.out==null||outMs>o.out)){o.outS=outS;o.out=outMs}o.ms+=ms};
@@ -800,8 +802,8 @@ function tcCls(dp,nm,d,x,A,nts){if(x!=='ម៉ោងចូល'&&x!=='ម៉ោ�
   if(x==='ម៉ោងចូល'){if(!ok(a))return '';let df=(hmN(a)-hmN(stOf(dp,nm))+1440)%1440;if(df>720)df-=1440;return df<=0?' tcb':' tcr'}
   if(!ok(a)||!ok(b))return '';return (hmN(b)-hmN(a)+1440)%1440>=720?' tcb':' tcr'}
 const SHIFT_H=12;
-function hrsSum(shifts,dp,nm,ym,A,nd){const done=monthMin(dp,nm,ym,A,nd),need=shifts*SHIFT_H*60,left=need-done;
-  return 'ត្រូវធ្វើ '+hrsM(need)+' · បានធ្វើ '+hrsM(done)+' · '+(left>=0?'សល់ '+hrsM(left):'លើស '+hrsM(-left))}
+function hrsSum(shifts,ds0,dp,nm,ym,A,nd){const done=ds0*SHIFT_H*60,need=shifts*SHIFT_H*60,left=need-done;
+  return 'ត្រូវធ្វើ '+hrsM(need)+' · បានធ្វើ '+hrsM(done)+' ('+ds0+' វេន) · '+(left>=0?'សល់ '+hrsM(left):'លើស '+hrsM(-left))}
 function monthMin(dp,nm,ym,A,nd){let m=0;for(let i=1;i<=nd;i++){const q=/^(\d+)[:h](\d{2})$/.exec(effVals(dp,nm,ym+'-'+p2(i),A,'')('ចំនួនម៉ោង')||'');if(q)m+=+q[1]*60+ +q[2]}return m}
 function monthHrs(dp,nm,ym,A,nd){let m=0;for(let i=1;i<=nd;i++){const q=/^(\d+)[:h](\d{2})$/.exec(effVals(dp,nm,ym+'-'+p2(i),A,'')('ចំនួនម៉ោង')||'');if(q)m+=+q[1]*60+ +q[2]}return hrsM(m)}
 function pcCell(dp,nm,d,x,A,nts,edit){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{};
@@ -863,11 +865,8 @@ async function ciAutoStart(){
   nm.value=me.n;$('ciAuto').checked=true;ciShowCode();
   const o=ciSel(),dpv=o.dpv,n=o.n;if(false){$('ciMsg').innerHTML='<b style="color:#e53935">🔑 កូដបានប្ដូរ — សូមបញ្ចូលកូដថ្មី ឬបើកតំណថ្មី</b>';ciShowCode();return}
   const msg=$('ciMsg');msg.textContent='…';ciWatchStart();
-  let t='in',recent=false;
-  try{const last=await ciFetchLast(dpv,n);
-    if(last&&last.t==='in'&&Date.now()-last.ms<20*36e5)t='out'}
-  catch(e){msg.textContent='⚠ '+e.message;return}
-  ciGo(t,true)}
+  try{const last=await ciFetchLast(dpv,n);msg.innerHTML=last?'កំណត់ត្រាចុងក្រោយ៖ <b>'+(last.t==='in'?'ចូលធ្វើការ':'ចេញពីការងារ')+'</b> ម៉ោង '+hhmm(last.ms)+'<br>សូមចុច ចូល ឬ ចេញ':'សូមចុច ចូល ឬ ចេញ'}
+  catch(e){msg.textContent='សូមចុច ចូល ឬ ចេញ'}}
 async function ciGo(t,skip,at){const msg=$('ciMsg');let dpv=$('ciDept').value,n=$('ciName').value;if(ciBusy)return;
   if($('ciName').dataset.m==='1'){const q=n.indexOf('|');dpv=n.slice(0,q);n=n.slice(q+1)}
   const s=(S.staff[dpv]||[]).find(x=>x.n===n);if(!s){msg.textContent='⚠ សូមជ្រើសឈ្មោះ';return}
