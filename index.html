@@ -321,7 +321,8 @@ function addEdit(el){
 $('mPrev').onclick=()=>{bEdit=false;mm--;if(mm<1){mm=12;my--}renderMonth()};$('mNext').onclick=()=>{bEdit=false;mm++;if(mm>12){mm=1;my++}renderMonth()};
 $('mToday').onclick=()=>{bEdit=false;const n=new Date();my=n.getFullYear();mm=n.getMonth()+1;renderMonth()};
 const sh=c=>({c1:'ព',c2:'រ',c3:'យ'}[c.id]||c.label.charAt(0));
-$('mv1').onclick=()=>{mview='day';renderMonth()};$('mv2').onclick=()=>{mview='staff';pName=null;pEdit=false;renderMonth()};$('mv3').onclick=()=>{mview='grid';renderMonth()};
+$('mv1').onclick=()=>{mview='day';renderMonth()};function pPick(dp){const L=(S.staff[dp]||[]).map(x=>x.n).sort(nameCmp);if(!L.length)return null;try{const q=JSON.parse(localStorage.getItem('deptPLast')||'{}');if(q[dp]&&L.includes(q[dp]))return q[dp];const m=JSON.parse(localStorage.getItem('deptCiMe')||'null');if(m&&m.n){const n=m.n.indexOf('|')>=0?m.n.slice(m.n.indexOf('|')+1):m.n;if(L.includes(n))return n}}catch(e){}return L[0]}
+$('mv2').onclick=()=>{mview='staff';pEdit=false;if(!dept(pDept))pDept=(S.depts[0]||{}).id;if(!pName||!(S.staff[pDept]||[]).some(x=>x.n===pName))pName=pPick(pDept);renderMonth()};$('mv3').onclick=()=>{mview='grid';renderMonth()};
 let vOrd=['day','staff','grid'];try{const o=JSON.parse(localStorage.getItem('deptViewOrder'));if(Array.isArray(o)&&o.length===3&&['day','staff','grid'].every(x=>o.includes(x)))vOrd=o}catch(e){}
 const saveV=()=>{try{localStorage.setItem('deptViewOrder',JSON.stringify(vOrd))}catch(e){}};
 function applyVOrd(){const b=$('mViews');vOrd.forEach(v=>b.appendChild(b.querySelector('[data-v="'+v+'"]')));b.appendChild($('mvArrows'))}
@@ -442,6 +443,7 @@ function renderMonth(){
   if(dayDept!=='all'&&!dept(dayDept))dayDept='all';
   const fixSt=()=>{stk();const W=$('mWrap'),c=[...W.children].find(e=>e.classList&&e.classList.contains('chips')),h1=c?c.offsetHeight:0,dh=W.querySelector('.mdept>.dh');W.style.setProperty('--t1',h1+'px');W.style.setProperty('--t2',(h1+(dh?dh.offsetHeight:0))+'px')};
   const k=my+'-'+mm+'|'+mview+'|'+(mview==='staff'?pDept+'|'+pName:dayDept),same=k===scrollKey,W=$('mWrap'),keep=(mview==='grid'&&same)?[...W.querySelectorAll('.tw')].map(e=>e.scrollLeft):null;
+  if(mview==='staff'&&pName&&pDept){try{const q=JSON.parse(localStorage.getItem('deptPLast')||'{}');q[pDept]=pName;localStorage.setItem('deptPLast',JSON.stringify(q))}catch(e){}}
   $('mVBar').appendChild($('mViews'));
   const r=mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
   if(mview==='staff')$('mWrap').insertAdjacentHTML('afterbegin','<div class="chips no-p stk" id="pChips" style="position:sticky;top:var(--b,0px);z-index:5;background:#fff">'+chips(pDept)+'</div>');
@@ -491,7 +493,7 @@ function renderMonthStaff(){
     const on=D.cols.filter(c=>get(d,D.id,c.id).includes(pName));tot+=on.length;if(d<=tdy)dn+=on.length;
     rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
       return '<td><div class="tg'+(pEdit?'':' lk')+'"'+(pEdit?' data-tg="'+c.id+'" data-d="'+d+'" data-dp="'+D.id+'"':'')+(a?' style="background:'+pc+';color:'+ink(pc)+';border:1px solid '+pc+'">✓':'>')+'</div></td>'}).join('')+(pShow?pcols().map(x=>pcCell(D.id,pName,d,x,A,on.map(c=>getN(d,D.id,c.id).map(y=>y.x).join(' ; ')).filter(Boolean).join(' ; '),pEdit)).join(''):'')+'</tr>'}
-  $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">'+D.icon+' '+esc(D.name)+' · <button class="nb no-p" data-pstep="-1" title="ឈ្មោះមុន">◀</button><b>'+esc(pName)+'</b><button class="nb no-p" data-pstep="1" title="ឈ្មោះបន្ទាប់">▶</button> · សរុប '+tot+' វេន</span><span>'+noonBtn(D)+' <button class="nb no-p" data-pshow="1">'+(pShow?'🙈 លាក់ជួរព្រីន':'👁 បង្ហាញជួរព្រីន')+'</button> <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span></div>'+(pShow?pcBlock():'')+'<div class="tw"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
+  $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">'+D.icon+' '+esc(D.name)+' · <button class="nb no-p" data-pstep="-1" title="ឈ្មោះមុន">◀</button><b data-pback="1" style="cursor:pointer" title="ចុចដើម្បីជ្រើសឈ្មោះផ្សេង">'+esc(pName)+'</b><button class="nb no-p" data-pstep="1" title="ឈ្មោះបន្ទាប់">▶</button> · សរុប '+tot+' វេន</span><span>'+noonBtn(D)+' <button class="nb no-p" data-pshow="1">'+(pShow?'🙈 លាក់ជួរព្រីន':'👁 បង្ហាញជួរព្រីន')+'</button> <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span></div>'+(pShow?pcBlock():'')+'<div class="tw"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
     D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+(pShow?pcols().map(x=>'<th class="pcx">'+esc(x)+'</th>').join(''):'')+'</tr></thead><tbody>'+rows+'</tbody><tfoot class="no-p"><tr><td colspan="'+(1+D.cols.length+(pShow?pcols().length:0))+'" style="text-align:left;font-weight:700;background:#f7f8fb;padding:10px 12px">សរុប '+tot+' វេន · '+hrsSum(tot,dn,D.id,pName,my+'-'+p2(mm),A,n)+'</td></tr><tr><td colspan="'+(1+D.cols.length+(pShow?pcols().length:0))+'" style="text-align:left;background:#f7f8fb;padding:6px 12px;color:var(--sub)">⏱ ម៉ោងពីការស្កេន (ចំនួនម៉ោង) សរុប៖ <b>'+monthHrs(D.id,pName,my+'-'+p2(mm),A,n)+'</b></td></tr></tfoot></table></div></div>';
 }
 
@@ -607,7 +609,7 @@ document.addEventListener('click',e=>{const t=e.target;
   if(t.dataset.pstep){const L=(S.staff[pDept]||[]).map(x=>x.n).sort(nameCmp),i=L.indexOf(pName);if(L.length){pName=L[(i+(+t.dataset.pstep)+L.length)%L.length];pEdit=false;renderMonth();scrollTo(0,0)}return}
   if(t.dataset.pback){pName=null;pEdit=false;renderMonth();return}
   if(t.dataset.grid){mview='grid';renderMonth();return}
-  const ch=t.closest('#pChips .chip');if(ch){pDept=ch.dataset.dp;pName=null;pEdit=false;renderMonth();return}
+  const ch=t.closest('#pChips .chip');if(ch){pDept=ch.dataset.dp;pName=pPick(pDept);pEdit=false;renderMonth();return}
   const pn=t.closest('[data-pn]');if(pn){pName=pn.dataset.pn;pEdit=false;renderMonth();return}
   const tg=t.closest('[data-tg]');if(tg){const l=get(tg.dataset.d,tg.dataset.dp,tg.dataset.tg);if(l.includes(pName))fxManualRemove(tg.dataset.d,tg.dataset.dp,tg.dataset.tg,pName);setL(tg.dataset.d,tg.dataset.dp,tg.dataset.tg,l.includes(pName)?l.filter(x=>x!==pName):l.concat(pName));save();renderAll();return}
   if(t.dataset.spv){openSpv();return}
