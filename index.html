@@ -229,8 +229,8 @@ document.addEventListener('dragstart',e=>{const c=e.target.closest&&e.target.clo
 document.addEventListener('dragover',e=>{if(pcDrag!==null)e.preventDefault()});
 document.addEventListener('drop',e=>{if(pcDrag===null)return;e.preventDefault();const c=e.target.closest&&e.target.closest('[data-pcren]'),f=pcDrag;pcDrag=null;if(!c)return;const t=+c.dataset.pcren;if(t===f)return;
   const L=pcols().slice(),m=L.splice(f,1)[0];L.splice(t,0,m);S.pcols=L;save();renderMonth()});
-function workCount(D,nm){const nd=new Date(my,mm,0).getDate(),per={};let tot=0;D.cols.forEach(c=>per[c.id]=0);
-  for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i);D.cols.forEach(c=>{if(get(d,D.id,c.id).includes(nm)){per[c.id]++;tot++}})}return{per,tot}}
+function workCount(D,nm){const nd=new Date(my,mm,0).getDate(),per={},td0=ds(new Date());let tot=0,done=0;D.cols.forEach(c=>per[c.id]=0);
+  for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i);D.cols.forEach(c=>{if(get(d,D.id,c.id).includes(nm)){per[c.id]++;tot++;if(d<=td0)done++}})}return{per,tot,done}}
 let noToday=false,ORI='auto',gridSplit=false,SPLIT=true,GAPPX=32;try{const o=JSON.parse(localStorage.getItem('deptPrintOpt')||'{}');if(typeof o.split==='boolean')SPLIT=o.split;if(typeof o.gap==='number'&&o.gap>=0&&o.gap<=300)GAPPX=o.gap}catch(e){}
 const savePO=()=>{try{localStorage.setItem('deptPrintOpt',JSON.stringify({split:SPLIT,gap:GAPPX}))}catch(e){}};try{const v=localStorage.getItem('deptPrintOri');if(v==='portrait'||v==='landscape')ORI=v}catch(e){}
 const syncOri=()=>document.querySelectorAll('.orsel').forEach(x=>{x.value=ORI});syncOri();
@@ -345,7 +345,7 @@ function renderDlg(){
   if(!M)return;$('dbox').classList.remove('wide');if(M.mode==='gprint'){renderGprint();return}const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
   const foot=ok=>'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn" data-dclose="1">បិទ</button><button class="btn p" data-dok="1">'+ok+'</button></div>';
   if(M.mode==='print'){const nm=M.v.slice(M.v.indexOf('|')+1),sh=D.cols.map(c=>c.label).join(' / '),wk=workCount(D,nm),wt=wk.tot+' វេន ('+D.cols.map(c=>c.label+' '+wk.per[c.id]).join(' · ')+')';
-    B.innerHTML='<div class="dt1">🖨️ ព្រីនប្រចាំខែ · '+esc(nm)+' · '+MN[mm-1]+' '+my+'</div><div style="margin:4px 0 14px;line-height:1.7">ចង់ព្រីនបន្ថែមជួរកាឡោន <b>'+esc(sh)+'</b> (ដាក់ ✓ ត្រង់វេនដែលគាត់យាម) ដែរឬទេ?</div><div style="margin:-6px 0 12px;font-weight:600">ចំនួនធ្វើការ៖ '+esc(wt)+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" data-dclose="1">បោះបង់</button><button class="btn" data-dprint="plain">ព្រីនធម្មតា</button><button class="btn p" data-dprint="cols">ព្រីន + ជួរ '+esc(sh)+' + ចំនួនធ្វើការ</button></div>';return}
+    B.innerHTML='<div class="dt1">🖨️ ព្រីនប្រចាំខែ · '+esc(nm)+' · '+MN[mm-1]+' '+my+'</div><div style="margin:4px 0 14px;line-height:1.7">ចង់ព្រីនបន្ថែមជួរកាឡោន <b>'+esc(sh)+'</b> (ដាក់ ✓ ត្រង់វេនដែលគាត់យាម) ដែរឬទេ?</div><div style="margin:-6px 0 12px;font-weight:600">ចំនួនធ្វើការ៖ '+esc(wt)+'</div><div style="margin:-6px 0 12px;font-weight:600">'+esc('សរុប '+wk.tot+' វេន · '+hrsSum(wk.tot,wk.done,D.id,nm,'',null,0))+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" data-dclose="1">បោះបង់</button><button class="btn" data-dprint="plain">ព្រីនធម្មតា</button><button class="btn p" data-dprint="cols">ព្រីន + ជួរ '+esc(sh)+' + ចំនួនធ្វើការ</button></div>';return}
   if(M.mode==='fill'){const l=get(M.d,D.id,M.c),av=(S.staff[D.id]||[]).map(x=>x.n).filter(x=>!l.includes(x));
     B.innerHTML='<div class="dt1">'+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div><label class="fl">គ្រូពេទ្យ<select id="dSel">'+(av.length?mopt(av.map(x=>[x,x]),''):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select></label><label class="fl">ឬវាយឈ្មោះថ្មី<input id="dNm" type="text" placeholder="ឈ្មោះ..."></label>'+foot('✓ បំពេញ');return}
   if(M.mode==='note'){const L=getN(M.d,M.dp,M.c);
@@ -482,6 +482,10 @@ function renderMonthGrid(){
     return parts.map((sub,k)=>(k?'<div class="cut" style="height:'+GAPPX+'px"><div style="border-top:2px dashed #9aa7bd;position:relative;top:50%"></div></div>':'')+'<div class="mdept" data-id="'+b.key+'">'+dh+'<div class="tw">'+tbl(sub)+'</div></div>').join('')}).join('');
 }
 
+function statFoot(D,tot,dn,A,n){const sty='text-align:left;font-weight:700;background:#f7f8fb;padding:10px 12px',ym=my+'-'+p2(mm),txt='សរុប '+tot+' វេន · '+hrsSum(tot,dn,D.id,pName,ym,A,n),sc=monthHrs(D.id,pName,ym,A,n),pc=pcols(),ix=pShow?pc.indexOf('ចំនួនម៉ោង'):-1,lead=1+D.cols.length;
+  if(ix<0)return '<tfoot class="no-p"><tr><td colspan="'+(lead+(pShow?pc.length:0))+'" style="'+sty+'">'+txt+' · ⏱ ម៉ោងស្កេន '+sc+'</td></tr></tfoot>';
+  const rest=pc.length-ix-1;
+  return '<tfoot class="no-p"><tr><td colspan="'+(lead+ix)+'" style="'+sty+'">'+txt+'</td><td class="pcx" style="background:#f7f8fb;font-weight:700;white-space:nowrap" title="ម៉ោងពីការស្កេន">⏱ '+sc+'</td>'+(rest>0?'<td colspan="'+rest+'" style="background:#f7f8fb"></td>':'')+'</tr></tfoot>'}
 function renderMonthStaff(){
   if(!dept(pDept))pDept=(S.depts[0]||{}).id;
   if(!pName||!dept(pDept)){
@@ -494,7 +498,7 @@ function renderMonthStaff(){
     rows+='<tr class="'+cl+'"><td class="nmc '+cl+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small>'+(d===t?'<span class="tb">ថ្ងៃនេះ</span>':'')+'</td>'+D.cols.map(c=>{const a=on.includes(c);
       return '<td><div class="tg'+(pEdit?'':' lk')+'"'+(pEdit?' data-tg="'+c.id+'" data-d="'+d+'" data-dp="'+D.id+'"':'')+(a?' style="background:'+pc+';color:'+ink(pc)+';border:1px solid '+pc+'">✓':'>')+'</div></td>'}).join('')+(pShow?pcols().map(x=>pcCell(D.id,pName,d,x,A,on.map(c=>getN(d,D.id,c.id).map(y=>y.x).join(' ; ')).filter(Boolean).join(' ; '),pEdit)).join(''):'')+'</tr>'}
   $('mWrap').innerHTML='<div class="mdept" data-id="'+D.id+'"><div class="dh" style="background:'+D.color+'"><span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap">'+D.icon+' '+esc(D.name)+' · <button class="nb no-p" data-pstep="-1" title="ឈ្មោះមុន">◀</button><b data-pback="1" style="cursor:pointer" title="ចុចដើម្បីជ្រើសឈ្មោះផ្សេង">'+esc(pName)+'</b><button class="nb no-p" data-pstep="1" title="ឈ្មោះបន្ទាប់">▶</button> · សរុប '+tot+' វេន</span><span>'+noonBtn(D)+' <button class="nb no-p" data-pshow="1">'+(pShow?'🙈 លាក់ជួរព្រីន':'👁 បង្ហាញជួរព្រីន')+'</button> <button class="nb no-p" data-pedit="1">'+(pEdit?'✅ រួចរាល់':'✏️ កែប្រែ')+'</button></span></div>'+(pShow?pcBlock():'')+'<div class="tw"><table class="mt dt"><thead><tr><th class="nmc">ថ្ងៃ</th>'+
-    D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+(pShow?pcols().map(x=>'<th class="pcx">'+esc(x)+'</th>').join(''):'')+'</tr></thead><tbody>'+rows+'</tbody><tfoot class="no-p"><tr><td colspan="'+(1+D.cols.length+(pShow?pcols().length:0))+'" style="text-align:left;font-weight:700;background:#f7f8fb;padding:10px 12px">សរុប '+tot+' វេន · '+hrsSum(tot,dn,D.id,pName,my+'-'+p2(mm),A,n)+'</td></tr><tr><td colspan="'+(1+D.cols.length+(pShow?pcols().length:0))+'" style="text-align:left;background:#f7f8fb;padding:6px 12px;color:var(--sub)">⏱ ម៉ោងពីការស្កេន (ចំនួនម៉ោង) សរុប៖ <b>'+monthHrs(D.id,pName,my+'-'+p2(mm),A,n)+'</b></td></tr></tfoot></table></div></div>';
+    D.cols.map(c=>'<th>'+esc(c.label)+'</th>').join('')+(pShow?pcols().map(x=>'<th class="pcx">'+esc(x)+'</th>').join(''):'')+'</tr></thead><tbody>'+rows+'</tbody>'+statFoot(D,tot,dn,A,n)+'</table></div></div>';
 }
 
 /* ===== ទាញវេនពីវេប SPV (Firebase project spv-schedule) ===== */
