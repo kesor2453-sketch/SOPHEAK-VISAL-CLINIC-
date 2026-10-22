@@ -482,10 +482,8 @@ function renderMonthGrid(){
     return parts.map((sub,k)=>(k?'<div class="cut" style="height:'+GAPPX+'px"><div style="border-top:2px dashed #9aa7bd;position:relative;top:50%"></div></div>':'')+'<div class="mdept" data-id="'+b.key+'">'+dh+'<div class="tw">'+tbl(sub)+'</div></div>').join('')}).join('');
 }
 
-function statFoot(D,tot,dn,A,n){const sty='text-align:left;font-weight:700;background:#f7f8fb;padding:10px 12px',ym=my+'-'+p2(mm),txt='សរុប '+tot+' វេន · '+hrsSum(tot,dn,D.id,pName,ym,A,n),sc=monthHrs(D.id,pName,ym,A,n),pc=pcols(),ix=pShow?pc.indexOf('ចំនួនម៉ោង'):-1,lead=1+D.cols.length;
-  if(ix<0)return '<tfoot class="no-p"><tr><td colspan="'+(lead+(pShow?pc.length:0))+'" style="'+sty+'">'+txt+' · ⏱ ម៉ោងស្កេន '+sc+'</td></tr></tfoot>';
-  const rest=pc.length-ix-1;
-  return '<tfoot class="no-p"><tr><td colspan="'+(lead+ix)+'" style="'+sty+'">'+txt+'</td><td class="pcx" style="background:#f7f8fb;font-weight:700;white-space:nowrap" title="ម៉ោងពីការស្កេន">⏱ '+sc+'</td>'+(rest>0?'<td colspan="'+rest+'" style="background:#f7f8fb"></td>':'')+'</tr></tfoot>'}
+function statFoot(D,tot,dn,A,n){const ym=my+'-'+p2(mm),w=1+D.cols.length+(pShow?pcols().length:0);
+  return '<tfoot class="no-p"><tr><td colspan="'+w+'" style="text-align:left;font-weight:700;background:#f7f8fb;padding:10px 12px">សរុប '+tot+' វេន · '+hrsSum(tot,dn,D.id,pName,ym,A,n)+'</td></tr><tr><td colspan="'+w+'" style="text-align:left;background:#f7f8fb;padding:6px 12px;color:var(--sub)">⏱ ម៉ោងពីការស្កេន សរុប៖ <b>'+monthHrs(D.id,pName,ym,A,n)+'</b></td></tr></tfoot>'}
 function renderMonthStaff(){
   if(!dept(pDept))pDept=(S.depts[0]||{}).id;
   if(!pName||!dept(pDept)){
