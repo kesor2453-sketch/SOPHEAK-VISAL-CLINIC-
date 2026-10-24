@@ -792,7 +792,7 @@ function attCalc(dp,nm,ym){const T=stOf(dp,nm),tOff=(+T.split(':')[0]*60+(+T.spl
   all.sort((a,b)=>a.ts-b.ts);for(let i=all.length-2;i>=0;i--){if(all[i].t===all[i+1].t&&all[i+1].ts-all[i].ts<12*36e5)all.splice(i,1)}const ss=[];let op=null;
   all.forEach(x=>{if(x.t==='in'){if(op)ss.push(op);op={i:x.ts,o:null}}else if(op&&x.ts-op.i<=5*864e5){op.o=x.ts;ss.push(op);op=null}else ss.push({i:null,o:x.ts})});if(op)ss.push(op);
   const m={},put=(d,inS,outS,ms,inMs,outMs)=>{const o=m[d]=m[d]||{inS:null,outS:null,ms:0,in:null,out:null};
-    if(inS&&(o.in==null||inMs<o.in)){o.inS=inS;o.in=inMs}if(outS&&(o.out==null||outMs>o.out)){o.outS=outS;o.out=outMs}o.ms+=ms};
+    if(inS&&(o.in==null||inMs<o.in)){o.inS=inS;o.in=inMs}if(outS&&(o.out==null||outMs>o.out)){o.outS=outS;o.out=outMs}o.ms+=ms;(o.segs=o.segs||[]).push([inS||'',outS||'']);};
   ss.forEach(q=>{
     if(q.i&&q.o){const first=ppDate(q.i-tOff+3*36e5);let last=ppDate(q.o-tOff-60000-72e5);if(last<first)last=first;
       for(let d=first;d<=last;d=nextD(d)){const ws=dayMs(d)+tOff,a=d===first?q.i:ws,b=d===last?q.o:ws+864e5;put(d,d===first?hhmm(q.i):T,d===last?hhmm(q.o):T,Math.max(0,b-a),a,b)}}
@@ -821,7 +821,7 @@ function hrsSum(shifts,ds0,dp,nm,ym,A,nd){const done=ds0*SHIFT_H*60,need=shifts*
 function monthMin(dp,nm,ym,A,nd){let m=0;for(let i=1;i<=nd;i++){const q=/^(\d+)[:h](\d{2})$/.exec(effVals(dp,nm,ym+'-'+p2(i),A,'')('ចំនួនម៉ោង')||'');if(q)m+=+q[1]*60+ +q[2]}return m}
 function monthHrs(dp,nm,ym,A,nd){let m=0;for(let i=1;i<=nd;i++){const q=/^(\d+)[:h](\d{2})$/.exec(effVals(dp,nm,ym+'-'+p2(i),A,'')('ចំនួនម៉ោង')||'');if(q)m+=+q[1]*60+ +q[2]}return hrsM(m)}
 function pcCell(dp,nm,d,x,A,nts,edit){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{};
-  return '<td class="pcx'+(o[x]!==undefined?' ov':'')+tcCls(dp,nm,d,x,A,nts)+'"'+(edit?' data-pv="'+d+'|'+esc(x)+'" title="ចុចដើម្បីកែ" style="cursor:pointer"':'')+'>'+esc(effVals(dp,nm,d,A,nts)(x))+'</td>'}
+  return '<td class="pcx'+(o[x]!==undefined?' ov':'')+tcCls(dp,nm,d,x,A,nts)+'"'+(edit?' data-pv="'+d+'|'+esc(x)+'" title="ចុចដើម្បីកែ" style="cursor:pointer"':'')+'>'+((o[x]===undefined&&(x==='ម៉ោងចូល'||x==='ម៉ោងចេញ')&&A&&A[d]&&A[d].segs&&A[d].segs.length>1)?A[d].segs.map(q=>esc(q[x==='ម៉ោងចូល'?0:1])||'&nbsp;').join('<br>'):esc(effVals(dp,nm,d,A,nts)(x)))+'</td>'}
 function attVal(lbl,o){if(!o)return '';if(lbl==='ម៉ោងចូល')return o.in?hhmm(o.in):'';if(lbl==='ម៉ោងចេញ')return o.out?hhmm(o.out):'';if(lbl==='ចំនួនម៉ោង')return(o.in&&o.out)?hrsF(Math.max(0,o.out-o.in)):'';return ''}
 function renderCI(){if(!CI)return;const dp=$('ciDept'),nm=$('ciName'),fx=(new URLSearchParams(location.search).get('dp')||'').split(',').filter(Boolean);
   if(!USE_FB){$('ciMsg').textContent='⚠ ត្រូវការការតភ្ជាប់ Firebase ដើម្បីចុះវត្តមាន';return}
