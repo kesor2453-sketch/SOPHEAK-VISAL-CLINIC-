@@ -138,7 +138,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <form class="add" id="sForm"><input id="sNew" placeholder="ឈ្មោះ — ឧ. Dr.Sok Dara"><select id="sRole" class="btn" title="តួនាទី (ស្រេចចិត្ត)"></select><input type="color" id="sColor" value="#4f8df5" title="ព័ណ៌ប្រអប់ឈ្មោះ" style="flex:0 0 46px;padding:2px;min-width:46px"><button class="btn p">+ បន្ថែម</button></form></div><div class="card"><div class="ch"><b>ម៉ោងធ្វើការ (ថ្ងៃថេរ) <small id="fxHint"></small></b><button class="btn" type="button" id="fxEditBtn"></button></div>
 <div class="chips" id="fxChips" style="margin-bottom:8px"></div><div id="fxList"></div>
 <div class="nav" style="margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line)"><button class="btn" id="fxPrev">‹</button><div class="lbl" id="fxLbl"></div><button class="btn" id="fxNext">›</button><button class="btn p" id="fxApply">⚡ បំពេញខែនេះតាមម៉ោងធ្វើការ</button></div>
-<small>បំពេញតែវេនដែលនៅទំនេរ មិនលុបឬប៉ះពាល់វេនដែលមានស្រាប់ទេ។</small></div><div class="card"><div class="ch"><b>🎨 ព័ណ៌ «ថ្ងៃនេះ» <small>(ក្នុងតារាងប្រចាំខែ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input type="color" id="tdPick" title="ជ្រើសព័ណ៌ថ្ងៃនេះ" value="#0d6efd" style="width:42px;height:34px;padding:2px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer"><button class="btn" type="button" id="tdReset">↺ ព័ណ៌ដើម (ខៀវ)</button><small style="color:var(--sub)">ចាំលើឧបករណ៍នេះ</small></div></div>
+<small>បំពេញតែវេនដែលនៅទំនេរ មិនលុបឬប៉ះពាល់វេនដែលមានស្រាប់ទេ។</small></div><div class="card"><div class="ch"><b>🎨 ព័ណ៌ «ថ្ងៃនេះ» <small>(ក្នុងតារាងប្រចាំខែ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input type="color" id="tdPick" title="ជ្រើសព័ណ៌ថ្ងៃនេះ" value="#0d6efd" style="width:42px;height:34px;padding:2px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer"><button class="btn" type="button" id="tdReset">↺ ព័ណ៌ដើម (ខៀវ)</button><small style="color:var(--sub)">ចាំលើឧបករណ៍នេះ</small></div></div><div class="card"><div class="ch"><b>🔒 កូដកែប្រែ <small>(ត្រូវបញ្ចូលមុនចុច ✏️ កែប្រែ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input id="pinNew" type="password" inputmode="numeric" placeholder="កូដថ្មី" style="padding:8px;border:1px solid var(--line);border-radius:9px;width:140px"><button class="btn p" type="button" id="pinSave">រក្សាទុក</button><button class="btn" type="button" id="pinOff">បិទកូដ</button><small id="pinSt" style="color:var(--sub)"></small></div></div>
 </div>
 
 
@@ -167,7 +167,7 @@ const cols2=()=>[{id:'c1',label:'ព្រឹក'},{id:'c3',label:'យប់'}];
 const MIDW={id:'midwife',name:'ឆ្មប',icon:'🤰',color:'#d6336c'};
 const DEF=()=>[{id:'doctor',name:'គ្រូពេទ្យ',icon:'🩺',color:'#2f6fed'},{id:'nurse',name:'គិលានុបដ្ឋាយិកា',icon:'💉',color:'#0f9d7a'},MIDW,{id:'eye',name:'ភ្នែក',icon:'👁️',color:'#8a4fd6'},{id:'dental',name:'ធ្មេញ',icon:'🦷',color:'#e07b00'}].map(d=>({...d,cols:cols2()}));
 const ord=c=>({c1:1,c2:2,c3:3}[c.id]||9);
-let S={v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null,fxm:{},fxMonths:[],fxs:{},pv:{},last:['Dr.Ka Seyla'],clinic:null,imp:{map:{},auto:false}};S.depts.forEach(d=>S.staff[d.id]=[]);
+let S={pin:'',v:2,depts:DEF(),staff:{},sched:{},log:[],notes:{},pcols:null,fxm:{},fxMonths:[],fxs:{},pv:{},last:['Dr.Ka Seyla'],clinic:null,imp:{map:{},auto:false}};S.depts.forEach(d=>S.staff[d.id]=[]);
 let day=new Date(),my=day.getFullYear(),mm=day.getMonth()+1,cy=my,cm=mm,staffDept='doctor',editing=false,pop=null,mview='day',pDept=null,pName=null,pEdit=false,dayDept='all',bEdit=false,rEdit=null,E=null,pShow=false;
 const $=id=>document.getElementById(id),p2=n=>(n<10?'0':'')+n,ds=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -186,7 +186,7 @@ const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at
 function save(){if(CI)return;if(USE_FB)setDoc(ref,S).catch(e=>toast('⚠ '+e.message));else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
-function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],clinic:null,imp:d.imp||{map:{},auto:false}};
+function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],pin:d.pin||'',clinic:null,imp:d.imp||{map:{},auto:false}};
   S.depts.forEach(x=>S.staff[x.id]=(S.staff[x.id]||[]).map(s=>typeof s==='string'?{n:s,r:''}:s));
   S.depts.forEach(D=>{D.roles=D.roles||[];(S.staff[D.id]||[]).forEach(s=>{if(s.r&&!D.roles.includes(s.r))D.roles.push(s.r)})});
   if(mig){
@@ -261,7 +261,7 @@ function printSheet(v,wc){
   const LS=ORI==='landscape';ps.querySelectorAll('.psd').forEach(b=>{b.style.width=LS?'1020px':'';const h=b.offsetHeight;if(h>0)b.style.zoom=Math.max(Math.min(1,(LS?700:1000)/h),.45)});
   const clean=()=>{document.body.classList.remove('psp');ps.innerHTML='';st.remove();removeEventListener('afterprint',clean)};
   addEventListener('afterprint',clean);print()}
-function renderAll(){sortStaff();fillSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit();renderQR()}
+function renderAll(){pinUI();sortStaff();fillSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit();renderQR()}
 
 /* ---------- shift column toggle (afternoon) ---------- */
 const noonBtnG=L=>{L=L.filter(D=>D.id==='eye'||D.id==='dental');return L.length?noonBtnG0(L):''};
@@ -434,6 +434,15 @@ function renderMonthDay(){
   document.addEventListener('mouseup',()=>{if(el)el.classList.remove('dragging');el=null});
   ['touchstart','wheel'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true},{passive:true}));document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true});
 })();
+async function needPin(){if(!S.pin)return true;try{if(sessionStorage.getItem('deptUnl')===S.pin)return true}catch(e){}
+  const v=prompt('🔒 បញ្ចូលកូដ ដើម្បីចូលកែប្រែ');if(v===null)return false;
+  if(await sha(v.trim())===S.pin){try{sessionStorage.setItem('deptUnl',S.pin)}catch(e){}return true}toast('⚠ កូដមិនត្រឹមត្រូវ');return false}
+function pinUI(){const e=$('pinSt');if(e)e.textContent=S.pin?'🔒 បានដាក់កូដ':'មិនទាន់ដាក់កូដ'}
+document.addEventListener('click',async e=>{const id=e.target.id;if(id!=='pinSave'&&id!=='pinOff')return;
+  if(S.pin&&!(await needPin()))return;
+  if(id==='pinOff'){S.pin='';save();try{sessionStorage.removeItem('deptUnl')}catch(x){}pinUI();toast('បិទកូដរួចរាល់ ✓');return}
+  const v=($('pinNew').value||'').trim();if(v.length<3){toast('⚠ កូដយ៉ាងតិច ៣ តួ');return}
+  S.pin=await sha(v);try{sessionStorage.setItem('deptUnl',S.pin)}catch(x){}save();$('pinNew').value='';pinUI();toast('រក្សាទុកកូដរួចរាល់ ✓')});
 function tdApply(c){const r=document.documentElement.style,n=parseInt(c.slice(1),16),L=(.299*(n>>16)+.587*((n>>8)&255)+.114*(n&255));r.setProperty('--td',c);r.setProperty('--tdi',L>160?'#1c2430':'#fff')}
 (function(){let c='#0d6efd';try{c=localStorage.getItem('deptTodayColor')||c}catch(e){}if(!/^#[0-9a-f]{6}$/i.test(c))c='#0d6efd';tdApply(c);const e=$('tdPick');if(e){e.value=c;const rs=$('tdReset');if(rs)rs.onclick=()=>{e.value='#0d6efd';tdApply('#0d6efd');try{localStorage.removeItem('deptTodayColor')}catch(x){}};e.oninput=()=>{tdApply(e.value);try{localStorage.setItem('deptTodayColor',e.value)}catch(x){}}}})();
 function stk(){const r=document.documentElement.style,t=document.querySelector('.top'),nv=$('mNav'),v=$('mVBar'),tt=t?t.offsetHeight:0,nh=(nv&&nv.offsetParent)?nv.offsetHeight:0,vh=(v&&v.offsetParent)?v.offsetHeight:0;r.setProperty('--tt',tt+'px');r.setProperty('--tn',(tt+nh)+'px');r.setProperty('--b',(tt+nh+vh)+'px')}
@@ -599,13 +608,13 @@ document.addEventListener('click',e=>{const t=e.target;
   const pr=t.closest('[data-pcren]');if(pr){const i=+pr.dataset.pcren,v=(prompt('ប្ដូរឈ្មោះជួរ៖',pcols()[i])||'').trim();if(v){const L=pcols().slice();L[i]=v;S.pcols=L;save();renderMonth()}return}
   if(t.dataset.vmove){const i=vOrd.indexOf(mview),j=i+(+t.dataset.vmove);if(i>=0&&j>=0&&j<3){const x=vOrd[i];vOrd[i]=vOrd[j];vOrd[j]=x;saveV();applyVOrd()}return}
   const dd=t.closest('[data-dd]');if(dd){dayDept=dd.dataset.dd;renderMonth();return}
-  if(t.dataset.pedit){pEdit=!pEdit;renderMonth();return}
+  if(t.dataset.pedit){if(pEdit){pEdit=false;renderMonth();return}needPin().then(ok=>{if(ok){pEdit=true;renderMonth()}});return}
   if(t.dataset.pshow){pShow=!pShow;renderMonth();return}
   const pvc=t.closest('[data-pv]');if(pvc&&pEdit){const k=pvc.dataset.pv,q=k.indexOf('|'),d=k.slice(0,q),lb=k.slice(q+1),key=pDept+'|'+pName+'|'+d;
     const v=prompt(lb+' · '+fmtD(d)+'\nទុកទទេ = មិនបានធ្វើការ · វាយ * = ត្រឡប់ទៅស្វ័យប្រវត្តិ',pvc.textContent.trim());if(v===null)return;let val=v.trim();
     if((lb==='ម៉ោងចូល'||lb==='ម៉ោងចេញ')&&val){if(!/^([01]?\d|2[0-3]):[0-5]\d$/.test(val)){toast('⚠ ម៉ោងត្រូវជា HH:MM (ឧ. 08:30)');return}if(val.length===4)val='0'+val}
     S.pv=S.pv||{};const o=S.pv[key]=S.pv[key]||{};if(val==='*')delete o[lb];else o[lb]=val;if(!Object.keys(o).length)delete S.pv[key];save();renderMonth();return}
-  if(t.dataset.bedit){bEdit=!bEdit;renderMonth();return}
+  if(t.dataset.bedit){if(bEdit){bEdit=false;renderMonth();return}needPin().then(ok=>{if(ok){bEdit=true;renderMonth()}});return}
   if(t.dataset.print){const sl=t.closest('.nav').querySelector('.psel,.psel2');doPrint(sl?sl.value:'all');return}
   if(t.dataset.up||t.dataset.dn){moveDept(t.dataset.up||t.dataset.dn,t.dataset.up?-1:1);return}
   if(t.dataset.pstep){const L=(S.staff[pDept]||[]).map(x=>x.n).sort(nameCmp),i=L.indexOf(pName);if(L.length){pName=L[(i+(+t.dataset.pstep)+L.length)%L.length];pEdit=false;renderMonth();scrollTo(0,0)}return}
