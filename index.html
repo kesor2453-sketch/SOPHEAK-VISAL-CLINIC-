@@ -1950,7 +1950,7 @@ function wireEditorInput(input, cell, date, field, currentVal, onInputExtra, res
 function askTimeForKaSeyla(resolved) { return isKaSeyla(resolved) && resolved.indexOf('(') === -1 && !/\s\S/.test(resolved.slice(baseDoctorName(resolved).length)); }
 function showTimeDialog(resolved, done) {
   var name = baseDoctorName(resolved);
-  var PRESETS = ['7am-12pm', '9am-12pm', '1pm-5pm', '5pm-9pm', '9am-5pm'];
+  var PRESETS = ['8am-11am', '16pm-19pm'];
   var settled = false;
   function out(v) { if (settled) return; settled = true; closeCellMenu(); done(v === null ? null : name + (v ? '(' + v + ')' : '')); }
   var ov = cellMenuShell('⏰ ' + escapeHtml(name) + '<div style="font-weight:500;font-size:12.5px;color:#6b7686;">ម៉ោងណាដល់ម៉ោងណា?</div>',
@@ -2053,7 +2053,7 @@ function openEditor(cell) {
       var comp = suggestions.filter(function (x) { return x.toLowerCase().indexOf(low) === 0 && x.length > low.length; })[0];
       if (comp) { nameInput.value = comp; nameInput.setSelectionRange(low.length, comp.length); }
     }
-    return false; // ចុច Enter ដើម្បីរើស — អាចវាយអក្សរបន្ថែមក្រោយឈ្មោះបាន
+    return fromList; // ជ្រើសពីបញ្ជីណែនាំ = Enter; បើវាយខ្លួនឯង ត្រូវចុច Enter (អាចវាយអក្សរបន្ថែមបាន)
   }, resolveFn, askTimeForKaSeyla);
 
 }
