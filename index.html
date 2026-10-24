@@ -1880,7 +1880,7 @@ function openCellInDirection(date, field, dir) {
 //   ← → .......... រក្សាទុក + លោតឆ្វេង / ស្ដាំ (តែពេល cursor នៅដើម / ចុងអក្សរ — បើមិនដូច្នោះ ព្រួញរំកិល cursor ធម្មតា)
 //   Tab / Shift+Tab  ស្ដាំ / ឆ្វេង
 //   Esc .......... បោះបង់
-function wireEditorInput(input, cell, date, field, currentVal, onInputExtra, resolver) {
+function wireEditorInput(input, cell, date, field, currentVal, onInputExtra, resolver, askExtra) {
   var finished = false;
   function finish(cancel, dir) {
     if (finished) return;
@@ -1896,6 +1896,17 @@ function wireEditorInput(input, cell, date, field, currentVal, onInputExtra, res
         }
         cancel = true; // ចុចចេញក្រៅ ជាមួយឈ្មោះមិនត្រឹមត្រូវ → បោះបង់
       } else newVal = best;
+      // សួរម៉ោង (Dr.Ka Seyla) មុនរក្សាទុក
+      if (askExtra && dir && !input.dataset.asked && !input.dataset.asking && askExtra(newVal)) {
+        input.dataset.asking = '1';
+        showTimeDialog(newVal, function (v) {
+          delete input.dataset.asking;
+          if (v === null) { input.focus(); return; }
+          input.value = v; input.dataset.asked = '1';
+          finish(false, dir);
+        });
+        return;
+      }
     }
     finished = true;
     STATE.editing = null;
@@ -1927,11 +1938,34 @@ function wireEditorInput(input, cell, date, field, currentVal, onInputExtra, res
   input.addEventListener('blur', function () {
     setTimeout(function () {
       var ae = document.activeElement;
-      if (ae && ae !== input && cell.contains(ae)) return; // ចុចលើប្រអប់ជ្រើសម៉ោង
+      if (input.dataset.asking) return; // កំពុងបើកផ្ទាំងសួរម៉ោង
+      if (ae && ae !== input && cell.contains(ae)) return;
       finish(false, null);
     }, 80);
   });
   return finish;
+}
+
+// Dr.Ka Seyla ដែលមិនទាន់មានម៉ោង → សួរម៉ោង
+function askTimeForKaSeyla(resolved) { return isKaSeyla(resolved) && resolved.indexOf('(') === -1 && !/\s\S/.test(resolved.slice(baseDoctorName(resolved).length)); }
+function showTimeDialog(resolved, done) {
+  var name = baseDoctorName(resolved);
+  var PRESETS = ['7am-12pm', '9am-12pm', '1pm-5pm', '5pm-9pm', '9am-5pm'];
+  var settled = false;
+  function out(v) { if (settled) return; settled = true; closeCellMenu(); done(v === null ? null : name + (v ? '(' + v + ')' : '')); }
+  var ov = cellMenuShell('⏰ ' + escapeHtml(name) + '<div style="font-weight:500;font-size:12.5px;color:#6b7686;">ម៉ោងណាដល់ម៉ោងណា?</div>',
+    PRESETS.map(function (t) { return '<button type="button" data-t="' + t + '" style="' + CM_BTN + '">' + t + '</button>'; }).join('') +
+    '<div style="display:flex;gap:6px;margin-bottom:10px;"><input id="tmFrom" type="text" placeholder="ចាប់ពី (9am)" style="' + CM_INP + 'margin:0;"><input id="tmTo" type="text" placeholder="ដល់ (12pm)" style="' + CM_INP + 'margin:0;"></div>' +
+    '<button type="button" id="tmOk" style="' + CM_GO + '">យល់ព្រម (Enter) — បើទទេ = គ្មានម៉ោង</button>' +
+    '<button type="button" id="tmNone" style="' + CM_BTN + 'text-align:center;color:#6b7686;margin-bottom:0;">គ្មានម៉ោង</button>');
+  ov.querySelectorAll('button[data-t]').forEach(function (b) { b.addEventListener('click', function () { out(b.dataset.t); }); });
+  var f = document.getElementById('tmFrom'), t = document.getElementById('tmTo');
+  function ok() { var a = f.value.trim(), b = t.value.trim(); out(a && b ? a + '-' + b : (a || b)); }
+  document.getElementById('tmOk').addEventListener('click', ok);
+  document.getElementById('tmNone').addEventListener('click', function () { out(''); });
+  [f, t].forEach(function (el) { el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ok(); } if (e.key === 'Escape') out(null); }); });
+  ov.addEventListener('mousedown', function (e) { if (e.target === ov) out(null); });
+  f.focus();
 }
 
 function openEditor(cell) {
@@ -2019,36 +2053,8 @@ function openEditor(cell) {
       var comp = suggestions.filter(function (x) { return x.toLowerCase().indexOf(low) === 0 && x.length > low.length; })[0];
       if (comp) { nameInput.value = comp; nameInput.setSelectionRange(low.length, comp.length); }
     }
-    if (isKaSeyla(v)) { refreshTimeSel(); return false; } // ទុកឲ្យរើសម៉ោងបាន
     return false; // ចុច Enter ដើម្បីរើស — អាចវាយអក្សរបន្ថែមក្រោយឈ្មោះបាន
-  }, resolveFn);
-
-  // ប្រអប់ជ្រើសម៉ោង — បង្ហាញតែពេលជា Dr.Ka Seyla (ជ្រើស ឬមិនជ្រើសក៏បាន)
-  var TIME_OPTS = ['7am-12pm', '9am-12pm', '1pm-5pm', '5pm-9pm', '9am-5pm'];
-  var timeSel = document.createElement('select');
-  timeSel.className = 'edit-select';
-  timeSel.style.cssText = 'margin-left:4px;max-width:92px;display:none;';
-  cell.appendChild(timeSel);
-  function refreshTimeSel() {
-    var sp = splitTyped(nameInput.value, suggestions) || (function () { var m = bestDoctorMatch(nameInput.value, suggestions); return m ? { name: m, rest: '' } : null; })();
-    var b = sp && sp.name;
-    if (!b || !isKaSeyla(b)) { timeSel.style.display = 'none'; return; }
-    var mm = /^\((.*?)\)?$/.exec(sp.rest || '');
-    var cur = mm ? mm[1].trim() : '';
-    var opts = TIME_OPTS.slice(); if (cur && opts.indexOf(cur) === -1) opts.push(cur);
-    timeSel.innerHTML = '<option value=""> </option>' + opts.map(function (o) { return '<option value="' + escapeAttr(o) + '"' + (o === cur ? ' selected' : '') + '>' + escapeHtml(o) + '</option>'; }).join('');
-    timeSel.dataset.name = b;
-    timeSel.style.display = '';
-  }
-  refreshTimeSel();
-  nameInput.addEventListener('input', refreshTimeSel);
-  timeSel.addEventListener('change', function () {
-    nameInput.value = timeSel.dataset.name + (timeSel.value ? '(' + timeSel.value + ')' : '');
-    nameInput.focus();
-  });
-  timeSel.addEventListener('blur', function () {
-    setTimeout(function () { var ae = document.activeElement; if (!ae || !cell.contains(ae)) finishFn(false, null); }, 80);
-  });
+  }, resolveFn, askTimeForKaSeyla);
 
 }
 
