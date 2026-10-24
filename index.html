@@ -1828,9 +1828,29 @@ function neighborCell(date, field, dir) {
 }
 
 // ជ្រើសឈ្មោះល្អបំផុតពីអក្សរដែលវាយមិនពេញ (មិនគិត Dr. / ទំហំអក្សរ / ដកឃ្លា)
+// បំបែកអក្សរដែលវាយ ជា ឈ្មោះគ្រូពេទ្យ + អក្សរបន្ថែម
+function splitTyped(typed, list) {
+  typed = String(typed || '').trim();
+  if (!typed) return null;
+  var whole = typed.indexOf('(') === -1 ? bestDoctorMatchStrict(typed, list) : null;
+  if (whole) return { name: whole, rest: '' };
+  function nk(x) { return String(x).toLowerCase().replace(/^dr\.?\s*/, '').replace(/\s+/g, ''); }
+  for (var k = typed.length - 1; k > 0; k--) {
+    var ch = typed.charAt(k), sep = (ch === '(' || /\s/.test(ch));
+    var base = typed.slice(0, k).trim(), rest = typed.slice(k).trim();
+    if (!base || !rest || base.indexOf('(') !== -1) continue;
+    var hit = bestDoctorMatchStrict(base, list);
+    if (!hit) continue;
+    // មិនមានដកឃ្លា៖ ទទួលតែពេលឈ្មោះគ្រប់ ឬអក្សរបន្ថែមមិនមែនអក្សរឡាតាំង (ខ្មែរ/លេខ/សញ្ញា)
+    if (!sep && nk(base) !== nk(hit) && /^[A-Za-z]/.test(rest)) continue;
+    return { name: hit, rest: rest };
+  }
+  return null;
+}
 function isKaSeyla(n) { return normName(baseDoctorName(n)).indexOf(LAST_DOCTOR_KEY) !== -1; }
-function bestDoctorMatch(typed, list) {
-  function strip(x) { return normName(baseDoctorName(x)).replace(/^dr\.?\s*/, ''); }
+function bestDoctorMatchStrict(typed, list) { return bestDoctorMatch(typed, list, true); }
+function bestDoctorMatch(typed, list, strict) {
+  function strip(x) { var t = String(x || ''), ix = t.indexOf('('); return normName(ix === -1 ? t : t.slice(0, ix)).replace(/^dr\.?\s*/, ''); }
   var q = strip(typed).replace(/\s+/g, '');
   if (!q) return null;
   function key(x) { return strip(x).replace(/\s+/g, ''); }
@@ -1842,7 +1862,7 @@ function bestDoctorMatch(typed, list) {
     var words = strip(sorted[i]).split(/\s+/);
     if (words.some(function (w) { return w.indexOf(q) === 0; })) hit = sorted[i];
   }
-  for (i = 0; i < sorted.length && !hit; i++) if (key(sorted[i]).indexOf(q) !== -1) hit = sorted[i];
+  if (!strict) for (i = 0; i < sorted.length && !hit; i++) if (key(sorted[i]).indexOf(q) !== -1) hit = sorted[i];
   return hit;
 }
 
@@ -1979,16 +1999,14 @@ function openEditor(cell) {
 
   // លោតស្វ័យប្រវត្តិ៖ ពេលជ្រើសឈ្មោះពីបញ្ជីណែនាំ ឬវាយឈ្មោះគ្រូពេទ្យត្រូវនឹងបញ្ជីពេញលេញ
   var resolveFn = function (typed) {
-    var i = typed.indexOf('(');
-    if (i === -1) return bestDoctorMatch(typed, suggestions);
-    var base = typed.slice(0, i).trim(), suf = typed.slice(i).trim();
-    if (!base) return null;
-    var b = bestDoctorMatch(base, suggestions);
-    if (!b) return null;
-    if (!isKaSeyla(b)) { resolveFn.msg = '⚠ ម៉ោងក្នុងវង់ក្រចកសម្រាប់តែ Dr.Ka Seyla ប៉ុណ្ណោះ'; return null; }
-    if (suf.charAt(suf.length - 1) !== ')') suf += ')';
-    return b + suf;
+    var sp = splitTyped(typed, suggestions);
+    if (!sp) return bestDoctorMatch(typed, suggestions);
+    if (!sp.rest) return sp.name;
+    var rest = sp.rest;
+    if (rest.charAt(0) === '(') return sp.name + rest + (rest.charAt(rest.length - 1) === ')' ? '' : ')');
+    return sp.name + ' ' + rest;
   };
+
   var finishFn = wireEditorInput(nameInput, cell, date, field, currentVal, function (e) {
     var v = nameInput.value.trim();
     if (!v) return false;
@@ -2002,7 +2020,7 @@ function openEditor(cell) {
       if (comp) { nameInput.value = comp; nameInput.setSelectionRange(low.length, comp.length); }
     }
     if (isKaSeyla(v)) { refreshTimeSel(); return false; } // ទុកឲ្យរើសម៉ោងបាន
-    return fromList || exact;
+    return false; // ចុច Enter ដើម្បីរើស — អាចវាយអក្សរបន្ថែមក្រោយឈ្មោះបាន
   }, resolveFn);
 
   // ប្រអប់ជ្រើសម៉ោង — បង្ហាញតែពេលជា Dr.Ka Seyla (ជ្រើស ឬមិនជ្រើសក៏បាន)
@@ -2012,11 +2030,11 @@ function openEditor(cell) {
   timeSel.style.cssText = 'margin-left:4px;max-width:92px;display:none;';
   cell.appendChild(timeSel);
   function refreshTimeSel() {
-    var v = nameInput.value, i = v.indexOf('(');
-    var base = (i === -1 ? v : v.slice(0, i)).trim();
-    var b = base ? bestDoctorMatch(base, suggestions) : null;
+    var sp = splitTyped(nameInput.value, suggestions) || (function () { var m = bestDoctorMatch(nameInput.value, suggestions); return m ? { name: m, rest: '' } : null; })();
+    var b = sp && sp.name;
     if (!b || !isKaSeyla(b)) { timeSel.style.display = 'none'; return; }
-    var cur = i === -1 ? '' : v.slice(i + 1).replace(/\)\s*$/, '').trim();
+    var mm = /^\((.*?)\)?$/.exec(sp.rest || '');
+    var cur = mm ? mm[1].trim() : '';
     var opts = TIME_OPTS.slice(); if (cur && opts.indexOf(cur) === -1) opts.push(cur);
     timeSel.innerHTML = '<option value=""> </option>' + opts.map(function (o) { return '<option value="' + escapeAttr(o) + '"' + (o === cur ? ' selected' : '') + '>' + escapeHtml(o) + '</option>'; }).join('');
     timeSel.dataset.name = b;
@@ -2307,8 +2325,18 @@ function bindPhoneForm() {
 // count as one person's shifts, summed together.
 function baseDoctorName(name) {
   if (!name) return name;
-  var idx = String(name).indexOf('(');
-  return (idx === -1 ? name : name.slice(0, idx)).trim();
+  var str = String(name);
+  var idx = str.indexOf('(');
+  var base = (idx === -1 ? str : str.slice(0, idx)).trim();
+  // អក្សរវាយថែមក្រោយឈ្មោះគ្រូពេទ្យ (មិនចាំបាច់ក្នុងវង់ក្រចក) — រកឈ្មោះគ្រូពេទ្យដែលជាបុព្វបទ
+  var low = base.toLowerCase(), best = null;
+  (STATE.doctors || []).forEach(function (d) {
+    var dn = d.NameSPV; if (!dn) return;
+    var l = dn.toLowerCase();
+    if (low === l) { best = dn; return; }
+    if (low.indexOf(l) === 0 && /\s/.test(low.charAt(l.length)) && (!best || dn.length > best.length)) best = dn;
+  });
+  return best || base;
 }
 
 function computePayrollClient(year, month) {
