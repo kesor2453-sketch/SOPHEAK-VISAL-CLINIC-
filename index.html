@@ -253,7 +253,7 @@ function printSheet(v,wc){
   const nc=wc?D.cols.length:0,rest=100-11-nc*6,wt=PC.map(x=>/ហត្ថាលេខា|ផ្សេងៗ/.test(x)?1.6:1),ws=wt.reduce((a,b)=>a+b,0),W=i=>(wt[i]/ws*rest).toFixed(1)+'%';
   for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),sl=D.cols.filter(c=>get(d,D.id,c.id).includes(nm)),
       nts=sl.map(c=>getN(d,D.id,c.id).map(x=>x.x).join(' ; ')).filter(Boolean).join(' ; ');
-    body+='<tr><td class="pd'+(w==0||w==6?' we':'')+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td>'+(wc?D.cols.map(c=>'<td class="pc">'+(sl.some(x=>x.id===c.id)?'✓':'')+'</td>').join(''):'')+PC.map(x=>'<td class="'+(x==='ផ្សេងៗ'?'po':'pc')+tcCls(D.id,nm,d,x,AA,nts)+'">'+esc(effVals(D.id,nm,d,AA,nts)(x))+'</td>').join('')+'</tr>'}
+    body+='<tr><td class="pd'+(w==0||w==6?' we':'')+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td>'+(wc?D.cols.map(c=>'<td class="pc">'+(sl.some(x=>x.id===c.id)?'✓':'')+'</td>').join(''):'')+PC.map(x=>'<td class="'+(x==='ផ្សេងៗ'?'po':'pc')+tcCls(D.id,nm,d,x,AA,nts)+'">'+pcHtml(D.id,nm,d,x,AA,nts,!wc)+'</td>').join('')+'</tr>'}
   if(wc){const wk=workCount(D,nm);body+='<tr class="pt"><td>ចំនួនធ្វើការ</td>'+D.cols.map(c=>'<td class="pc">'+wk.per[c.id]+'</td>').join('')+'<td colspan="'+PC.length+'" style="text-align:left">សរុប '+wk.tot+' វេន</td></tr>'}
   ps.innerHTML='<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th>'+(wc?D.cols.map(c=>'<th style="width:6%">'+esc(c.label)+'</th>').join(''):'')+PC.map((x,i)=>'<th style="width:'+W(i)+'">'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+body+'</tbody></table></div>';
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+(ORI==='landscape'?'landscape':'portrait')+';margin:8mm}}';document.head.appendChild(st);
@@ -801,7 +801,7 @@ function attCalc(dp,nm,ym){const T=stOf(dp,nm),tOff=(+T.split(':')[0]*60+(+T.spl
   all.sort((a,b)=>a.ts-b.ts);for(let i=all.length-2;i>=0;i--){if(all[i].t===all[i+1].t&&all[i+1].ts-all[i].ts<12*36e5)all.splice(i,1)}const ss=[];let op=null;
   all.forEach(x=>{if(x.t==='in'){if(op)ss.push(op);op={i:x.ts,o:null}}else if(op&&x.ts-op.i<=5*864e5){op.o=x.ts;ss.push(op);op=null}else ss.push({i:null,o:x.ts})});if(op)ss.push(op);
   const m={},put=(d,inS,outS,ms,inMs,outMs)=>{const o=m[d]=m[d]||{inS:null,outS:null,ms:0,in:null,out:null};
-    if(inS&&(o.in==null||inMs<o.in)){o.inS=inS;o.in=inMs}if(outS&&(o.out==null||outMs>o.out)){o.outS=outS;o.out=outMs}o.ms+=ms;(o.segs=o.segs||[]).push([inS||'',outS||'']);};
+    if(inS&&(o.in==null||inMs<o.in)){o.inS=inS;o.in=inMs}if(outS&&(o.out==null||outMs>o.out)){o.outS=outS;o.out=outMs}o.ms+=ms;(o.segs=o.segs||[]).push([inS||'',outS||'',ms||0]);};
   ss.forEach(q=>{
     if(q.i&&q.o){const first=ppDate(q.i-tOff+3*36e5);let last=ppDate(q.o-tOff-60000-72e5);if(last<first)last=first;
       for(let d=first;d<=last;d=nextD(d)){const ws=dayMs(d)+tOff,a=d===first?q.i:ws,b=d===last?q.o:ws+864e5;put(d,d===first?hhmm(q.i):T,d===last?hhmm(q.o):T,Math.max(0,b-a),a,b)}}
@@ -829,8 +829,11 @@ function hrsSum(shifts,ds0,dp,nm,ym,A,nd){const done=ds0*SHIFT_H*60,need=shifts*
   return 'ត្រូវធ្វើ '+hrsM(need)+' · បានធ្វើ '+hrsM(done)+' ('+ds0+' វេន) · '+(left>=0?'សល់ '+hrsM(left):'លើស '+hrsM(-left))}
 function monthMin(dp,nm,ym,A,nd){let m=0;for(let i=1;i<=nd;i++){const q=/^(\d+)[:h](\d{2})$/.exec(effVals(dp,nm,ym+'-'+p2(i),A,'')('ចំនួនម៉ោង')||'');if(q)m+=+q[1]*60+ +q[2]}return m}
 function monthHrs(dp,nm,ym,A,nd){let m=0;for(let i=1;i<=nd;i++){const q=/^(\d+)[:h](\d{2})$/.exec(effVals(dp,nm,ym+'-'+p2(i),A,'')('ចំនួនម៉ោង')||'');if(q)m+=+q[1]*60+ +q[2]}return hrsM(m)}
+function pcHtml(dp,nm,d,x,A,nts,plain){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{},sc=(x==='ម៉ោងចូល'||x==='ម៉ោងចេញ'||x==='ចំនួនម៉ោង');
+  if(sc&&o[x]===undefined){if(plain)return '';const g=A&&A[d];if(g&&g.segs&&g.segs.length>1)return g.segs.map(q=>(x==='ម៉ោងចូល'?esc(q[0]):x==='ម៉ោងចេញ'?esc(q[1]):(q[2]?hrsF(q[2]):''))||'&nbsp;').join('<br>')}
+  return esc(effVals(dp,nm,d,A,nts)(x))}
 function pcCell(dp,nm,d,x,A,nts,edit){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{};
-  return '<td class="pcx'+(o[x]!==undefined?' ov':'')+tcCls(dp,nm,d,x,A,nts)+'"'+(edit?' data-pv="'+d+'|'+esc(x)+'" title="ចុចដើម្បីកែ" style="cursor:pointer"':'')+'>'+((o[x]===undefined&&(x==='ម៉ោងចូល'||x==='ម៉ោងចេញ')&&A&&A[d]&&A[d].segs&&A[d].segs.length>1)?A[d].segs.map(q=>esc(q[x==='ម៉ោងចូល'?0:1])||'&nbsp;').join('<br>'):esc(effVals(dp,nm,d,A,nts)(x)))+'</td>'}
+  return '<td class="pcx'+(o[x]!==undefined?' ov':'')+tcCls(dp,nm,d,x,A,nts)+'"'+(edit?' data-pv="'+d+'|'+esc(x)+'" title="ចុចដើម្បីកែ" style="cursor:pointer"':'')+'>'+pcHtml(dp,nm,d,x,A,nts,false)+'</td>'}
 function attVal(lbl,o){if(!o)return '';if(lbl==='ម៉ោងចូល')return o.in?hhmm(o.in):'';if(lbl==='ម៉ោងចេញ')return o.out?hhmm(o.out):'';if(lbl==='ចំនួនម៉ោង')return(o.in&&o.out)?hrsF(Math.max(0,o.out-o.in)):'';return ''}
 function renderCI(){if(!CI)return;const dp=$('ciDept'),nm=$('ciName'),fx=(new URLSearchParams(location.search).get('dp')||'').split(',').filter(Boolean);
   if(!USE_FB){$('ciMsg').textContent='⚠ ត្រូវការការតភ្ជាប់ Firebase ដើម្បីចុះវត្តមាន';return}
