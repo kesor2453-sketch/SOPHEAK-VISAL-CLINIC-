@@ -254,8 +254,9 @@ function printSheet(v,wc){
   for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),sl=D.cols.filter(c=>get(d,D.id,c.id).includes(nm)),
       nts=sl.map(c=>getN(d,D.id,c.id).map(x=>x.x).join(' ; ')).filter(Boolean).join(' ; ');
     body+='<tr><td class="pd'+(w==0||w==6?' we':'')+'">'+i+'/'+p2(mm)+'<small>'+DW[w]+'</small></td>'+(wc?D.cols.map(c=>'<td class="pc">'+(sl.some(x=>x.id===c.id)?'✓':'')+'</td>').join(''):'')+PC.map(x=>'<td class="'+(x==='ផ្សេងៗ'?'po':'pc')+tcCls(D.id,nm,d,x,AA,nts)+'">'+pcHtml(D.id,nm,d,x,AA,nts,!wc)+'</td>').join('')+'</tr>'}
-  if(wc){const wk=workCount(D,nm);body+='<tr class="pt"><td>ចំនួនធ្វើការ</td>'+D.cols.map(c=>'<td class="pc">'+wk.per[c.id]+'</td>').join('')+'<td colspan="'+PC.length+'" style="text-align:left">សរុប '+wk.tot+' វេន</td></tr>'
-    body+='<tr class="pt"><td>ម៉ោងសរុប</td>'+D.cols.map(()=>'<td></td>').join('')+PC.map(x=>'<td class="pc">'+(x==='ចំនួនម៉ោង'?monthHrs(D.id,nm,my+'-'+p2(mm),AA,nd):'')+'</td>').join('')+'</tr>'}
+  if(wc){const wk=workCount(D,nm),ix=PC.indexOf('ចំនួនម៉ោង'),sm='សរុប '+wk.tot+' វេន',pre='<tr class="pt"><td>ចំនួនធ្វើការ</td>'+D.cols.map(c=>'<td class="pc">'+wk.per[c.id]+'</td>').join('');
+    if(ix<0)body+=pre+'<td colspan="'+PC.length+'" style="text-align:left">'+sm+'</td></tr>';
+    else{const rest=PC.length-ix-1;body+=pre+(ix>0?'<td colspan="'+ix+'" style="text-align:left">'+sm+'</td>':'')+'<td class="pc">'+monthHrs(D.id,nm,my+'-'+p2(mm),AA,nd)+'</td>'+(rest>0?'<td colspan="'+rest+'" style="text-align:left">'+(ix>0?'':sm)+'</td>':'')+'</tr>'}}
   ps.innerHTML='<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th>'+(wc?D.cols.map(c=>'<th style="width:6%">'+esc(c.label)+'</th>').join(''):'')+PC.map((x,i)=>'<th style="width:'+W(i)+'">'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+body+'</tbody></table></div>';
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+(ORI==='landscape'?'landscape':'portrait')+';margin:8mm}}';document.head.appendChild(st);
   document.body.classList.add('psp');
