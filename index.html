@@ -248,7 +248,9 @@ function printMonthView(){
   addEventListener('afterprint',clean);print()}
 function printSheet(v,wc){
   const k=v.indexOf('|');if(k<0){toast('⚠ សូមជ្រើសឈ្មោះគ្រូពេទ្យ');return}
-  const D=dept(v.slice(0,k)),nm=v.slice(k+1);if(!D)return;
+  const D=dept(v.slice(0,k)),nm=v.slice(k+1);if(!D)return;runPrint(sheetHtml(D,nm,wc))}
+function printAllPlain(dp){const D=dept(dp);if(!D)return;const L=(S.staff[dp]||[]).map(x=>x.n).sort(nameCmp);if(!L.length){toast('⚠ គ្មានបុគ្គលិកក្នុងផ្នែកនេះ');return}runPrint(L.map(n=>sheetHtml(D,n,false)).join(''))}
+function sheetHtml(D,nm,wc){
   const nd=new Date(my,mm,0).getDate(),ps=$('psheet'),r=role(D.id,nm),PC=pcols();let body='';const AA=attCalc(D.id,nm,my+'-'+p2(mm));
   const nc=wc?D.cols.length:0,rest=100-11-nc*6,wt=PC.map(x=>/ហត្ថាលេខា|ផ្សេងៗ/.test(x)?1.6:1),ws=wt.reduce((a,b)=>a+b,0),W=i=>(wt[i]/ws*rest).toFixed(1)+'%';
   for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),sl=D.cols.filter(c=>get(d,D.id,c.id).includes(nm)),
@@ -257,7 +259,8 @@ function printSheet(v,wc){
   if(wc){const wk=workCount(D,nm),ix=PC.indexOf('ចំនួនម៉ោង'),sm='សរុប '+wk.tot+' វេន',pre='<tr class="pt"><td>ចំនួនធ្វើការ</td>'+D.cols.map(c=>'<td class="pc">'+wk.per[c.id]+'</td>').join('');
     if(ix<0)body+=pre+'<td colspan="'+PC.length+'" style="text-align:left">'+sm+'</td></tr>';
     else{const rest=PC.length-ix-1;body+=pre+(ix>0?'<td colspan="'+ix+'" style="text-align:left">'+sm+'</td>':'')+'<td class="pc">'+monthHrs(D.id,nm,my+'-'+p2(mm),AA,nd)+'</td>'+(rest>0?'<td colspan="'+rest+'" style="text-align:left">'+(ix>0?'':sm)+'</td>':'')+'</tr>'}}
-  ps.innerHTML='<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th>'+(wc?D.cols.map(c=>'<th style="width:6%">'+esc(c.label)+'</th>').join(''):'')+PC.map((x,i)=>'<th style="width:'+W(i)+'">'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+body+'</tbody></table></div>';
+  return '<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th>'+(wc?D.cols.map(c=>'<th style="width:6%">'+esc(c.label)+'</th>').join(''):'')+PC.map((x,i)=>'<th style="width:'+W(i)+'">'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+body+'</tbody></table></div>'}
+function runPrint(html){const ps=$('psheet');ps.innerHTML=html;
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+(ORI==='landscape'?'landscape':'portrait')+';margin:8mm}}';document.head.appendChild(st);
   document.body.classList.add('psp');
   const LS=ORI==='landscape';ps.querySelectorAll('.psd').forEach(b=>{b.style.width=LS?'1020px':'';const h=b.offsetHeight;if(h>0)b.style.zoom=Math.max(Math.min(1,(LS?700:1000)/h),.45)});
@@ -347,7 +350,7 @@ function renderDlg(){
   if(!M)return;$('dbox').classList.remove('wide');if(M.mode==='gprint'){renderGprint();return}const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
   const foot=ok=>'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn" data-dclose="1">បិទ</button><button class="btn p" data-dok="1">'+ok+'</button></div>';
   if(M.mode==='print'){const nm=M.v.slice(M.v.indexOf('|')+1),sh=D.cols.map(c=>c.label).join(' / '),wk=workCount(D,nm),wt=wk.tot+' វេន ('+D.cols.map(c=>c.label+' '+wk.per[c.id]).join(' · ')+')';
-    B.innerHTML='<div class="dt1">🖨️ ព្រីនប្រចាំខែ · '+esc(nm)+' · '+MN[mm-1]+' '+my+'</div><div style="margin:4px 0 14px;line-height:1.7">ចង់ព្រីនបន្ថែមជួរកាឡោន <b>'+esc(sh)+'</b> (ដាក់ ✓ ត្រង់វេនដែលគាត់យាម) ដែរឬទេ?</div><div style="margin:-6px 0 12px;font-weight:600">ចំនួនធ្វើការ៖ '+esc(wt)+'</div><div style="margin:-6px 0 12px;font-weight:600">'+esc('សរុប '+wk.tot+' វេន · '+hrsSum(wk.tot,wk.done,D.id,nm,'',null,0))+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" data-dclose="1">បោះបង់</button><button class="btn" data-dprint="plain">ព្រីនធម្មតា</button><button class="btn p" data-dprint="cols">ព្រីន + ជួរ '+esc(sh)+' + ចំនួនធ្វើការ</button></div>';return}
+    B.innerHTML='<div class="dt1">🖨️ ព្រីនប្រចាំខែ · '+esc(nm)+' · '+MN[mm-1]+' '+my+'</div><div style="margin:4px 0 14px;line-height:1.7">ចង់ព្រីនបន្ថែមជួរកាឡោន <b>'+esc(sh)+'</b> (ដាក់ ✓ ត្រង់វេនដែលគាត់យាម) ដែរឬទេ?</div><div style="margin:-6px 0 12px;font-weight:600">ចំនួនធ្វើការ៖ '+esc(wt)+'</div><div style="margin:-6px 0 12px;font-weight:600">'+esc('សរុប '+wk.tot+' វេន · '+hrsSum(wk.tot,wk.done,D.id,nm,'',null,0))+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" data-dclose="1">បោះបង់</button><button class="btn" data-dprint="plain">ព្រីនធម្មតា</button><button class="btn" data-dprint="allplain">ព្រីនធម្មតា · គ្រប់បុគ្គលិកក្នុងផ្នែកនេះ</button><button class="btn p" data-dprint="cols">ព្រីន + ជួរ '+esc(sh)+' + ចំនួនធ្វើការ</button></div>';return}
   if(M.mode==='fill'){const l=get(M.d,D.id,M.c),av=(S.staff[D.id]||[]).map(x=>x.n).filter(x=>!l.includes(x));
     B.innerHTML='<div class="dt1">'+D.icon+' '+esc(D.name)+' · '+fmD(M.d,M.c,D)+'</div><label class="fl">គ្រូពេទ្យ<select id="dSel">'+(av.length?mopt(av.map(x=>[x,x]),''):'<option value="">— គ្មានបុគ្គលិកទំនេរ —</option>')+'</select></label><label class="fl">ឬវាយឈ្មោះថ្មី<input id="dNm" type="text" placeholder="ឈ្មោះ..."></label>'+foot('✓ បំពេញ');return}
   if(M.mode==='note'){const L=getN(M.d,M.dp,M.c);
@@ -404,7 +407,7 @@ $('dlg').addEventListener('change',e=>{const gk=e.target.dataset.gp;
 $('dlg').addEventListener('input',e=>{if(e.target.dataset.gp==='gap'&&M&&M.mode==='gprint'){GAPPX=+e.target.value;$('gpGapV').textContent=GAPPX+'px';savePO();fillGpPv()}});
 $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   if(t===$('dlg')||t.dataset.dclose){closeDlg();return}
-  if(t.dataset.dprint){const v=M.v,wc=t.dataset.dprint==='cols';closeDlg();printSheet(v,wc);return}
+  if(t.dataset.dprint){const v=M.v,wc=t.dataset.dprint==='cols';closeDlg();if(t.dataset.dprint==='allplain')printAllPlain(v.slice(0,v.indexOf('|')));else printSheet(v,wc);return}
   if(t.dataset.dgp){closeDlg();printMonthView();return}
   if(t.dataset.dok){applyDlg();return}
   const a=t.closest('[data-dact]');if(a){const n=$('dNote');M.note=n?n.value:'';M.act=a.dataset.dact;renderDlg();return}
