@@ -830,7 +830,8 @@ function hrsSum(shifts,ds0,dp,nm,ym,A,nd){const done=ds0*SHIFT_H*60,need=shifts*
 function monthMin(dp,nm,ym,A,nd){let m=0;for(let i=1;i<=nd;i++){const q=/^(\d+)[:h](\d{2})$/.exec(effVals(dp,nm,ym+'-'+p2(i),A,'')('ចំនួនម៉ោង')||'');if(q)m+=+q[1]*60+ +q[2]}return m}
 function monthHrs(dp,nm,ym,A,nd){let m=0;for(let i=1;i<=nd;i++){const q=/^(\d+)[:h](\d{2})$/.exec(effVals(dp,nm,ym+'-'+p2(i),A,'')('ចំនួនម៉ោង')||'');if(q)m+=+q[1]*60+ +q[2]}return hrsM(m)}
 function pcHtml(dp,nm,d,x,A,nts,plain){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{},sc=(x==='ម៉ោងចូល'||x==='ម៉ោងចេញ'||x==='ចំនួនម៉ោង');
-  if(sc&&o[x]===undefined){if(plain)return '';const g=A&&A[d];if(g&&g.segs&&g.segs.length>1)return g.segs.map(q=>(x==='ម៉ោងចូល'?esc(q[0]):x==='ម៉ោងចេញ'?esc(q[1]):(q[2]?hrsF(q[2]):''))||'&nbsp;').join('<br>')}
+  if(sc&&plain)return '';
+  if(sc&&o[x]===undefined){const g=A&&A[d];if(g&&g.segs&&g.segs.length>1)return g.segs.map(q=>(x==='ម៉ោងចូល'?esc(q[0]):x==='ម៉ោងចេញ'?esc(q[1]):(q[2]?hrsF(q[2]):''))||'&nbsp;').join('<br>')}
   return esc(effVals(dp,nm,d,A,nts)(x))}
 function pcCell(dp,nm,d,x,A,nts,edit){const o=(S.pv||{})[dp+'|'+nm+'|'+d]||{};
   return '<td class="pcx'+(o[x]!==undefined?' ov':'')+tcCls(dp,nm,d,x,A,nts)+'"'+(edit?' data-pv="'+d+'|'+esc(x)+'" title="ចុចដើម្បីកែ" style="cursor:pointer"':'')+'>'+pcHtml(dp,nm,d,x,A,nts,false)+'</td>'}
