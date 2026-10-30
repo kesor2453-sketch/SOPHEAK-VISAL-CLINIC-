@@ -138,7 +138,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <form class="add" id="sForm"><input id="sNew" placeholder="ឈ្មោះ — ឧ. Dr.Sok Dara"><select id="sRole" class="btn" title="តួនាទី (ស្រេចចិត្ត)"></select><input type="color" id="sColor" value="#4f8df5" title="ព័ណ៌ប្រអប់ឈ្មោះ" style="flex:0 0 46px;padding:2px;min-width:46px"><button class="btn p">+ បន្ថែម</button></form></div><div class="card"><div class="ch"><b>ម៉ោងធ្វើការ (ថ្ងៃថេរ) <small id="fxHint"></small></b><button class="btn" type="button" id="fxEditBtn"></button></div>
 <div class="chips" id="fxChips" style="margin-bottom:8px"></div><div id="fxList"></div>
 <div class="nav" style="margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line)"><button class="btn" id="fxPrev">‹</button><div class="lbl" id="fxLbl"></div><button class="btn" id="fxNext">›</button><button class="btn p" id="fxApply">⚡ បំពេញខែនេះតាមម៉ោងធ្វើការ</button></div>
-<small>បំពេញតែវេនដែលនៅទំនេរ មិនលុបឬប៉ះពាល់វេនដែលមានស្រាប់ទេ។</small></div><div class="card"><div class="ch"><b>🎨 ព័ណ៌ «ថ្ងៃនេះ» <small>(ក្នុងតារាងប្រចាំខែ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input type="color" id="tdPick" title="ជ្រើសព័ណ៌ថ្ងៃនេះ" value="#0d6efd" style="width:42px;height:34px;padding:2px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer"><button class="btn" type="button" id="tdReset">↺ ព័ណ៌ដើម (ខៀវ)</button><small style="color:var(--sub)">ចាំលើឧបករណ៍នេះ</small></div></div><div class="card"><div class="ch"><b>🔒 កូដកែប្រែ <small>(ត្រូវបញ្ចូលមុនចុច ✏️ កែប្រែ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input id="pinNew" type="password" inputmode="numeric" placeholder="កូដថ្មី" style="padding:8px;border:1px solid var(--line);border-radius:9px;width:140px"><button class="btn p" type="button" id="pinSave">រក្សាទុក</button><button class="btn" type="button" id="pinOff">បិទកូដ</button><small id="pinSt" style="color:var(--sub)"></small></div></div>
+<small>បំពេញតែវេនដែលនៅទំនេរ មិនលុបឬប៉ះពាល់វេនដែលមានស្រាប់ទេ។</small></div><div class="card"><div class="ch"><b>🎨 ព័ណ៌ «ថ្ងៃនេះ» <small>(ក្នុងតារាងប្រចាំខែ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input type="color" id="tdPick" title="ជ្រើសព័ណ៌ថ្ងៃនេះ" value="#0d6efd" style="width:42px;height:34px;padding:2px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer"><button class="btn" type="button" id="tdReset">↺ ព័ណ៌ដើម (ខៀវ)</button><small style="color:var(--sub)">ចាំលើឧបករណ៍នេះ</small></div></div><div class="card"><div class="ch"><b>🔒 កូដកែប្រែ <small>(សម្រាប់ ✏️ កែប្រែ ក្នុង «បំពេញវេន (តាមបុគ្គលិក)» ប៉ុណ្ណោះ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input id="pinNew" type="password" inputmode="numeric" placeholder="កូដថ្មី" style="padding:8px;border:1px solid var(--line);border-radius:9px;width:140px"><button class="btn p" type="button" id="pinSave">រក្សាទុក</button><button class="btn" type="button" id="pinOff">បិទកូដ</button><small id="pinSt" style="color:var(--sub)"></small></div></div>
 </div>
 
 
@@ -186,7 +186,11 @@ const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at
 function save(){if(CI)return;if(USE_FB)setDoc(ref,S).catch(e=>toast('⚠ '+e.message));else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
-function load(d){const mig=!d.v;S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],pin:d.pin||'',clinic:null,imp:d.imp||{map:{},auto:false}};
+function load(d){const mig=!d.v;try{Object.keys(d.sched||{}).forEach(k=>Object.keys(d.sched[k]||{}).forEach(c=>{const v=d.sched[k][c];if(Array.isArray(v)&&v.length>1)d.sched[k][c]=v.filter((x,i)=>v.indexOf(x)===i)}))}catch(e){}S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],pin:d.pin||'',clinic:null,imp:d.imp||{map:{},auto:false}};
+  try{S.imp=S.imp||{map:{},auto:false};if(!S.imp.cl&&S.depts.some(D=>D.id==='doctor')){const nms=new Set((S.staff.doctor||[]).map(x=>String(x.n).trim().toLowerCase()));
+    S.depts.forEach(D=>{if(D.id!=='doctor')S.staff[D.id]=(S.staff[D.id]||[]).filter(x=>!nms.has(String(x.n).trim().toLowerCase()))});
+    Object.keys(S.sched).forEach(dt=>Object.keys(S.sched[dt]||{}).forEach(k=>{const dp=k.split('__')[0],v=S.sched[dt][k];if(dp==='doctor'||!Array.isArray(v))return;S.sched[dt][k]=v.filter(n=>!nms.has(String(n).trim().toLowerCase()))}));
+    S.imp.cl=1;S.imp.dp='doctor';setTimeout(()=>save(),500)}}catch(e){}
   S.depts.forEach(x=>S.staff[x.id]=(S.staff[x.id]||[]).map(s=>typeof s==='string'?{n:s,r:''}:s));
   S.depts.forEach(D=>{D.roles=D.roles||[];(S.staff[D.id]||[]).forEach(s=>{if(s.r&&!D.roles.includes(s.r))D.roles.push(s.r)})});
   if(mig){
@@ -259,7 +263,7 @@ function sheetHtml(D,nm,wc){
   if(wc){const wk=workCount(D,nm),ix=PC.indexOf('ចំនួនម៉ោង'),sm='សរុប '+wk.tot+' វេន',pre='<tr class="pt"><td>ចំនួនធ្វើការ</td>'+D.cols.map(c=>'<td class="pc">'+wk.per[c.id]+'</td>').join('');
     if(ix<0)body+=pre+'<td colspan="'+PC.length+'" style="text-align:left">'+sm+'</td></tr>';
     else{const rest=PC.length-ix-1;body+=pre+(ix>0?'<td colspan="'+ix+'" style="text-align:left">'+sm+'</td>':'')+'<td class="pc">'+monthHrs(D.id,nm,my+'-'+p2(mm),AA,nd)+'</td>'+(rest>0?'<td colspan="'+rest+'" style="text-align:left">'+(ix>0?'':sm)+'</td>':'')+'</tr>'}}
-  return '<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th>'+(wc?D.cols.map(c=>'<th style="width:6%">'+esc(c.label)+'</th>').join(''):'')+PC.map((x,i)=>'<th style="width:'+W(i)+'">'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+body+'</tbody></table></div>'}
+  return '<div class="psd"><h2>'+D.icon+' '+esc(nm)+(r?' ('+esc(r)+')':'')+' — '+esc(D.name)+' — '+MN[mm-1]+' '+my+'</h2><table class="pst"><thead><tr><th style="width:11%">ថ្ងៃ</th>'+(wc?D.cols.map(c=>'<th style="width:6%">'+esc(c.label)+'</th>').join(''):'')+PC.map((x,i)=>'<th style="width:'+W(i)+'">'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+body+'</tbody></table><div style="text-align:left;margin-top:14px;font-weight:700;font-size:13px">'+esc(nm)+'</div></div>'}
 function runPrint(html){const ps=$('psheet');ps.innerHTML=html;
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+(ORI==='landscape'?'landscape':'portrait')+';margin:8mm}}';document.head.appendChild(st);
   document.body.classList.add('psp');
@@ -439,12 +443,12 @@ function renderMonthDay(){
   document.addEventListener('mouseup',()=>{if(el)el.classList.remove('dragging');el=null});
   ['touchstart','wheel'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true},{passive:true}));document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true});
 })();
-async function needPin(){if(!S.pin)return true;try{if(sessionStorage.getItem('deptUnl')===S.pin)return true}catch(e){}
+async function needPin(force){if(!S.pin)return true;try{if(!force&&sessionStorage.getItem('deptUnl')===S.pin)return true}catch(e){}
   const v=prompt('🔒 បញ្ចូលកូដ ដើម្បីចូលកែប្រែ');if(v===null)return false;
   if(await sha(v.trim())===S.pin){try{sessionStorage.setItem('deptUnl',S.pin)}catch(e){}return true}toast('⚠ កូដមិនត្រឹមត្រូវ');return false}
 function pinUI(){const e=$('pinSt');if(e)e.textContent=S.pin?'🔒 បានដាក់កូដ':'មិនទាន់ដាក់កូដ'}
 document.addEventListener('click',async e=>{const id=e.target.id;if(id!=='pinSave'&&id!=='pinOff')return;
-  if(S.pin&&!(await needPin()))return;
+  if(S.pin&&!(await needPin(true)))return;
   if(id==='pinOff'){S.pin='';save();try{sessionStorage.removeItem('deptUnl')}catch(x){}pinUI();toast('បិទកូដរួចរាល់ ✓');return}
   const v=($('pinNew').value||'').trim();if(v.length<3){toast('⚠ កូដយ៉ាងតិច ៣ តួ');return}
   S.pin=await sha(v);try{sessionStorage.setItem('deptUnl',S.pin)}catch(x){}save();$('pinNew').value='';pinUI();toast('រក្សាទុកកូដរួចរាល់ ✓')});
@@ -552,16 +556,16 @@ function spvApply(data,o){const D=dept(o.dp);if(!D)return 0;let ch=0;if(o.syncSt
 function spvHash(d){const t=JSON.stringify(d.scheduleAll||[])+JSON.stringify(d.columnsByMonth||{});let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return h+':'+t.length}
 function spvAutoStart(){if(!USE_FB||CI||spvUnsub||!S.imp||!S.imp.auto)return;
   spvUnsub=onSnapshot(spvRef(),snap=>{if(!snap.exists()||!S.imp||!S.imp.auto)return;const d=snap.data(),h=spvHash(d);if(S.imp.h===h)return;
-    const dp=S.imp.dp||'doctor',ch=spvApply(d,{dp,months:spvMonths(d,'fut'),mode:'replace'});S.imp.h=h;save();if(ch){renderAll();toast('⬇ បានធ្វើសមកាលកម្មវេនពី SPV ('+ch+' ក្រឡា)')}},()=>{})}
+    const dp=dept('doctor')?'doctor':(S.imp.dp||'doctor'),ch=spvApply(d,{dp,months:spvMonths(d,'fut'),mode:'replace'});S.imp.h=h;save();if(ch){renderAll();toast('⬇ បានធ្វើសមកាលកម្មវេនពី SPV ('+ch+' ក្រឡា)')}},()=>{})}
 async function openSpv(){
-  S.imp=S.imp||{map:{},auto:false};SPVS={dp:S.imp.dp||(dept('doctor')?'doctor':(S.depts[0]||{}).id),sc:S.imp.sc||'cur',mode:S.imp.mode||'replace',data:null,err:''};
+  S.imp=S.imp||{map:{},auto:false};SPVS={dp:dept('doctor')?'doctor':(S.imp.dp||(S.depts[0]||{}).id),sc:S.imp.sc||'cur',mode:S.imp.mode||'replace',data:null,err:''};
   $('dbox').innerHTML='<div class="dt1">⬇ ទាញវេនពីវេប SPV</div><div style="padding:14px">⏳ កំពុងភ្ជាប់ទៅវេប SPV…</div>';$('dlg').style.display='flex';
   try{const sn=await getDoc(spvRef());if(!sn.exists())throw new Error('មិនមានទិន្នន័យក្នុងវេប SPV');SPVS.data=sn.data()}catch(e){SPVS.err=e.message}
   spvRender()}
 function spvRender(){const X=SPVS;if(!X)return;let h='<div class="dt1">⬇ ទាញវេនពីវេប SPV</div><div style="padding:12px 14px;line-height:1.9;font-size:13.5px;max-height:75vh;overflow:auto">';
   if(X.err){h+='<div class="note">⚠ មិនអាចអានវេប SPV៖ '+esc(X.err)+'<br>ពិនិត្យ Firestore Rules របស់ spv-schedule (allow read: if true) និងអ៊ីនធឺណិត។</div><div style="margin-top:10px"><button class="btn" data-spvx="close">បិទ</button></div></div>';$('dbox').innerHTML=h;return}
   const months=spvMonths(X.data,X.sc),names=spvNames(X.data,X.dp,months);
-  h+='<label class="fl">ផ្នែកគោលដៅ<select data-spvx="dp">'+S.depts.map(d=>'<option value="'+d.id+'"'+(d.id===X.dp?' selected':'')+'>'+esc(d.icon+' '+d.name)+'</option>').join('')+'</select></label>'+
+  h+='<div class="fl">ផ្នែកគោលដៅ៖ <b>'+esc(((dept(X.dp)||{}).icon||'')+' '+((dept(X.dp)||{}).name||''))+'</b></div>'+
     '<label class="fl">ខែដែលត្រូវទាញ<select data-spvx="sc"><option value="cur"'+(X.sc==='cur'?' selected':'')+'>ខែដែលកំពុងមើល ('+MN[mm-1]+' '+my+')</option><option value="fut"'+(X.sc==='fut'?' selected':'')+'>ពីខែបច្ចុប្បន្ន ទៅខែខាងមុខទាំងអស់</option></select></label>'+
     '<label class="fl">របៀប<select data-spvx="mode"><option value="replace"'+(X.mode==='replace'?' selected':'')+'>ជំនួស — វេនក្នុងថ្ងៃដែល SPV មាន ធ្វើតាម SPV</option><option value="merge"'+(X.mode==='merge'?' selected':'')+'>បន្ថែម — រក្សាវេនចាស់ ហើយបន្ថែមឈ្មោះពី SPV</option></select></label>';
   const dd=dept(X.dp),isDoc=dd&&(dd.id==='doctor'||dd.name==='គ្រូពេទ្យ'),un=isDoc?[]:names.filter(n=>!spvMatch(n,X.dp));
@@ -619,7 +623,7 @@ document.addEventListener('click',e=>{const t=e.target;
     const v=prompt(lb+' · '+fmtD(d)+'\nទុកទទេ = មិនបានធ្វើការ · វាយ * = ត្រឡប់ទៅស្វ័យប្រវត្តិ',pvc.textContent.trim());if(v===null)return;let val=v.trim();
     if((lb==='ម៉ោងចូល'||lb==='ម៉ោងចេញ')&&val){if(!/^([01]?\d|2[0-3]):[0-5]\d$/.test(val)){toast('⚠ ម៉ោងត្រូវជា HH:MM (ឧ. 08:30)');return}if(val.length===4)val='0'+val}
     S.pv=S.pv||{};const o=S.pv[key]=S.pv[key]||{};if(val==='*')delete o[lb];else o[lb]=val;if(!Object.keys(o).length)delete S.pv[key];save();renderMonth();return}
-  if(t.dataset.bedit){if(bEdit){bEdit=false;renderMonth();return}needPin().then(ok=>{if(ok){bEdit=true;renderMonth()}});return}
+  if(t.dataset.bedit){bEdit=!bEdit;renderMonth();return}
   if(t.dataset.print){const sl=t.closest('.nav').querySelector('.psel,.psel2');doPrint(sl?sl.value:'all');return}
   if(t.dataset.up||t.dataset.dn){moveDept(t.dataset.up||t.dataset.dn,t.dataset.up?-1:1);return}
   if(t.dataset.pstep){const L=(S.staff[pDept]||[]).map(x=>x.n).sort(nameCmp),i=L.indexOf(pName);if(L.length){pName=L[(i+(+t.dataset.pstep)+L.length)%L.length];pEdit=false;renderMonth();scrollTo(0,0)}return}
@@ -681,7 +685,7 @@ function fxPlan(extraMonth){const months=(S.fxMonths||[]).slice();if(extraMonth&
   S.depts.forEach(D=>(S.staff[D.id]||[]).forEach(s=>{if(!s.fx)return;months.forEach(mo=>{const ym=mo.split('-'),k=D.id+'|'+s.n;fxDesired(D,s,+ym[0],+ym[1]).forEach(x=>{(want[k]=want[k]||{})[x]=1})})}));
   Object.keys(S.fxm).forEach(d=>Object.keys(S.fxm[d]).forEach(k=>{const p=k.split('__');S.fxm[d][k].forEach(n=>{const w=want[p[0]+'|'+n];if(!(w&&w[d+'|'+p[1]]))rem.push([d,p[0],p[1],n])})}));
   Object.keys(want).forEach(k=>{const dp=k.slice(0,k.indexOf('|')),n=k.slice(k.indexOf('|')+1);Object.keys(want[k]).forEach(x=>{const d=x.split('|')[0],cid=x.split('|')[1];
-    if(((S.fxm[d]||{})[key(dp,cid)]||[]).includes(n)||get(d,dp,cid).includes(n)||fxSkipped(d,dp,cid,n))return;add.push([d,dp,cid,n])})});
+    if(((S.fxm[d]||{})[key(dp,cid)]||[]).includes(n)||S.depts.some(X=>get(d,X.id,cid).includes(n))||fxSkipped(d,dp,cid,n))return;add.push([d,dp,cid,n])})});
   const sk=[];Object.keys(S.fxs||{}).forEach(d=>Object.keys(S.fxs[d]).forEach(k=>{const p=k.split('__');S.fxs[d][k].forEach(n=>{const w=want[p[0]+'|'+n];if(!(w&&w[d+'|'+p[1]]))sk.push([d,p[0],p[1],n])})}));
   return{add,rem,months,sk}}
 function fxRun(pl){S.fxMonths=pl.months;S.fxm=S.fxm||{};(pl.sk||[]).forEach(o=>fxUnskip(o[0],o[1],o[2],o[3]));
