@@ -255,7 +255,7 @@ function printSheet(v,wc){
   const D=dept(v.slice(0,k)),nm=v.slice(k+1);if(!D)return;runPrint(sheetHtml(D,nm,wc))}
 function printAllPlain(dp){const D=dept(dp);if(!D)return;const L=(S.staff[dp]||[]).map(x=>x.n).sort(nameCmp);if(!L.length){toast('⚠ គ្មានបុគ្គលិកក្នុងផ្នែកនេះ');return}runPrint(L.map(n=>sheetHtml(D,n,false)).join(''))}
 function sheetHtml(D,nm,wc){
-  const nd=new Date(my,mm,0).getDate(),ps=$('psheet'),r=role(D.id,nm),PC=pcols();let body='';const AA=attCalc(D.id,nm,my+'-'+p2(mm));
+  const nd=new Date(my,mm,0).getDate(),ps=$('psheet'),r=role(D.id,nm),PC=pcols().filter(x=>!((D.id==='nurse'||D.id==='midwife')&&x==='ចំនួនម៉ោង'));let body='';const AA=attCalc(D.id,nm,my+'-'+p2(mm));
   const nc=wc?D.cols.length:0,rest=100-11-nc*6,wt=PC.map(x=>/ហត្ថាលេខា|ផ្សេងៗ/.test(x)?1.6:1),ws=wt.reduce((a,b)=>a+b,0),W=i=>(wt[i]/ws*rest).toFixed(1)+'%';
   for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay(),sl=D.cols.filter(c=>get(d,D.id,c.id).includes(nm)),
       nts=sl.map(c=>getN(d,D.id,c.id).map(x=>x.x).join(' ; ')).filter(Boolean).join(' ; ');
