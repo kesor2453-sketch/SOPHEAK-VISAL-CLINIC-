@@ -68,6 +68,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .psd{width:700px;margin:0 auto;color:#000;background:#fff}.psd h2{font-size:21px;margin:0 0 8px;text-align:center}
 .pst{width:100%;border-collapse:collapse;font-size:11px}.pst th,.pst td{border:1px solid #333;padding:3px 4px;height:22px}
 .pst th{background:#eee}.pst td.pd{text-align:center;font-weight:700;white-space:nowrap}.pst td.pd.we{background:#ffeaea;color:#d32f2f}
+.imgcap .mdept>.dh,.imgcap .mt thead th,.imgcap .mt .nmc{position:static!important}.imgcap .tw,.imgcap .gridv .tw,.imgcap.gridv .tw{overflow:visible!important;max-height:none!important}.imgcap .no-p{display:none!important}.imgcap .mt tr.td td,.imgcap .mt td.td,.imgcap .mt .td{background:#9ccaff!important}.imgcap .mt th.td{background:#0d6efd!important;color:#fff!important}.imgcap .mt td.nmc.td{background:#5aa7ff!important}.imgcap .tb{background:#0d6efd!important}.imgttl{font-weight:700;font-size:20px;padding:10px 6px;background:#fff;color:#000}
 .pst td.pd small{display:block;font-weight:400;font-size:9px}.pst td.pn1 small{color:#555;margin-left:3px;font-size:9.5px}.pst td.po{font-size:10px}.pst tr.pon td{background:#e3ecfb}.pf{margin-top:8px;font-size:12px;text-align:right}.pst td.pc{text-align:center;font-weight:700}.pst tr.pt td{background:#eee;font-weight:700;font-size:10px}
 @media print{.psd{break-after:page}.psd:last-child{break-after:auto}.pst thead{display:table-header-group}.pst tr{break-inside:avoid}}
 .ppl .pp{padding:8px 15px;font-size:14px}
@@ -120,12 +121,12 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 
 <div class="pn on" id="p-day"><div class="card">
 <div class="nav"><button class="btn" id="dPrev">‹</button><div class="lbl" id="dLbl"></div><button class="btn" id="dNext">›</button>
-<input type="date" class="btn" id="dPick"><button class="btn" id="dToday">ថ្ងៃនេះ</button><select class="btn no-p psel" title="ជ្រើសផ្នែកដែលត្រូវព្រីន"></select><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button></div>
+<input type="date" class="btn" id="dPick"><button class="btn" id="dToday">ថ្ងៃនេះ</button><select class="btn no-p psel" title="ជ្រើសផ្នែកដែលត្រូវព្រីន"></select><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button><button class="btn no-p" data-img="1" title="ទាញយកជារូបភាព សម្រាប់ផ្ញើ Telegram">🖼️ រូបភាព</button></div>
 <div class="dlist" id="dGrid"></div></div></div>
 
 <div class="pn" id="p-month"><div class="card">
 <div class="nav" id="mNav"><button class="btn" id="mPrev">‹</button><div class="lbl" id="mLbl"></div><button class="btn" id="mNext">›</button>
-<button class="btn" id="mToday">ខែនេះ</button><button class="btn no-p" data-spv="1">⬇ ទាញវេនពីវេប SPV</button><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button>
+<button class="btn" id="mToday">ខែនេះ</button><button class="btn no-p" data-spv="1">⬇ ទាញវេនពីវេប SPV</button><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button><button class="btn no-p" data-img="1" title="ទាញយកជារូបភាព សម្រាប់ផ្ញើ Telegram">🖼️ រូបភាព</button>
 </div><div id="mVBar" class="no-p"><span id="mViews" class="mvs"><button class="btn" id="mv1" data-v="day" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">មើលតាមថ្ងៃ (រាយឈ្មោះ)</button><button class="btn" id="mv2" data-v="staff" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">បំពេញវេន (តាមបុគ្គលិក)</button><button class="btn" id="mv3" data-v="grid" draggable="true" title="ទាញដើម្បីប្ដូរលំដាប់">កាឡោនដើម (ទាំងអស់)</button><span id="mvArrows" class="no-p"><button class="btn" data-vmove="-1" title="រំកិលទៅមុខ">◀</button><button class="btn" data-vmove="1" title="រំកិលទៅក្រោយ">▶</button></span></span></div>
 <div id="mWrap"></div></div></div>
 
@@ -452,6 +453,22 @@ document.addEventListener('click',async e=>{const id=e.target.id;if(id!=='pinSav
   if(id==='pinOff'){S.pin='';save();try{sessionStorage.removeItem('deptUnl')}catch(x){}pinUI();toast('បិទកូដរួចរាល់ ✓');return}
   const v=($('pinNew').value||'').trim();if(v.length<3){toast('⚠ កូដយ៉ាងតិច ៣ តួ');return}
   S.pin=await sha(v);try{sessionStorage.setItem('deptUnl',S.pin)}catch(x){}save();$('pinNew').value='';pinUI();toast('រក្សាទុកកូដរួចរាល់ ✓')});
+function loadH2C(){return window.html2canvas?Promise.resolve():new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('មិនអាចផ្ទុកឧបករណ៍បង្កើតរូបភាព (ត្រូវការអ៊ីនធឺណិត)'));document.head.appendChild(sc)})}
+let imgBusy=false;
+async function saveImg(){if(imgBusy)return;imgBusy=true;const month=$('p-month').classList.contains('on'),el=month?$('mWrap'):$('dGrid');
+  if(!el||!el.innerHTML.trim()){imgBusy=false;return}
+  toast('⏳ កំពុងបង្កើតរូបភាព…');let ttl=null,w0=el.style.width;
+  try{await loadH2C();if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+    ttl=document.createElement('div');ttl.className='imgttl';ttl.textContent='កាលវិភាគ · '+(month?MN[mm-1]+' '+my:$('dLbl').textContent);el.insertBefore(ttl,el.firstChild);
+    document.body.classList.add('imgcap');el.style.width='max-content';el.style.minWidth=el.parentElement.clientWidth+'px';
+    await new Promise(r=>setTimeout(r,60));
+    const cv=await html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true,width:el.scrollWidth,windowWidth:el.scrollWidth+40,scrollX:0,scrollY:-window.scrollY});
+    const blob=await new Promise(r=>cv.toBlob(r,'image/png')),fn='schedule-'+(month?my+'-'+p2(mm)+'-'+(mview||'day'):ds(new Date()))+'.png';
+    const file=new File([blob],fn,{type:'image/png'});
+    if(matchMedia('(pointer:coarse)').matches&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});toast('✓ រួចរាល់');return}catch(e){if(e&&e.name==='AbortError')return}}
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast('✓ បានទាញយករូបភាព')}
+  catch(e){toast('⚠ '+(e&&e.message||e))}
+  finally{document.body.classList.remove('imgcap');el.style.width=w0;el.style.minWidth='';if(ttl)ttl.remove();imgBusy=false}}
 function tdApply(c){const r=document.documentElement.style,n=parseInt(c.slice(1),16),L=(.299*(n>>16)+.587*((n>>8)&255)+.114*(n&255));r.setProperty('--td',c);r.setProperty('--tdi',L>160?'#1c2430':'#fff')}
 (function(){let c='#0d6efd';try{c=localStorage.getItem('deptTodayColor')||c}catch(e){}if(!/^#[0-9a-f]{6}$/i.test(c))c='#0d6efd';tdApply(c);const e=$('tdPick');if(e){e.value=c;const rs=$('tdReset');if(rs)rs.onclick=()=>{e.value='#0d6efd';tdApply('#0d6efd');try{localStorage.removeItem('deptTodayColor')}catch(x){}};e.oninput=()=>{tdApply(e.value);try{localStorage.setItem('deptTodayColor',e.value)}catch(x){}}}})();
 function stk(){const r=document.documentElement.style,t=document.querySelector('.top'),nv=$('mNav'),v=$('mVBar'),tt=t?t.offsetHeight:0,nh=(nv&&nv.offsetParent)?nv.offsetHeight:0,vh=(v&&v.offsetParent)?v.offsetHeight:0;r.setProperty('--tt',tt+'px');r.setProperty('--tn',(tt+nh)+'px');r.setProperty('--b',(tt+nh+vh)+'px')}
@@ -632,6 +649,7 @@ document.addEventListener('click',e=>{const t=e.target;
   const ch=t.closest('#pChips .chip');if(ch){pDept=ch.dataset.dp;pName=pPick(pDept);pEdit=false;renderMonth();return}
   const pn=t.closest('[data-pn]');if(pn){pName=pn.dataset.pn;pEdit=false;renderMonth();return}
   const tg=t.closest('[data-tg]');if(tg){const l=get(tg.dataset.d,tg.dataset.dp,tg.dataset.tg);if(l.includes(pName))fxManualRemove(tg.dataset.d,tg.dataset.dp,tg.dataset.tg,pName);setL(tg.dataset.d,tg.dataset.dp,tg.dataset.tg,l.includes(pName)?l.filter(x=>x!==pName):l.concat(pName));save();renderAll();return}
+  if(t.dataset.img){saveImg();return}
   if(t.dataset.spv){openSpv();return}
   if(t.dataset.noon){noon(t.dataset.noon);return}
   if(t.dataset.rm!==undefined){fxManualRemove(t.dataset.d,t.dataset.dp,t.dataset.c,t.dataset.rm);setL(t.dataset.d,t.dataset.dp,t.dataset.c,get(t.dataset.d,t.dataset.dp,t.dataset.c).filter(x=>x!==t.dataset.rm));save();renderAll();return}
