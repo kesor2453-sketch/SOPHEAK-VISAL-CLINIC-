@@ -246,7 +246,7 @@ function printMonthView(){
   noToday=true;if(mview==='grid')gridSplit=sp;renderMonth();
   document.body.classList.add('fitp');const rw=mview==='day'&&W.querySelectorAll('.mdept').length>1;if(rw)W.classList.add('rowp');W.style.width=rw?(W.querySelectorAll('.mdept').length*380)+'px':'max-content';
   const dim={landscape:[1020,700],portrait:[700,1020]};let best='landscape',bs=0;
-  if(rw){const n=W.querySelectorAll('.mdept').length,os=ORI==='auto'?['landscape','portrait']:[ORI];let bw=n*380;
+  if(rw){const n=W.querySelectorAll('.mdept').length,os=['landscape'];let bw=n*380;
     for(const o of os)for(let pw=240;pw<=1000;pw+=40){W.style.width=(n*pw)+'px';const sc=Math.min(dim[o][0]/(n*pw),dim[o][1]/W.offsetHeight);if(sc>bs){bs=sc;best=o;bw=n*pw}}
     W.style.width=bw+'px';bs*=.92}
   else{const w=W.offsetWidth,h=W.offsetHeight;
