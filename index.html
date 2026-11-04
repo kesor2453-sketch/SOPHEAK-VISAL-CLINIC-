@@ -28,7 +28,7 @@ small{font-weight:400;color:var(--sub);font-size:11.5px;margin-left:3px}
 .adding{flex:1;min-width:150px}
 input.ed{width:100%;padding:5px;border:1px solid var(--brand);border-radius:7px;font-family:inherit;font-size:12.5px}
 .mdept{border:1px solid var(--line);border-radius:12px;overflow:clip;margin-bottom:14px}
-.mt.tr90{table-layout:auto;width:100%;min-width:0}#mWrap.meas .mt.tr90{width:1px}.mt.tr90 .nmc{min-width:0;position:static}.mt.tr90 th{min-width:0}.tr90 .nmc{width:1%;white-space:nowrap}
+.mt.tr90{table-layout:fixed;width:100%;min-width:0}#mWrap.meas .mt.tr90{width:1px;table-layout:auto}.mt.tr90 .nmc{min-width:0;position:static}.mt.tr90 th{min-width:0}.tr90 .nmc{width:34px;white-space:nowrap}
 .tr90 .ppl{flex-direction:column;align-items:stretch;gap:2px;min-height:0}.tr90 .pp,.tr90 .dt .pp,.tr90 .ppl .pp{display:block!important;width:auto!important;min-width:0!important;max-width:none!important;white-space:nowrap!important;overflow:visible!important;padding:2px 6px!important;font-size:12px!important;line-height:1.3;text-align:center;border-radius:6px!important}.tr90 td{padding:2px!important;vertical-align:top}
 #mWrap.rowp{display:flex;gap:8px;align-items:flex-start}#mWrap.rowp>.mdept{flex:1 1 0;min-width:0;margin:0}
 table{border-collapse:collapse;font-size:12.5px}
@@ -190,7 +190,7 @@ const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at
 function save(){if(CI)return;if(USE_FB){try{const kb=Math.round(new Blob([JSON.stringify(S)]).size/1024);if(kb>850)toast('⚠ ទិន្នន័យធំ '+kb+' KB (ជិតកំណត់ 1024 KB)')}catch(e){}setDoc(ref,S).catch(e=>toast('⚠ មិនអាចរក្សាទុក៖ '+e.message))}else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
-function load(d){const mig=!d.v;try{Object.keys(d.sched||{}).forEach(k=>Object.keys(d.sched[k]||{}).forEach(c=>{const v=d.sched[k][c];if(Array.isArray(v)&&v.length>1)d.sched[k][c]=v.filter((x,i)=>v.indexOf(x)===i)}))}catch(e){}S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],pin:d.pin||'',clinic:null,imp:d.imp||{map:{},auto:false}};
+function load(d){const mig=!d.v;try{Object.keys(d.sched||{}).forEach(k=>Object.keys(d.sched[k]||{}).forEach(c=>{const v=d.sched[k][c];if(Array.isArray(v)&&v.length>1)d.sched[k][c]=v.filter((x,i)=>v.indexOf(x)===i)}))}catch(e){}S={...d,v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],pin:d.pin||'',clinic:null,imp:d.imp||{map:{},auto:false}};
   try{S.imp=S.imp||{map:{},auto:false};if(!S.imp.cl&&S.depts.some(D=>D.id==='doctor')){const nms=new Set((S.staff.doctor||[]).map(x=>String(x.n).trim().toLowerCase()));
     S.depts.forEach(D=>{if(D.id!=='doctor')S.staff[D.id]=(S.staff[D.id]||[]).filter(x=>!nms.has(String(x.n).trim().toLowerCase()))});
     Object.keys(S.sched).forEach(dt=>Object.keys(S.sched[dt]||{}).forEach(k=>{const dp=k.split('__')[0],v=S.sched[dt][k];if(dp==='doctor'||!Array.isArray(v))return;S.sched[dt][k]=v.filter(n=>!nms.has(String(n).trim().toLowerCase()))}));
@@ -254,14 +254,14 @@ function printMonthView(){
       let h='<div class="mdept" data-id="'+b.key+'" style="margin-bottom:6px"><div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span></div><table class="mt dt tr90"><thead><tr><th class="nmc"></th>';
       for(let i=a;i<=z;i++){const w=new Date(my,mm-1,i).getDay();h+='<th'+(w==0||w==6?' class="we"':'')+'>'+i+'<small style="display:block;font-weight:400">'+DW[w]+'</small></th>'}
       h+='</tr></thead><tbody>';
-      b.ds.forEach(D=>UC.forEach(c=>{if(!D.cols.some(x=>x.id===c.id))return;h+='<tr><td class="nmc" style="color:'+(g?D.color:'inherit')+'">'+(g?D.icon+' '+esc(D.name)+' · ':'')+esc(c.label)+'</td>';
-        for(let i=a;i<=z;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();h+='<td'+(w==0||w==6?' class="we" style="background:#fdeaea"':'')+'><div class="ppl">'+nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')+'</div></td>'}
-        h+='</tr>'}));
+      UC.forEach(c=>{const DS=b.ds.filter(D=>D.cols.some(x=>x.id===c.id));if(!DS.length)return;h+='<tr><td class="nmc">'+esc(c.label)+'</td>';
+        for(let i=a;i<=z;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();h+='<td'+(w==0||w==6?' class="we" style="background:#fdeaea"':'')+'><div class="ppl">'+DS.map(D=>nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')).join('')+'</div></td>'}
+        h+='</tr>'});
       return h+'</tbody></table></div>'}).join('');
     const mk=k=>{const sz=Math.ceil(nd/k);let h='';BK.forEach(b=>{for(let a=1;a<=nd;a+=sz)(()=>{h+='<div class="rpart">'+build(a,Math.min(nd,a+sz-1),[b])+'</div>'})()});return h};
     let PW=0;const fit=g=>{W.classList.add('meas');W.style.display='grid';W.style.gridTemplateColumns='repeat('+g+',max-content)';W.style.columnGap='12px';W.style.rowGap='8px';W.style.alignItems='start';W.style.width='auto';
       const mp={};W.querySelectorAll('.rpart').forEach(p=>{const id=p.firstChild.dataset.id;p.querySelectorAll('.tr90').forEach(t=>{mp[id]=Math.max(mp[id]||0,t.offsetWidth)})});W.classList.remove('meas');
-      PW=0;W.querySelectorAll('.rpart').forEach(p=>{const w=Math.ceil(mp[p.firstChild.dataset.id]*1.04)+4;p.dataset.w=w;p.style.width=w+'px';PW=Math.max(PW,w)});
+      PW=0;W.querySelectorAll('.rpart').forEach(p=>{const w=Math.ceil(Math.max(...Object.values(mp))*1.04)+4;p.dataset.w=w;p.style.width=w+'px';PW=Math.max(PW,w)});
       const tw=g*PW+(g-1)*12;W.style.width=tw+'px';return tw};
     let bk=1,bg=1;
     for(const k of (DSPLIT?[DSPLIT]:[1,2,3,4]))for(const g of [1]){W.innerHTML=mk(k);const nw=fit(g);const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=k;bg=g}}
@@ -679,7 +679,7 @@ $('depList').onclick=e=>{if(!eDep)return;const id=e.target.dataset.del;
   save();renderAll();toast('លុបផ្នែករួចរាល់ ✓')};
 $('depForm').onsubmit=e=>{e.preventDefault();const n=$('depName').value.trim();if(!n){toast('សូមបញ្ចូលឈ្មោះផ្នែក');return}
   const id='d'+Date.now();S.depts.push({id,name:n,icon:$('depIcon').value.trim()||'🏥',color:$('depColor').value,cols:cols2()});S.staff[id]=[];
-  if(!staffDept)staffDept=id;$('depName').value='';$('depIcon').value='';save();renderAll();toast('បន្ថែមផ្នែករួចរាល់ ✓')};
+  staffDept=id;$('depName').value='';$('depIcon').value='';save();renderAll();toast('បន្ថែមផ្នែករួចរាល់ ✓')};
 const rolesOf=(dp,cur)=>{const D=dept(dp),r=[...((D&&D.roles)||[])];if(cur&&!r.includes(cur))r.push(cur);return r};
 const roleSel=(dp,s,i)=>'<select class="rs" data-rs="'+i+'"><option value="">— គ្មានតួនាទី —</option>'+rolesOf(dp,s.r).map(r=>'<option value="'+esc(r)+'"'+(r===s.r?' selected':'')+'>'+esc(r)+'</option>').join('')+'</select>';
 $('rBox').onsubmit=e=>{e.preventDefault();const v=$('rNew').value.trim(),D=dept(staffDept);if(!v||!D)return;D.roles=D.roles||[];if(!D.roles.includes(v))D.roles.push(v);save();renderStaff();toast('បន្ថែមតួនាទីរួចរាល់ ✓')};
