@@ -249,7 +249,7 @@ function printMonthView(){
   document.body.classList.add('fitp');const rw=mview==='day'&&W.querySelectorAll('.mdept').length>1;
   const dim={landscape:[1020,700],portrait:[700,1020]};let best='landscape',bs=0;
   if(rw){const nd=new Date(my,mm,0).getDate(),BK=blocks().filter(b=>dayDept==='all'||inBlock(b,dayDept));
-    const build=(a,z)=>BK.map(b=>{const UC=ucols(b),g=b.ds.length>1,D0=b.ds[0];
+    const build=(a,z,L)=>(L||BK).map(b=>{const UC=ucols(b),g=b.ds.length>1,D0=b.ds[0];
       let h='<div class="mdept" data-id="'+b.key+'" style="margin-bottom:6px"><div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span></div><table class="mt dt tr90"><thead><tr><th class="nmc"></th>';
       for(let i=a;i<=z;i++){const w=new Date(my,mm-1,i).getDay();h+='<th'+(w==0||w==6?' class="we"':'')+'>'+i+'<small style="display:block;font-weight:400">'+DW[w]+'</small></th>'}
       h+='</tr></thead><tbody>';
@@ -257,11 +257,11 @@ function printMonthView(){
         for(let i=a;i<=z;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();h+='<td'+(w==0||w==6?' class="we" style="background:#fdeaea"':'')+'><div class="ppl">'+nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')+'</div></td>'}
         h+='</tr>'}));
       return h+'</tbody></table></div>'}).join('');
-    const mk=k=>{const sz=Math.ceil(nd/k);let h='';for(let a=1;a<=nd;a+=sz)h+='<div class="rpart">'+build(a,Math.min(nd,a+sz-1))+'</div>';return h};
+    const mk=k=>{const sz=Math.ceil(nd/k);let h='';BK.forEach(b=>{for(let a=1;a<=nd;a+=sz)(()=>{h+='<div class="rpart">'+build(a,Math.min(nd,a+sz-1),[b])+'</div>'})()});return h};
     let PW=0;const fit=g=>{W.classList.add('meas');W.style.display='grid';W.style.gridTemplateColumns='repeat('+g+',max-content)';W.style.columnGap='12px';W.style.rowGap='8px';W.style.alignItems='start';W.style.width='auto';PW=0;W.querySelectorAll('.tr90').forEach(t=>{PW=Math.max(PW,t.offsetWidth)});W.classList.remove('meas');PW=Math.ceil(PW*1.04)+4;
       W.querySelectorAll('.rpart').forEach(p=>{p.style.width=PW+'px'});const tw=g*PW+(g-1)*12;W.style.width=tw+'px';return tw};
     let bk=1,bg=1;
-    for(const k of [1,2,3,4])for(const g of [1,2]){if(g>k)continue;W.innerHTML=mk(k);const nw=fit(g);const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=k;bg=g}}
+    for(const k of [1,2,3,4])for(const g of [1]){W.innerHTML=mk(k);const nw=fit(g);const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=k;bg=g}}
     W.innerHTML=mk(bk);fit(bg);bs=Math.min(bs,3)*.97;
     {const tw=Math.floor(dim.landscape[0]/bs),pw=Math.floor((tw-(bg-1)*12)/bg);if(pw>PW){W.querySelectorAll('.rpart').forEach(p=>{p.style.width=pw+'px'});W.style.width=(bg*pw+(bg-1)*12)+'px'}}}
   else{W.style.width='max-content';const w=W.offsetWidth,h=W.offsetHeight;
