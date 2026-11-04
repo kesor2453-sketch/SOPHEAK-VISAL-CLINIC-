@@ -259,12 +259,14 @@ function printMonthView(){
         h+='</tr>'}));
       return h+'</tbody></table></div>'}).join('');
     const mk=k=>{const sz=Math.ceil(nd/k);let h='';BK.forEach(b=>{for(let a=1;a<=nd;a+=sz)(()=>{h+='<div class="rpart">'+build(a,Math.min(nd,a+sz-1),[b])+'</div>'})()});return h};
-    let PW=0;const fit=g=>{W.classList.add('meas');W.style.display='grid';W.style.gridTemplateColumns='repeat('+g+',max-content)';W.style.columnGap='12px';W.style.rowGap='8px';W.style.alignItems='start';W.style.width='auto';PW=0;W.querySelectorAll('.tr90').forEach(t=>{PW=Math.max(PW,t.offsetWidth)});W.classList.remove('meas');PW=Math.ceil(PW*1.04)+4;
-      W.querySelectorAll('.rpart').forEach(p=>{p.style.width=PW+'px'});const tw=g*PW+(g-1)*12;W.style.width=tw+'px';return tw};
+    let PW=0;const fit=g=>{W.classList.add('meas');W.style.display='grid';W.style.gridTemplateColumns='repeat('+g+',max-content)';W.style.columnGap='12px';W.style.rowGap='8px';W.style.alignItems='start';W.style.width='auto';
+      const mp={};W.querySelectorAll('.rpart').forEach(p=>{const id=p.firstChild.dataset.id;p.querySelectorAll('.tr90').forEach(t=>{mp[id]=Math.max(mp[id]||0,t.offsetWidth)})});W.classList.remove('meas');
+      PW=0;W.querySelectorAll('.rpart').forEach(p=>{const w=Math.ceil(mp[p.firstChild.dataset.id]*1.04)+4;p.dataset.w=w;p.style.width=w+'px';PW=Math.max(PW,w)});
+      const tw=g*PW+(g-1)*12;W.style.width=tw+'px';return tw};
     let bk=1,bg=1;
     for(const k of (DSPLIT?[DSPLIT]:[1,2,3,4]))for(const g of [1]){W.innerHTML=mk(k);const nw=fit(g);const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=k;bg=g}}
     W.innerHTML=mk(bk);fit(bg);bs=Math.min(bs,3)*.97;
-    {const tw=Math.floor(dim.landscape[0]/bs),pw=Math.floor((tw-(bg-1)*12)/bg);if(pw>PW){W.querySelectorAll('.rpart').forEach(p=>{p.style.width=pw+'px'});W.style.width=(bg*pw+(bg-1)*12)+'px'}}}
+    {const tw=Math.floor(dim.landscape[0]/bs),f=(tw-(bg-1)*12)/bg/PW;if(f>1){W.querySelectorAll('.rpart').forEach(p=>{p.style.width=Math.floor(p.dataset.w*f)+'px'});W.style.width=(bg*Math.floor(PW*f)+(bg-1)*12)+'px'}}}
   else{W.style.width='max-content';const w=W.offsetWidth,h=W.offsetHeight;
   if(ORI!=='auto'){best=ORI;bs=Math.min(2,dim[ORI][0]/w,dim[ORI][1]/h)}
   else for(const o in dim){const sc=Math.min(2,dim[o][0]/w,dim[o][1]/h);if(sc>bs){bs=sc;best=o}}}
