@@ -218,6 +218,7 @@ function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.valu
 function doPrint(v){
   if($('p-month').classList.contains('on')){
     if(mview==='grid'){openDlg({mode:'gprint'});return}
+    if(mview==='day'&&$('mWrap').querySelectorAll('.mdept').length>1){openDlg({mode:'dsplit'});return}
     if(mview!=='staff')return printMonthView();
     if(pName&&dept(pDept)){watchAtt(my,mm);const v2=pDept+'|'+pName;if(!workCount(dept(pDept),pName).tot){printSheet(v2,false);return}openDlg({mode:'print',v:v2,dp:pDept});return}
     toast('សូមជ្រើសឈ្មោះគ្រូពេទ្យ មុនព្រីន');return}
@@ -261,7 +262,7 @@ function printMonthView(){
     let PW=0;const fit=g=>{W.classList.add('meas');W.style.display='grid';W.style.gridTemplateColumns='repeat('+g+',max-content)';W.style.columnGap='12px';W.style.rowGap='8px';W.style.alignItems='start';W.style.width='auto';PW=0;W.querySelectorAll('.tr90').forEach(t=>{PW=Math.max(PW,t.offsetWidth)});W.classList.remove('meas');PW=Math.ceil(PW*1.04)+4;
       W.querySelectorAll('.rpart').forEach(p=>{p.style.width=PW+'px'});const tw=g*PW+(g-1)*12;W.style.width=tw+'px';return tw};
     let bk=1,bg=1;
-    for(const k of [1,2,3,4])for(const g of [1]){W.innerHTML=mk(k);const nw=fit(g);const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=k;bg=g}}
+    for(const k of (DSPLIT?[DSPLIT]:[1,2,3,4]))for(const g of [1]){W.innerHTML=mk(k);const nw=fit(g);const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=k;bg=g}}
     W.innerHTML=mk(bk);fit(bg);bs=Math.min(bs,3)*.97;
     {const tw=Math.floor(dim.landscape[0]/bs),pw=Math.floor((tw-(bg-1)*12)/bg);if(pw>PW){W.querySelectorAll('.rpart').forEach(p=>{p.style.width=pw+'px'});W.style.width=(bg*pw+(bg-1)*12)+'px'}}}
   else{W.style.width='max-content';const w=W.offsetWidth,h=W.offsetHeight;
@@ -373,7 +374,7 @@ let M=null;
 function openDlg(m){M=m;$('dlg').style.display='flex';renderDlg()}
 function closeDlg(){M=null;$('dlg').style.display='none'}
 function renderDlg(){
-  if(!M)return;$('dbox').classList.remove('wide');if(M.mode==='gprint'){renderGprint();return}const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
+  if(!M)return;$('dbox').classList.remove('wide');if(M.mode==='gprint'){renderGprint();return}if(M.mode==='dsplit'){renderDsplit();return}const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
   const foot=ok=>'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn" data-dclose="1">បិទ</button><button class="btn p" data-dok="1">'+ok+'</button></div>';
   if(M.mode==='print'){const nm=M.v.slice(M.v.indexOf('|')+1),sh=D.cols.map(c=>c.label).join(' / '),wk=workCount(D,nm),wt=wk.tot+' វេន ('+D.cols.map(c=>c.label+' '+wk.per[c.id]).join(' · ')+')';
     B.innerHTML='<div class="dt1">🖨️ ព្រីនប្រចាំខែ · '+esc(nm)+' · '+MN[mm-1]+' '+my+'</div><div style="margin:4px 0 14px;line-height:1.7">ចង់ព្រីនបន្ថែមជួរកាឡោន <b>'+esc(sh)+'</b> (ដាក់ ✓ ត្រង់វេនដែលគាត់យាម) ដែរឬទេ?</div><div style="margin:-6px 0 12px;font-weight:600">ចំនួនធ្វើការ៖ '+esc(wt)+'</div><div style="margin:-6px 0 12px;font-weight:600">'+esc('សរុប '+wk.tot+' វេន · '+hrsSum(wk.tot,wk.done,D.id,nm,'',null,0))+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" data-dclose="1">បោះបង់</button><button class="btn" data-dprint="plain">ព្រីនធម្មតា</button><button class="btn" data-dprint="allplain">ព្រីនធម្មតា · គ្រប់បុគ្គលិកក្នុងផ្នែកនេះ</button><button class="btn p" data-dprint="cols">ព្រីន + ជួរ '+esc(sh)+' + ចំនួនធ្វើការ</button></div>';return}
@@ -397,6 +398,11 @@ function renderDlg(){
   B.innerHTML=h+lb(M.act==='misc'?'ផ្សេងៗ (សរសេរ)':'សំគាល់ (ស្រេចចិត្ត)','<textarea id="dNote" rows="2" placeholder="ឧ. មូលហេតុនៃការដូរ..."></textarea>')+foot('✓ អនុវត្ត');
   const t=$('dNote');if(t)t.value=M.note||'';
 }
+let DSPLIT=0;try{DSPLIT=+localStorage.getItem('deptDaySplit')||0}catch(e){}
+function renderDsplit(){const n=new Date(my,mm,0).getDate(),lab=k=>{const sz=Math.ceil(n/k),r=[];for(let a=1;a<=n;a+=sz)r.push(a+'–'+Math.min(n,a+sz-1));return r.join(' / ')};
+  $('dbox').classList.remove('wide');
+  $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនគ្រប់ផ្នែក · '+MN[mm-1]+' '+my+'</div><div style="font-size:13px;color:var(--sub);margin-bottom:10px">បែងចែកថ្ងៃជាប៉ុន្មានផ្នែក? (ផ្នែកនីមួយៗចេញជាបន្ទាប់គ្នា ពីលើចុះក្រោម · ក្រដាស A4 ផ្ដេក ១ទំព័រ)</div><div style="display:flex;flex-direction:column;gap:8px">'+
+   [[0,'ស្វ័យប្រវត្តិ (អក្សរធំបំផុត)'],[1,'១ផ្នែក · '+lab(1)],[2,'២ផ្នែក · '+lab(2)],[3,'៣ផ្នែក · '+lab(3)],[4,'៤ផ្នែក · '+lab(4)]].map(x=>'<button class="btn'+(DSPLIT===x[0]?' p':'')+'" data-dsp="'+x[0]+'" style="text-align:left">'+x[1]+'</button>').join('')+'</div><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" data-dclose="1">បោះបង់</button></div>'}
 function renderGprint(){const n=new Date(my,mm,0).getDate(),hf=Math.ceil(n/2);$('dbox').classList.add('wide');
   $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនកាឡោនដើម · '+MN[mm-1]+' '+my+'</div>'+
     '<label class="fl">ទិសដៅក្រដាស<select data-gp="ori"><option value="auto">ស្វ័យប្រវត្តិ</option><option value="portrait">បញ្ឈរ</option><option value="landscape">ផ្ដេក</option></select></label>'+
@@ -435,6 +441,7 @@ $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   if(t===$('dlg')||t.dataset.dclose){closeDlg();return}
   if(t.dataset.dprint){const v=M.v,wc=t.dataset.dprint==='cols';closeDlg();if(t.dataset.dprint==='allplain')printAllPlain(v.slice(0,v.indexOf('|')));else printSheet(v,wc);return}
   if(t.dataset.dgp){closeDlg();printMonthView();return}
+  if(t.dataset.dsp!==undefined){DSPLIT=+t.dataset.dsp;try{localStorage.setItem('deptDaySplit',DSPLIT)}catch(x){}closeDlg();printMonthView();return}
   if(t.dataset.dok){applyDlg();return}
   const a=t.closest('[data-dact]');if(a){const n=$('dNote');M.note=n?n.value:'';M.act=a.dataset.dact;renderDlg();return}
   if(t.dataset.ndel!==undefined){getN(M.d,M.dp,M.c).splice(+t.dataset.ndel,1);save();renderAll();renderDlg()}});
