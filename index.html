@@ -28,6 +28,7 @@ small{font-weight:400;color:var(--sub);font-size:11.5px;margin-left:3px}
 .adding{flex:1;min-width:150px}
 input.ed{width:100%;padding:5px;border:1px solid var(--brand);border-radius:7px;font-family:inherit;font-size:12.5px}
 .mdept{border:1px solid var(--line);border-radius:12px;overflow:clip;margin-bottom:14px}
+.tr90{table-layout:fixed;width:100%}.tr90 .nmc{width:80px}
 #mWrap.rowp{display:flex;gap:8px;align-items:flex-start}#mWrap.rowp>.mdept{flex:1 1 0;min-width:0;margin:0}
 table{border-collapse:collapse;font-size:12.5px}
 .mt{width:100%}.mt th{background:#f7f8fb;color:var(--sub);padding:6px 2px;border-bottom:1px solid var(--line);min-width:30px;font-weight:600}
@@ -244,12 +245,21 @@ document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList
 function printMonthView(){
   const W=$('mWrap'),sp=mview==='grid'&&SPLIT;
   noToday=true;if(mview==='grid')gridSplit=sp;renderMonth();
-  document.body.classList.add('fitp');const rw=mview==='day'&&W.querySelectorAll('.mdept').length>1;if(rw)W.classList.add('rowp');W.style.width=rw?(W.querySelectorAll('.mdept').length*380)+'px':'max-content';
+  document.body.classList.add('fitp');const rw=mview==='day'&&W.querySelectorAll('.mdept').length>1;
   const dim={landscape:[1020,700],portrait:[700,1020]};let best='landscape',bs=0;
-  if(rw){const n=W.querySelectorAll('.mdept').length,os=['landscape'];let bw=n*380;
-    for(const o of os)for(let pw=240;pw<=1000;pw+=40){W.style.width=(n*pw)+'px';const sc=Math.min(dim[o][0]/(n*pw),dim[o][1]/W.offsetHeight);if(sc>bs){bs=sc;best=o;bw=n*pw}}
-    W.style.width=bw+'px';bs*=.92}
-  else{const w=W.offsetWidth,h=W.offsetHeight;
+  if(rw){const nd=new Date(my,mm,0).getDate();
+    W.innerHTML=blocks().filter(b=>dayDept==='all'||inBlock(b,dayDept)).map(b=>{const UC=ucols(b),g=b.ds.length>1,D0=b.ds[0];
+      let h='<div class="mdept" data-id="'+b.key+'" style="margin-bottom:6px"><div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span></div><table class="mt dt tr90"><thead><tr><th class="nmc"></th>';
+      for(let i=1;i<=nd;i++){const w=new Date(my,mm-1,i).getDay();h+='<th'+(w==0||w==6?' class="we"':'')+'>'+i+'<small style="display:block;font-weight:400">'+DW[w]+'</small></th>'}
+      h+='</tr></thead><tbody>';
+      b.ds.forEach(D=>UC.forEach(c=>{if(!D.cols.some(x=>x.id===c.id))return;h+='<tr><td class="nmc" style="color:'+(g?D.color:'inherit')+'">'+(g?D.icon+' '+esc(D.name)+' · ':'')+esc(c.label)+'</td>';
+        for(let i=1;i<=nd;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();h+='<td'+(w==0||w==6?' class="we" style="background:#fdeaea"':'')+'><div class="ppl">'+nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')+'</div></td>'}
+        h+='</tr>'}));
+      return h+'</tbody></table></div>'}).join('');
+    let bw=1500;
+    for(let pw=60;pw<=160;pw+=10){const tw=80+nd*pw;W.style.width=tw+'px';const sc=Math.min(dim.landscape[0]/tw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bw=tw}}
+    W.style.width=bw+'px';bs=Math.min(bs,2)*.92}
+  else{W.style.width='max-content';const w=W.offsetWidth,h=W.offsetHeight;
   if(ORI!=='auto'){best=ORI;bs=Math.min(2,dim[ORI][0]/w,dim[ORI][1]/h)}
   else for(const o in dim){const sc=Math.min(2,dim[o][0]/w,dim[o][1]/h);if(sc>bs){bs=sc;best=o}}}
   W.style.zoom=Math.max(bs,.3);
