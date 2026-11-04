@@ -257,18 +257,19 @@ function printMonthView(){
         for(let i=a;i<=z;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();h+='<td'+(w==0||w==6?' class="we" style="background:#fdeaea"':'')+'><div class="ppl">'+nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')+'</div></td>'}
         h+='</tr>'}));
       return h+'</tbody></table></div>'}).join('');
-    const mk=k=>{const sz=Math.ceil(nd/k);let h='';for(let a=1,j=0;a<=nd;a+=sz,j++)h+=(j?'<div style="height:8px"></div>':'')+build(a,Math.min(nd,a+sz-1));return h};
-    const fit=()=>{W.classList.add('meas');let nw=0;W.querySelectorAll('.tr90').forEach(t=>{nw=Math.max(nw,t.offsetWidth)});W.classList.remove('meas');nw=Math.ceil(nw*1.04)+4;W.style.width=nw+'px';return nw};
-    let bk=1;
-    for(const k of [1,2,3,4]){W.innerHTML=mk(k);W.style.width='auto';const nw=fit();const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=k}}
-    W.innerHTML=mk(bk);W.style.width='auto';fit();
-    bs=Math.min(bs,3)*.97}
+    const mk=k=>{const sz=Math.ceil(nd/k);let h='';for(let a=1;a<=nd;a+=sz)h+='<div class="rpart">'+build(a,Math.min(nd,a+sz-1))+'</div>';return h};
+    let PW=0;const fit=g=>{W.classList.add('meas');W.style.display='grid';W.style.gridTemplateColumns='repeat('+g+',max-content)';W.style.columnGap='12px';W.style.rowGap='8px';W.style.alignItems='start';W.style.width='auto';PW=0;W.querySelectorAll('.tr90').forEach(t=>{PW=Math.max(PW,t.offsetWidth)});W.classList.remove('meas');PW=Math.ceil(PW*1.04)+4;
+      W.querySelectorAll('.rpart').forEach(p=>{p.style.width=PW+'px'});const tw=g*PW+(g-1)*12;W.style.width=tw+'px';return tw};
+    let bk=1,bg=1;
+    for(const k of [1,2,3,4])for(const g of [1,2]){if(g>k)continue;W.innerHTML=mk(k);const nw=fit(g);const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=k;bg=g}}
+    W.innerHTML=mk(bk);fit(bg);bs=Math.min(bs,3)*.97;
+    {const tw=Math.floor(dim.landscape[0]/bs),pw=Math.floor((tw-(bg-1)*12)/bg);if(pw>PW){W.querySelectorAll('.rpart').forEach(p=>{p.style.width=pw+'px'});W.style.width=(bg*pw+(bg-1)*12)+'px'}}}
   else{W.style.width='max-content';const w=W.offsetWidth,h=W.offsetHeight;
   if(ORI!=='auto'){best=ORI;bs=Math.min(2,dim[ORI][0]/w,dim[ORI][1]/h)}
   else for(const o in dim){const sc=Math.min(2,dim[o][0]/w,dim[o][1]/h);if(sc>bs){bs=sc;best=o}}}
   W.style.zoom=Math.max(bs,.3);
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+best+';margin:8mm}}';document.head.appendChild(st);
-  const clean=()=>{document.body.classList.remove('fitp');W.classList.remove('rowp','meas');W.style.zoom='';W.style.width='';st.remove();noToday=false;if(sp)gridSplit=false;renderMonth();removeEventListener('afterprint',clean)};
+  const clean=()=>{document.body.classList.remove('fitp');W.classList.remove('rowp','meas');W.style.display='';W.style.gridTemplateColumns='';W.style.columnGap='';W.style.rowGap='';W.style.alignItems='';W.style.zoom='';W.style.width='';st.remove();noToday=false;if(sp)gridSplit=false;renderMonth();removeEventListener('afterprint',clean)};
   addEventListener('afterprint',clean);print()}
 function printSheet(v,wc){
   const k=v.indexOf('|');if(k<0){toast('⚠ សូមជ្រើសឈ្មោះគ្រូពេទ្យ');return}
