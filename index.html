@@ -139,7 +139,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 <form class="add" id="sForm"><input id="sNew" placeholder="ឈ្មោះ — ឧ. Dr.Sok Dara"><select id="sRole" class="btn" title="តួនាទី (ស្រេចចិត្ត)"></select><input type="color" id="sColor" value="#4f8df5" title="ព័ណ៌ប្រអប់ឈ្មោះ" style="flex:0 0 46px;padding:2px;min-width:46px"><button class="btn p">+ បន្ថែម</button></form></div><div class="card"><div class="ch"><b>ម៉ោងធ្វើការ (ថ្ងៃថេរ) <small id="fxHint"></small></b><button class="btn" type="button" id="fxEditBtn"></button></div>
 <div class="chips" id="fxChips" style="margin-bottom:8px"></div><div id="fxList"></div>
 <div class="nav" style="margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line)"><button class="btn" id="fxPrev">‹</button><div class="lbl" id="fxLbl"></div><button class="btn" id="fxNext">›</button></div>
-</div><div class="card"><div class="ch"><b>🎨 ព័ណ៌ «ថ្ងៃនេះ» <small>(ក្នុងតារាងប្រចាំខែ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input type="color" id="tdPick" title="ជ្រើសព័ណ៌ថ្ងៃនេះ" value="#0d6efd" style="width:42px;height:34px;padding:2px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer"><button class="btn" type="button" id="tdReset">↺ ព័ណ៌ដើម (ខៀវ)</button><small style="color:var(--sub)">ចាំលើឧបករណ៍នេះ</small></div></div><div class="card"><div class="ch"><b>🔒 កូដកែប្រែ <small>(សម្រាប់ ✏️ កែប្រែ ក្នុង «បំពេញវេន (តាមបុគ្គលិក)» ប៉ុណ្ណោះ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input id="pinNew" type="password" inputmode="numeric" placeholder="កូដថ្មី" style="padding:8px;border:1px solid var(--line);border-radius:9px;width:140px"><button class="btn p" type="button" id="pinSave">រក្សាទុក</button><button class="btn" type="button" id="pinOff">បិទកូដ</button><small id="pinSt" style="color:var(--sub)"></small></div></div>
+</div><div class="card"><div class="ch"><b>🎨 ព័ណ៌ «ថ្ងៃនេះ» <small>(ក្នុងតារាងប្រចាំខែ)</small></b></div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><input type="color" id="tdPick" title="ជ្រើសព័ណ៌ថ្ងៃនេះ" value="#0d6efd" style="width:42px;height:34px;padding:2px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer"><button class="btn" type="button" id="tdReset">↺ ព័ណ៌ដើម (ខៀវ)</button><small style="color:var(--sub)">ចាំលើឧបករណ៍នេះ</small></div></div>
 </div>
 
 
@@ -184,7 +184,7 @@ const col=(dp,n)=>{let s=(S.staff[dp]||[]).find(x=>x.n===n);if(!s&&sibHas(dp,n))
 const ink=h=>{const m=/^#(..)(..)(..)$/.exec(h);if(!m)return '#1c2430';return (.299*parseInt(m[1],16)+.587*parseInt(m[2],16)+.114*parseInt(m[3],16))>150?'#1c2430':'#fff'};
 const nmSt=(dp,n)=>{const c=col(dp,n);return c?'background:'+c+';color:'+ink(c)+';border-color:'+c:''};
 const pill=(D,n,x,at)=>{const c=col(D.id,n);return '<span class="pp"'+(at?' '+at:'')+' style="'+(c?'background:'+c+';color:'+ink(c):'background:'+D.color+'1f')+'">'+lab(D.id,n)+(x||'')+'</span>'};
-function save(){if(CI)return;if(USE_FB)setDoc(ref,S).catch(e=>toast('⚠ '+e.message));else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
+function save(){if(CI)return;if(USE_FB){try{const kb=Math.round(new Blob([JSON.stringify(S)]).size/1024);if(kb>850)toast('⚠ ទិន្នន័យធំ '+kb+' KB (ជិតកំណត់ 1024 KB)')}catch(e){}setDoc(ref,S).catch(e=>toast('⚠ មិនអាចរក្សាទុក៖ '+e.message))}else try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){toast('⚠ '+e.message)}}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('s');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('s'),2000)}
 
 function load(d){const mig=!d.v;try{Object.keys(d.sched||{}).forEach(k=>Object.keys(d.sched[k]||{}).forEach(c=>{const v=d.sched[k][c];if(Array.isArray(v)&&v.length>1)d.sched[k][c]=v.filter((x,i)=>v.indexOf(x)===i)}))}catch(e){}S={v:2,depts:d.depts||DEF(),staff:d.staff||{},sched:d.sched||{},log:d.log||[],notes:d.notes||{},pcols:d.pcols||null,fxm:d.fxm||{},fxMonths:d.fxMonths||[],fxs:d.fxs||{},pv:d.pv||{},last:d.last||['Dr.Ka Seyla'],pin:d.pin||'',clinic:null,imp:d.imp||{map:{},auto:false}};
@@ -271,7 +271,7 @@ function runPrint(html){const ps=$('psheet');ps.innerHTML=html;
   const LS=ORI==='landscape';ps.querySelectorAll('.psd').forEach(b=>{b.style.width=LS?'1020px':'';const h=b.offsetHeight,T=LS?700:1000;if(h>T)b.style.zoom=Math.max(T/h,.45);else{b.style.display='flex';b.style.flexDirection='column';b.style.height=T+'px'}});
   const clean=()=>{document.body.classList.remove('psp');ps.innerHTML='';st.remove();removeEventListener('afterprint',clean)};
   addEventListener('afterprint',clean);print()}
-function renderAll(){pinUI();sortStaff();fillSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit();renderQR()}
+function renderAll(){sortStaff();fillSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit();renderQR()}
 
 /* ---------- shift column toggle (afternoon) ---------- */
 const noonBtnG=L=>{L=L.filter(D=>D.id==='eye'||D.id==='dental');return L.length?noonBtnG0(L):''};
@@ -444,31 +444,6 @@ function renderMonthDay(){
   document.addEventListener('mouseup',()=>{if(el)el.classList.remove('dragging');el=null});
   ['touchstart','wheel'].forEach(ev=>document.addEventListener(ev,e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true},{passive:true}));document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.gridv .tw'))userScrolled=true});
 })();
-async function needPin(force){if(!S.pin)return true;try{if(!force&&sessionStorage.getItem('deptUnl')===S.pin)return true}catch(e){}
-  const v=prompt('🔒 បញ្ចូលកូដ ដើម្បីចូលកែប្រែ');if(v===null)return false;
-  if(await sha(v.trim())===S.pin){try{sessionStorage.setItem('deptUnl',S.pin)}catch(e){}return true}toast('⚠ កូដមិនត្រឹមត្រូវ');return false}
-function pinUI(){const e=$('pinSt');if(e)e.textContent=S.pin?'🔒 បានដាក់កូដ':'មិនទាន់ដាក់កូដ'}
-document.addEventListener('click',async e=>{const id=e.target.id;if(id!=='pinSave'&&id!=='pinOff')return;
-  if(S.pin&&!(await needPin(true)))return;
-  if(id==='pinOff'){S.pin='';save();try{sessionStorage.removeItem('deptUnl')}catch(x){}pinUI();toast('បិទកូដរួចរាល់ ✓');return}
-  const v=($('pinNew').value||'').trim();if(v.length<3){toast('⚠ កូដយ៉ាងតិច ៣ តួ');return}
-  S.pin=await sha(v);try{sessionStorage.setItem('deptUnl',S.pin)}catch(x){}save();$('pinNew').value='';pinUI();toast('រក្សាទុកកូដរួចរាល់ ✓')});
-function loadH2C(){return window.html2canvas?Promise.resolve():new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('មិនអាចផ្ទុកឧបករណ៍បង្កើតរូបភាព (ត្រូវការអ៊ីនធឺណិត)'));document.head.appendChild(sc)})}
-let imgBusy=false;
-async function saveImg(){if(imgBusy)return;imgBusy=true;const month=$('p-month').classList.contains('on'),el=month?$('mWrap'):$('dGrid');
-  if(!el||!el.innerHTML.trim()){imgBusy=false;return}
-  toast('⏳ កំពុងបង្កើតរូបភាព…');let ttl=null,w0=el.style.width;
-  try{await loadH2C();if(document.fonts&&document.fonts.ready)await document.fonts.ready;
-    ttl=document.createElement('div');ttl.className='imgttl';ttl.textContent='កាលវិភាគ · '+(month?MN[mm-1]+' '+my:$('dLbl').textContent);el.insertBefore(ttl,el.firstChild);
-    document.body.classList.add('imgcap');el.style.width='max-content';el.style.minWidth=el.parentElement.clientWidth+'px';
-    await new Promise(r=>setTimeout(r,60));
-    const cv=await html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true,width:el.scrollWidth,windowWidth:el.scrollWidth+40,scrollX:0,scrollY:-window.scrollY});
-    const blob=await new Promise(r=>cv.toBlob(r,'image/png')),fn='schedule-'+(month?my+'-'+p2(mm)+'-'+(mview||'day'):ds(new Date()))+'.png';
-    const file=new File([blob],fn,{type:'image/png'});
-    if(matchMedia('(pointer:coarse)').matches&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});toast('✓ រួចរាល់');return}catch(e){if(e&&e.name==='AbortError')return}}
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast('✓ បានទាញយករូបភាព')}
-  catch(e){toast('⚠ '+(e&&e.message||e))}
-  finally{document.body.classList.remove('imgcap');el.style.width=w0;el.style.minWidth='';if(ttl)ttl.remove();imgBusy=false}}
 function tdApply(c){const r=document.documentElement.style,n=parseInt(c.slice(1),16),L=(.299*(n>>16)+.587*((n>>8)&255)+.114*(n&255));r.setProperty('--td',c);r.setProperty('--tdi',L>160?'#1c2430':'#fff')}
 (function(){let c='#0d6efd';try{c=localStorage.getItem('deptTodayColor')||c}catch(e){}if(!/^#[0-9a-f]{6}$/i.test(c))c='#0d6efd';tdApply(c);const e=$('tdPick');if(e){e.value=c;const rs=$('tdReset');if(rs)rs.onclick=()=>{e.value='#0d6efd';tdApply('#0d6efd');try{localStorage.removeItem('deptTodayColor')}catch(x){}};e.oninput=()=>{tdApply(e.value);try{localStorage.setItem('deptTodayColor',e.value)}catch(x){}}}})();
 function stk(){const r=document.documentElement.style,t=document.querySelector('.top'),nv=$('mNav'),v=$('mVBar'),tt=t?t.offsetHeight:0,nh=(nv&&nv.offsetParent)?nv.offsetHeight:0,vh=(v&&v.offsetParent)?v.offsetHeight:0;r.setProperty('--tt',tt+'px');r.setProperty('--tn',(tt+nh)+'px');r.setProperty('--b',(tt+nh+vh)+'px')}
@@ -634,7 +609,7 @@ document.addEventListener('click',e=>{const t=e.target;
   const pr=t.closest('[data-pcren]');if(pr){const i=+pr.dataset.pcren,v=(prompt('ប្ដូរឈ្មោះជួរ៖',pcols()[i])||'').trim();if(v){const L=pcols().slice();L[i]=v;S.pcols=L;save();renderMonth()}return}
   if(t.dataset.vmove){const i=vOrd.indexOf(mview),j=i+(+t.dataset.vmove);if(i>=0&&j>=0&&j<3){const x=vOrd[i];vOrd[i]=vOrd[j];vOrd[j]=x;saveV();applyVOrd()}return}
   const dd=t.closest('[data-dd]');if(dd){dayDept=dd.dataset.dd;renderMonth();return}
-  if(t.dataset.pedit){if(pEdit){pEdit=false;renderMonth();return}needPin().then(ok=>{if(ok){pEdit=true;renderMonth()}});return}
+  if(t.dataset.pedit){pEdit=!pEdit;renderMonth();return}
   if(t.dataset.pshow){pShow=!pShow;renderMonth();return}
   const pvc=t.closest('[data-pv]');if(pvc&&pEdit){const k=pvc.dataset.pv,q=k.indexOf('|'),d=k.slice(0,q),lb=k.slice(q+1),key=pDept+'|'+pName+'|'+d;
     const v=prompt(lb+' · '+fmtD(d)+'\nទុកទទេ = មិនបានធ្វើការ · វាយ * = ត្រឡប់ទៅស្វ័យប្រវត្តិ',pvc.textContent.trim());if(v===null)return;let val=v.trim();
@@ -699,7 +674,7 @@ function fxManualRemove(d,dp,cid,n){const k=key(dp,cid),m=S.fxm&&S.fxm[d];if(!m|
   m[k]=m[k].filter(x=>x!==n);if(!m[k].length)delete m[k];if(!Object.keys(m).length)delete S.fxm[d];
   S.fxs=S.fxs||{};const o=S.fxs[d]=S.fxs[d]||{};o[k]=o[k]||[];if(!o[k].includes(n))o[k].push(n)}
 function fxPlan(extraMonth){const months=(S.fxMonths||[]).slice();if(extraMonth&&!months.includes(extraMonth))months.push(extraMonth);
-  {const n0=new Date(),cm0=n0.getFullYear()+'-'+p2(n0.getMonth()+1);if(!months.length)months.push(cm0);const f0=months.slice().sort()[0].split('-');let y=+f0[0],m=+f0[1];const lim=(n0.getFullYear()+1)*12+n0.getMonth()+1;while(y*12+m<=lim){const k=y+'-'+p2(m);if(!months.includes(k))months.push(k);m++;if(m>12){m=1;y++}}}
+  {const n0=new Date(),cm0=n0.getFullYear()+'-'+p2(n0.getMonth()+1);if(!months.length)months.push(cm0);const f0=months.slice().sort()[0].split('-');let y=+f0[0],m=+f0[1];const lim=n0.getFullYear()*12+n0.getMonth()+1+3;while(y*12+m<=lim){const k=y+'-'+p2(m);if(!months.includes(k))months.push(k);m++;if(m>12){m=1;y++}}}
   const want={},add=[],rem=[];S.fxm=S.fxm||{};
   S.depts.forEach(D=>(S.staff[D.id]||[]).forEach(s=>{if(!s.fx)return;months.forEach(mo=>{const ym=mo.split('-'),k=D.id+'|'+s.n;fxDesired(D,s,+ym[0],+ym[1]).forEach(x=>{(want[k]=want[k]||{})[x]=1})})}));
   Object.keys(S.fxm).forEach(d=>Object.keys(S.fxm[d]).forEach(k=>{const p=k.split('__');S.fxm[d][k].forEach(n=>{const w=want[p[0]+'|'+n];if(!(w&&w[d+'|'+p[1]]))rem.push([d,p[0],p[1],n])})}));
