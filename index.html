@@ -201,7 +201,7 @@ function load(d){const mig=!d.v;try{Object.keys(d.sched||{}).forEach(k=>Object.k
   if(!dept(staffDept))staffDept=(S.depts[0]||{}).id;
   let rn=false;S.depts.forEach(D=>{if(D.id==='nurse'&&D.name==='Nurse'){D.name='គិលានុបដ្ឋាយិកា';rn=true}});if(rn&&!mig)save()}
 if(USE_FB){
-  onSnapshot(ref,snap=>{if(snap.exists())load(snap.data());else save();if(CI){renderCI();return}if(!editing)renderAll();spvAutoStart()},
+  onSnapshot(ref,snap=>{if(snap.exists())load(snap.data());else save();if(CI){renderCI();return}if(!editing)renderAll();spvAutoStart();fxHeal()},
     e=>{$('dGrid').innerHTML='<div>⚠ មិនអាចភ្ជាប់ Firestore: '+esc(e.message)+'</div>'});
 }else{
   try{const r=localStorage.getItem(LS);if(r)load(JSON.parse(r))}catch(e){}
@@ -699,17 +699,20 @@ function fxManualRemove(d,dp,cid,n){const k=key(dp,cid),m=S.fxm&&S.fxm[d];if(!m|
   m[k]=m[k].filter(x=>x!==n);if(!m[k].length)delete m[k];if(!Object.keys(m).length)delete S.fxm[d];
   S.fxs=S.fxs||{};const o=S.fxs[d]=S.fxs[d]||{};o[k]=o[k]||[];if(!o[k].includes(n))o[k].push(n)}
 function fxPlan(extraMonth){const months=(S.fxMonths||[]).slice();if(extraMonth&&!months.includes(extraMonth))months.push(extraMonth);
+  if(months.length){const f0=months.slice().sort()[0].split('-'),n0=new Date();let y=+f0[0],m=+f0[1];const lim=(n0.getFullYear()+1)*12+n0.getMonth()+1;while(y*12+m<=lim){const k=y+'-'+p2(m);if(!months.includes(k))months.push(k);m++;if(m>12){m=1;y++}}}
   const want={},add=[],rem=[];S.fxm=S.fxm||{};
   S.depts.forEach(D=>(S.staff[D.id]||[]).forEach(s=>{if(!s.fx)return;months.forEach(mo=>{const ym=mo.split('-'),k=D.id+'|'+s.n;fxDesired(D,s,+ym[0],+ym[1]).forEach(x=>{(want[k]=want[k]||{})[x]=1})})}));
   Object.keys(S.fxm).forEach(d=>Object.keys(S.fxm[d]).forEach(k=>{const p=k.split('__');S.fxm[d][k].forEach(n=>{const w=want[p[0]+'|'+n];if(!(w&&w[d+'|'+p[1]]))rem.push([d,p[0],p[1],n])})}));
   Object.keys(want).forEach(k=>{const dp=k.slice(0,k.indexOf('|')),n=k.slice(k.indexOf('|')+1);Object.keys(want[k]).forEach(x=>{const d=x.split('|')[0],cid=x.split('|')[1];
-    if(((S.fxm[d]||{})[key(dp,cid)]||[]).includes(n)||S.depts.some(X=>get(d,X.id,cid).includes(n))||fxSkipped(d,dp,cid,n))return;add.push([d,dp,cid,n])})});
+    const heal=!(dp==='doctor'&&S.imp&&S.imp.auto);if((!heal&&((S.fxm[d]||{})[key(dp,cid)]||[]).includes(n))||S.depts.some(X=>get(d,X.id,cid).includes(n))||fxSkipped(d,dp,cid,n))return;add.push([d,dp,cid,n])})});
   const sk=[];Object.keys(S.fxs||{}).forEach(d=>Object.keys(S.fxs[d]).forEach(k=>{const p=k.split('__');S.fxs[d][k].forEach(n=>{const w=want[p[0]+'|'+n];if(!(w&&w[d+'|'+p[1]]))sk.push([d,p[0],p[1],n])})}));
   return{add,rem,months,sk}}
 function fxRun(pl){S.fxMonths=pl.months;S.fxm=S.fxm||{};(pl.sk||[]).forEach(o=>fxUnskip(o[0],o[1],o[2],o[3]));
   pl.rem.forEach(o=>{const d=o[0],dp=o[1],cid=o[2],n=o[3],l=get(d,dp,cid);if(l.includes(n))setL(d,dp,cid,l.filter(x=>x!==n));
     const k=key(dp,cid),a=S.fxm[d]&&S.fxm[d][k];if(a){const b=a.filter(x=>x!==n);if(b.length)S.fxm[d][k]=b;else{delete S.fxm[d][k];if(!Object.keys(S.fxm[d]).length)delete S.fxm[d]}}});
-  pl.add.forEach(o=>{const d=o[0],dp=o[1],cid=o[2],n=o[3],l=get(d,dp,cid);if(!l.includes(n))setL(d,dp,cid,l.concat(n));const k=key(dp,cid),m=S.fxm[d]=S.fxm[d]||{};m[k]=(m[k]||[]).concat(n)})}
+  pl.add.forEach(o=>{const d=o[0],dp=o[1],cid=o[2],n=o[3],l=get(d,dp,cid);if(!l.includes(n))setL(d,dp,cid,l.concat(n));const k=key(dp,cid),m=S.fxm[d]=S.fxm[d]||{};if(!(m[k]||[]).includes(n))m[k]=(m[k]||[]).concat(n)})}
+let fxHealAt=0;
+function fxHeal(){if(CI||!(S.fxMonths||[]).length||Date.now()-fxHealAt<8000)return;fxHealAt=Date.now();try{const pl=fxPlan();if(pl.add.length||pl.rem.length){fxRun(pl);save();renderAll()}}catch(e){}}
 function fxAuto(){const pl=fxPlan();if(pl.add.length||pl.rem.length){fxRun(pl);toast('កែតាមកាឡោនដែរ ✓ +'+pl.add.length+' / −'+pl.rem.length)}}
 const fxxSel={};
 const fxExLbl=(D,x)=>{const k=x.indexOf('|');return k<0?fmtD(x):fmtD(x.slice(0,k))+' · '+((D.cols.find(c=>c.id===x.slice(k+1))||{}).label||'')};
