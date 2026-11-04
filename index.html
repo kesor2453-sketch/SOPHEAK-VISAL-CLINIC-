@@ -245,9 +245,13 @@ function printMonthView(){
   const W=$('mWrap'),sp=mview==='grid'&&SPLIT;
   noToday=true;if(mview==='grid')gridSplit=sp;renderMonth();
   document.body.classList.add('fitp');const rw=mview==='day'&&W.querySelectorAll('.mdept').length>1;if(rw)W.classList.add('rowp');W.style.width=rw?(W.querySelectorAll('.mdept').length*380)+'px':'max-content';
-  const w=W.offsetWidth,h=W.offsetHeight,dim={landscape:[1020,700],portrait:[700,1020]};let best='landscape',bs=0;
+  const dim={landscape:[1020,700],portrait:[700,1020]};let best='landscape',bs=0;
+  if(rw){const n=W.querySelectorAll('.mdept').length,os=ORI==='auto'?['landscape','portrait']:[ORI];let bw=n*380;
+    for(const o of os)for(let pw=240;pw<=1000;pw+=40){W.style.width=(n*pw)+'px';const sc=Math.min(dim[o][0]/(n*pw),dim[o][1]/W.offsetHeight);if(sc>bs){bs=sc;best=o;bw=n*pw}}
+    W.style.width=bw+'px';bs*=.92}
+  else{const w=W.offsetWidth,h=W.offsetHeight;
   if(ORI!=='auto'){best=ORI;bs=Math.min(2,dim[ORI][0]/w,dim[ORI][1]/h)}
-  else for(const o in dim){const sc=Math.min(2,dim[o][0]/w,dim[o][1]/h);if(sc>bs){bs=sc;best=o}}
+  else for(const o in dim){const sc=Math.min(2,dim[o][0]/w,dim[o][1]/h);if(sc>bs){bs=sc;best=o}}}
   W.style.zoom=Math.max(bs,.3);
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+best+';margin:8mm}}';document.head.appendChild(st);
   const clean=()=>{document.body.classList.remove('fitp');W.classList.remove('rowp');W.style.zoom='';W.style.width='';st.remove();noToday=false;if(sp)gridSplit=false;renderMonth();removeEventListener('afterprint',clean)};
