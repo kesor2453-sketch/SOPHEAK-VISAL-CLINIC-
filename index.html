@@ -722,7 +722,7 @@ function fxHeal(){if(CI||Date.now()-fxHealAt<8000)return;fxHealAt=Date.now();try
 function fxAuto(){const pl=fxPlan();if(pl.add.length||pl.rem.length){fxRun(pl);toast('កែតាមកាឡោនដែរ ✓ +'+pl.add.length+' / −'+pl.rem.length)}}
 const fxxSel={};
 const fxExLbl=(D,x)=>{const k=x.indexOf('|');return k<0?fmtD(x):fmtD(x.slice(0,k))+' · '+((D.cols.find(c=>c.id===x.slice(k+1))||{}).label||'')};
-const fxDef=D=>D.cols.some(c=>c.id==='c3')?'c3':D.cols[D.cols.length-1].id;
+const fxDef=D=>/^d\d{8,}$/.test(D.id)?D.cols[0].id:(D.cols.some(c=>c.id==='c3')?'c3':D.cols[D.cols.length-1].id);
 const fxMap=f=>{if(f.dc)return f.dc;const o={};(f.days||[]).forEach(w=>{o[w]=(f.cols||[]).slice()});return o};
 function fxEnsure(D,s){if(!s.fx)s.fx={days:[],cols:[]};const f=s.fx;if(!f.cols.length)f.cols=[fxDef(D)];if(!f.dc){f.dc={};(f.days||[]).forEach(w=>{f.dc[w]=f.cols.slice()})}return f}
 function renderFx(){
