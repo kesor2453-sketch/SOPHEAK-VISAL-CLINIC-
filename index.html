@@ -498,7 +498,7 @@ function eqPills(){const ps=[...document.querySelectorAll('#mWrap .dt .pp')];if(
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(mview==='day')eqPills()});
 function bandBuild(a,z,L){return L.map(b=>{const UC=ucols(b),g=b.ds.length>1,D0=b.ds[0];
       let h='<div class="mdept" data-id="'+b.key+'" style="margin-bottom:6px"><div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span></div><table class="mt dt tr90"><thead><tr><th class="nmc"></th>';
-      for(let i=a;i<=z;i++){const w=new Date(my,mm-1,i).getDay(),isT=!noToday&&my+'-'+p2(mm)+'-'+p2(i)===ds(new Date());h+='<th class="'+(w==0||w==6?'we ':'')+(isT?'td':'')+'">'+i+'<small style="display:block;font-weight:400">'+DW[w]+'</small></th>'}
+      for(let i=a;i<=z;i++){const w=new Date(my,mm-1,i).getDay(),isT=!noToday&&my+'-'+p2(mm)+'-'+p2(i)===ds(new Date());h+='<th class="'+(w==0||w==6?'we ':'')+(isT?'td':'')+'">'+i+'<small style="display:block;font-weight:400">'+DW[w]+'</small>'+(isT?'<div style="font-size:11px;font-weight:700;background:#fff;color:#1a56d6;border-radius:8px;padding:0 6px;margin-top:2px">ថ្ងៃនេះ</div>':'')+'</th>'}
       h+='</tr></thead><tbody>';
       UC.forEach(c=>{const DS=b.ds.filter(D=>D.cols.some(x=>x.id===c.id));if(!DS.length)return;h+='<tr><td class="nmc">'+esc(c.label)+'</td>';
         for(let i=a;i<=z;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();const isT=!noToday&&d===ds(new Date());h+='<td'+(isT?' class="td"':(w==0||w==6?' class="we" style="background:#fdeaea"':''))+'><div class="ppl">'+DS.map(D=>nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')).join('')+'</div></td>'}
