@@ -257,7 +257,7 @@ function printMonthView(){
   const W=$('mWrap'),sp=mview==='grid'&&SPLIT;
   noToday=true;if(mview==='grid')gridSplit=sp;renderMonth();
   document.body.classList.add('fitp');const rw=mview==='day'&&W.querySelectorAll('.mdept').length>1;
-  const dim={landscape:[1020,700],portrait:[700,1020]};let best='landscape',bs=0;
+  const dim={landscape:rw?[1080,745]:[1020,700],portrait:[700,1020]};let best='landscape',bs=0;
   if(rw){const nd=new Date(my,mm,0).getDate(),BK=blocks().filter(b=>dayDept==='all'||inBlock(b,dayDept));
     const build=(a,z,L)=>(L||BK).map(b=>{const UC=ucols(b),g=b.ds.length>1,D0=b.ds[0];
       let h='<div class="mdept" data-id="'+b.key+'" style="margin-bottom:6px"><div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span></div><table class="mt dt tr90"><thead><tr><th class="nmc"></th>';
@@ -276,12 +276,12 @@ function printMonthView(){
       const tw=g*PW+(g-1)*12;W.style.width=tw+'px';return tw};
     let bk=evenR(1),bg=1;const CANDS=(DSPLIT===-1&&DBRK.length)?[brkR(DBRK)]:(DSPLIT>0?[evenR(DSPLIT)]:[1,2,3,4].map(evenR));
     for(const R of CANDS){W.innerHTML=mk(R);const nw=fit(1);const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=R}}
-    W.innerHTML=mk(bk);fit(bg);bs=Math.min(bs,3)*.94}
+    W.innerHTML=mk(bk);fit(bg);bs=Math.min(bs,3)*.97*PSM}
   else{W.style.width='max-content';const w=W.offsetWidth,h=W.offsetHeight;
   if(ORI!=='auto'){best=ORI;bs=Math.min(2,dim[ORI][0]/w,dim[ORI][1]/h)}
   else for(const o in dim){const sc=Math.min(2,dim[o][0]/w,dim[o][1]/h);if(sc>bs){bs=sc;best=o}}}
   W.style.zoom=Math.max(bs,.3);
-  const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+best+';margin:8mm}}';document.head.appendChild(st);
+  const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+best+';margin:'+(rw?'4mm':'8mm')+'}}';document.head.appendChild(st);
   const clean=()=>{document.body.classList.remove('fitp');W.classList.remove('rowp','meas');W.style.display='';W.style.gridTemplateColumns='';W.style.columnGap='';W.style.rowGap='';W.style.alignItems='';W.style.zoom='';W.style.width='';st.remove();noToday=false;if(sp)gridSplit=false;renderMonth();removeEventListener('afterprint',clean)};
   addEventListener('afterprint',clean);print()}
 function printSheet(v,wc){
@@ -410,6 +410,7 @@ function renderDlg(){
   B.innerHTML=h+lb(M.act==='misc'?'ផ្សេងៗ (សរសេរ)':'សំគាល់ (ស្រេចចិត្ត)','<textarea id="dNote" rows="2" placeholder="ឧ. មូលហេតុនៃការដូរ..."></textarea>')+foot('✓ អនុវត្ត');
   const t=$('dNote');if(t)t.value=M.note||'';
 }
+let PSM=1;try{PSM=+localStorage.getItem('deptPSM')||1}catch(e){}
 let DSPLIT=0,DBRK=[];try{DSPLIT=+localStorage.getItem('deptDaySplit')||0;DBRK=JSON.parse(localStorage.getItem('deptDayBrk')||'[]')}catch(e){}
 function renderDayall(){const dv=$('dPick').value||ds(new Date()),ym=dv.slice(0,7),n=new Date(+ym.slice(0,4),+ym.slice(5),0).getDate(),lab=k=>{const sz=Math.ceil(n/k),r=[];for(let a=1;a<=n;a+=sz)r.push(a+'–'+Math.min(n,a+sz-1));return r.join(' | ')};
   $('dbox').classList.remove('wide');
@@ -428,7 +429,7 @@ function printMonthAll(ym,cc){cc=cc||1;const y=+ym.slice(0,4),m=+ym.slice(5),nd=
 function renderDsplit(){const n=new Date(my,mm,0).getDate(),lab=k=>{const sz=Math.ceil(n/k),r=[];for(let a=1;a<=n;a+=sz)r.push(a+'–'+Math.min(n,a+sz-1));return r.join(' / ')};
   $('dbox').classList.remove('wide');
   $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនគ្រប់ផ្នែក · '+MN[mm-1]+' '+my+'</div><div style="font-size:13px;color:var(--sub);margin-bottom:10px">បែងចែកថ្ងៃជាប៉ុន្មានផ្នែក? (ផ្នែកនីមួយៗចេញជាបន្ទាប់គ្នា ពីលើចុះក្រោម · ក្រដាស A4 ផ្ដេក ១ទំព័រ)</div><div style="display:flex;flex-direction:column;gap:8px">'+
-   [[0,'ស្វ័យប្រវត្តិ (អក្សរធំបំផុត)'],[1,'១ផ្នែក · '+lab(1)],[2,'២ផ្នែក · '+lab(2)],[3,'៣ផ្នែក · '+lab(3)],[4,'៤ផ្នែក · '+lab(4)]].map(x=>'<button class="btn'+(DSPLIT===x[0]?' p':'')+'" data-dsp="'+x[0]+'" style="text-align:left">'+x[1]+'</button>').join('')+'</div><div style="margin-top:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><small>ឬកំណត់ខ្លួនឯង · បែងត្រង់ថ្ងៃ៖</small><input id="dbrk" class="btn" style="width:130px" placeholder="ឧ. 10,20" value="'+DBRK.join(',')+'"><button class="btn'+(DSPLIT===-1?' p':'')+'" data-dbrkgo="1">ប្រើ</button></div><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" data-dclose="1">បោះបង់</button></div>'}
+   [[0,'ស្វ័យប្រវត្តិ (អក្សរធំបំផុត)'],[1,'១ផ្នែក · '+lab(1)],[2,'២ផ្នែក · '+lab(2)],[3,'៣ផ្នែក · '+lab(3)],[4,'៤ផ្នែក · '+lab(4)]].map(x=>'<button class="btn'+(DSPLIT===x[0]?' p':'')+'" data-dsp="'+x[0]+'" style="text-align:left">'+x[1]+'</button>').join('')+'</div><div style="margin-top:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><small>ឬកំណត់ខ្លួនឯង · បែងត្រង់ថ្ងៃ៖</small><input id="dbrk" class="btn" style="width:130px" placeholder="ឧ. 10,20" value="'+DBRK.join(',')+'"><button class="btn'+(DSPLIT===-1?' p':'')+'" data-dbrkgo="1">ប្រើ</button></div><div style="margin-top:10px;display:flex;gap:6px;align-items:center"><small>ទំហំអក្សរ/តារាង៖</small><button class="btn" data-psm="-1">−</button><b style="min-width:44px;text-align:center">'+Math.round(PSM*100)+'%</b><button class="btn" data-psm="1">+</button><small style="color:var(--sub)">(១០០% = ពេញក្រដាស)</small></div><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" data-dclose="1">បោះបង់</button></div>'}
 function renderGprint(){const n=new Date(my,mm,0).getDate(),hf=Math.ceil(n/2);$('dbox').classList.add('wide');
   $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនកាឡោនដើម · '+MN[mm-1]+' '+my+'</div>'+
     '<label class="fl">ទិសដៅក្រដាស<select data-gp="ori"><option value="auto">ស្វ័យប្រវត្តិ</option><option value="portrait">បញ្ឈរ</option><option value="landscape">ផ្ដេក</option></select></label>'+
@@ -469,6 +470,7 @@ $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   if(t.dataset.dgp){closeDlg();printMonthView();return}
   if(t.dataset.dayall){const dv=$('dPick').value||ds(new Date());closeDlg();if(t.dataset.dayall==='month')printMonthAll(dv.slice(0,7),+t.dataset.cc||1);else doPrint('all',1);return}
   if(t.dataset.dbrkgo){const v=($('dbrk').value||'').split(/[,\s]+/).map(x=>+x).filter(x=>x>=1&&x<=30);if(!v.length){toast('សូមវាយថ្ងៃ ឧ. 10,20');return}DBRK=v;DSPLIT=-1;try{localStorage.setItem('deptDayBrk',JSON.stringify(v));localStorage.setItem('deptDaySplit','-1')}catch(x){}closeDlg();printMonthView();return}
+  if(t.dataset.psm){PSM=Math.round(Math.min(1.2,Math.max(.5,PSM+.05*(+t.dataset.psm)))*100)/100;try{localStorage.setItem('deptPSM',PSM)}catch(x){}renderDsplit();return}
   if(t.dataset.dsp!==undefined){DSPLIT=+t.dataset.dsp;try{localStorage.setItem('deptDaySplit',DSPLIT)}catch(x){}closeDlg();printMonthView();return}
   if(t.dataset.dok){applyDlg();return}
   const a=t.closest('[data-dact]');if(a){const n=$('dNote');M.note=n?n.value:'';M.act=a.dataset.dact;renderDlg();return}
@@ -520,7 +522,8 @@ function renderMonth(){
   if(mview==='staff'&&pName&&pDept){try{const q=JSON.parse(localStorage.getItem('deptPLast')||'{}');q[pDept]=pName;localStorage.setItem('deptPLast',JSON.stringify(q))}catch(e){}}
   $('mVBar').appendChild($('mViews'));
   const r=mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
-  if(mview==='day'&&ORI==='landscape'&&!bEdit){const BKs=blocks().filter(b=>dayDept==='all'||inBlock(b,dayDept));if(BKs.length){const ds0=[...$('mWrap').querySelectorAll('.mdept')];if(ds0.length){const nd=new Date(my,mm,0).getDate(),box=document.createElement('div');box.className='bandscr';box.style.cssText='overflow-x:auto;max-width:100%';box.innerHTML=bandBuild(1,nd,BKs);ds0[0].before(box);ds0.forEach(e=>e.remove());box.classList.add('meas');{let mw=0;box.querySelectorAll('.pp').forEach(p=>{mw=Math.max(mw,p.getBoundingClientRect().width)});box.classList.remove('meas');box.style.setProperty('--cw',Math.ceil(mw+10)+'px')}}}}
+  if(mview==='day'&&ORI==='landscape'&&!bEdit){const BKs=blocks().filter(b=>dayDept==='all'||inBlock(b,dayDept));if(BKs.length){const ds0=[...$('mWrap').querySelectorAll('.mdept')];if(ds0.length){const nd=new Date(my,mm,0).getDate(),box=document.createElement('div');box.className='bandscr';box.style.cssText='overflow-x:auto;max-width:100%';box.innerHTML=bandBuild(1,nd,BKs);ds0[0].before(box);ds0.forEach(e=>e.remove());{const top=document.createElement('div');top.className='topscr';top.style.cssText='overflow-x:auto;max-width:100%;height:14px';top.innerHTML='<div style="height:1px"></div>';box.before(top);const sy=()=>{top.firstChild.style.width=box.scrollWidth+'px'};let lk=0;top.onscroll=()=>{if(lk){lk=0;return}lk=1;box.scrollLeft=top.scrollLeft};box.onscroll=()=>{if(lk){lk=0;return}lk=1;top.scrollLeft=box.scrollLeft};requestAnimationFrame(sy);setTimeout(sy,300)}
+box.classList.add('meas');{let mw=0;box.querySelectorAll('.pp').forEach(p=>{mw=Math.max(mw,p.getBoundingClientRect().width)});box.classList.remove('meas');box.style.setProperty('--cw',Math.ceil(mw+10)+'px')}}}}
   if(mview==='staff')$('mWrap').insertAdjacentHTML('afterbegin','<div class="chips no-p stk" id="pChips" style="position:sticky;top:var(--b,0px);z-index:5;background:#fff">'+chips(pDept)+'</div>');
   {const ch=[...$('mWrap').children].find(e=>e.classList&&e.classList.contains('chips')&&e.classList.contains('no-p'));if(ch)ch.appendChild($('mViews'));$('mVBar').style.display=$('mVBar').contains($('mViews'))?'':'none'}
   fixSt();requestAnimationFrame(fixSt);setTimeout(fixSt,400);
