@@ -470,7 +470,7 @@ $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   if(t.dataset.dgp){closeDlg();printMonthView();return}
   if(t.dataset.dayall){const dv=$('dPick').value||ds(new Date());closeDlg();if(t.dataset.dayall==='month')printMonthAll(dv.slice(0,7),+t.dataset.cc||1);else doPrint('all',1);return}
   if(t.dataset.dbrkgo){const v=($('dbrk').value||'').split(/[,\s]+/).map(x=>+x).filter(x=>x>=1&&x<=30);if(!v.length){toast('សូមវាយថ្ងៃ ឧ. 10,20');return}DBRK=v;DSPLIT=-1;try{localStorage.setItem('deptDayBrk',JSON.stringify(v));localStorage.setItem('deptDaySplit','-1')}catch(x){}closeDlg();printMonthView();return}
-  if(t.dataset.psm){PSM=Math.round(Math.min(1.2,Math.max(.5,PSM+.05*(+t.dataset.psm)))*100)/100;try{localStorage.setItem('deptPSM',PSM)}catch(x){}renderDsplit();return}
+  if(t.dataset.psm){PSM=Math.round(Math.min(3,Math.max(.3,PSM+(PSM>=1&&+t.dataset.psm>0||PSM>1.001&&+t.dataset.psm<0?.1:.05)*(+t.dataset.psm)))*100)/100;try{localStorage.setItem('deptPSM',PSM)}catch(x){}renderDsplit();return}
   if(t.dataset.dsp!==undefined){DSPLIT=+t.dataset.dsp;try{localStorage.setItem('deptDaySplit',DSPLIT)}catch(x){}closeDlg();printMonthView();return}
   if(t.dataset.dok){applyDlg();return}
   const a=t.closest('[data-dact]');if(a){const n=$('dNote');M.note=n?n.value:'';M.act=a.dataset.dact;renderDlg();return}
