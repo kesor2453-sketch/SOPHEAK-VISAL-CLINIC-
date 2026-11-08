@@ -68,8 +68,8 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .xg{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}.xf{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:4px;min-width:160px;margin-bottom:6px}
 .xf select,.xf input,.xf textarea{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
 #psheet .dmoc{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}#psheet .dmoc .pp{display:inline-block!important;width:auto!important;min-width:0!important;white-space:nowrap!important;padding:1px 6px!important;font-size:11px!important;border-radius:5px!important}#psheet .dmo td,#psheet .dmo th{padding:2px 3px}
-@media screen{body.pv-l #app{max-width:1123px}body.pv-p #app{max-width:794px}}
 @media print{#app{zoom:1!important}}
+@media screen{.bandscr .mt.tr90{width:max-content;min-width:100%;table-layout:fixed}.bandscr .tr90 thead th:not(.nmc){width:var(--cw,150px);min-width:var(--cw,150px)}.bandscr.meas .pp{display:inline-block!important;width:auto!important}.bandscr .tr90 .nmc{width:46px}.bandscr .mdept{margin-bottom:8px;overflow:visible}.bandscr .mdept>.dh{position:static!important;top:auto!important}.bandscr .tr90 thead th{position:static!important}}
 #psheet{display:none}body.psp #app,body.psp .toast,body.psp .dlg{display:none!important}body.psp #psheet{display:block}
 .psd{width:700px;margin:0 auto;color:#000;background:#fff}.psd h2{font-size:21px;margin:0 0 8px;text-align:center}
 .pst{width:100%;border-collapse:collapse;font-size:11px}.pst th,.pst td{border:1px solid #333;padding:3px 4px;height:22px}
@@ -127,7 +127,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 
 <div class="pn on" id="p-day"><div class="card">
 <div class="nav"><button class="btn" id="dPrev">‹</button><div class="lbl" id="dLbl"></div><button class="btn" id="dNext">›</button>
-<input type="date" class="btn" id="dPick"><button class="btn" id="dToday">ថ្ងៃនេះ</button><select class="btn no-p psel" title="ជ្រើសផ្នែកដែលត្រូវព្រីន"></select><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button><button class="btn no-p" data-img="1" title="ទាញយកជារូបភាព សម្រាប់ផ្ញើ Telegram">🖼️ រូបភាព</button></div>
+<input type="date" class="btn" id="dPick"><button class="btn" id="dToday">ថ្ងៃនេះ</button><button class="btn no-p" id="dMonth" title="ព្រីន/មើលទាំងមួយខែ">🗓️ ខែនេះ</button><select class="btn no-p psel" title="ជ្រើសផ្នែកដែលត្រូវព្រីន"></select><select class="btn no-p orsel" title="ទិសដៅក្រដាស"><option value="auto">ក្រដាស៖ ស្វ័យប្រវត្តិ</option><option value="portrait">ក្រដាស៖ បញ្ឈរ</option><option value="landscape">ក្រដាស៖ ផ្ដេក</option></select><button class="btn no-p" data-print="1">🖨️ ព្រីន</button><button class="btn no-p" data-img="1" title="ទាញយកជារូបភាព សម្រាប់ផ្ញើ Telegram">🖼️ រូបភាព</button></div>
 <div class="dlist" id="dGrid"></div></div></div>
 
 <div class="pn" id="p-month"><div class="card">
@@ -218,6 +218,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{scrollKey='';eDep=eS
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.pn').forEach(x=>x.classList.remove('on'));
   t.classList.add('on');$('p-'+t.dataset.p).classList.add('on');renderAll()});
 function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.value||'all',bs=blocks();x.innerHTML='<option value="all">ព្រីនទាំងអស់</option>'+bs.map(b=>'<option value="'+b.key+'">'+b.ds.map(D=>D.icon+' '+D.name).map(esc).join(' + ')+'</option>').join('');x.value=bs.some(b=>b.key===v)?v:'all'})}
+$('dMonth').onclick=()=>openDlg({mode:'dayall'});
 function doPrint(v,skip){
   if(!skip&&v==='all'&&!$('p-month').classList.contains('on')&&$('p-day')&&$('p-day').classList.contains('on')){openDlg({mode:'dayall'});return}
   if($('p-month').classList.contains('on')){
@@ -250,8 +251,8 @@ let PVZ=1;try{PVZ=Math.min(1.6,Math.max(.6,+localStorage.getItem('deptPvZoom')||
 const syncZ=()=>{document.getElementById('app').style.zoom=PVZ===1?'':PVZ;document.querySelectorAll('.zlbl').forEach(x=>x.textContent=Math.round(PVZ*100)+'%')};
 document.querySelectorAll('.orsel').forEach(x=>{x.insertAdjacentHTML('afterend','<span class="no-p" style="display:inline-flex;gap:3px;align-items:center"><button class="btn" data-zm="-1" title="បង្រួម">−</button><span class="zlbl" style="min-width:38px;text-align:center;font-size:12px"></span><button class="btn" data-zm="1" title="ពង្រីក">+</button></span>')});
 document.addEventListener('click',e=>{const z=e.target.dataset&&e.target.dataset.zm;if(!z)return;PVZ=Math.round(Math.min(1.6,Math.max(.6,PVZ+.1*(+z)))*10)/10;try{localStorage.setItem('deptPvZoom',PVZ)}catch(x){}syncZ()});
-const syncOri=()=>{document.querySelectorAll('.orsel').forEach(x=>{x.value=ORI});document.body.classList.toggle('pv-l',ORI==='landscape');document.body.classList.toggle('pv-p',ORI==='portrait')};syncOri();syncZ();
-document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('orsel')){ORI=e.target.value;try{localStorage.setItem('deptPrintOri',ORI)}catch(x){}syncOri()}});
+const syncOri=()=>{document.querySelectorAll('.orsel').forEach(x=>{x.value=ORI});document.body.classList.toggle('pv-l',ORI==='landscape');document.body.classList.toggle('pv-p',ORI==='portrait');};syncOri();syncZ();
+document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('orsel')){ORI=e.target.value;try{localStorage.setItem('deptPrintOri',ORI)}catch(x){}syncOri();renderMonth()}});
 function printMonthView(){
   const W=$('mWrap'),sp=mview==='grid'&&SPLIT;
   noToday=true;if(mview==='grid')gridSplit=sp;renderMonth();
@@ -275,7 +276,7 @@ function printMonthView(){
       const tw=g*PW+(g-1)*12;W.style.width=tw+'px';return tw};
     let bk=evenR(1),bg=1;const CANDS=(DSPLIT===-1&&DBRK.length)?[brkR(DBRK)]:(DSPLIT>0?[evenR(DSPLIT)]:[1,2,3,4].map(evenR));
     for(const R of CANDS){W.innerHTML=mk(R);const nw=fit(1);const sc=Math.min(dim.landscape[0]/nw,dim.landscape[1]/W.offsetHeight);if(sc>bs){bs=sc;bk=R}}
-    W.innerHTML=mk(bk);fit(bg);bs=Math.min(bs,3)*.97}
+    W.innerHTML=mk(bk);fit(bg);bs=Math.min(bs,3)*.94}
   else{W.style.width='max-content';const w=W.offsetWidth,h=W.offsetHeight;
   if(ORI!=='auto'){best=ORI;bs=Math.min(2,dim[ORI][0]/w,dim[ORI][1]/h)}
   else for(const o in dim){const sc=Math.min(2,dim[o][0]/w,dim[o][1]/h);if(sc>bs){bs=sc;best=o}}}
@@ -301,7 +302,7 @@ function sheetHtml(D,nm,wc,split){
 function runPrint(html,ori){const ps=$('psheet'),O=ori||ORI;ps.innerHTML=html;
   const st=document.createElement('style');st.textContent='@media print{@page{size:A4 '+(O==='landscape'?'landscape':'portrait')+';margin:8mm}}';document.head.appendChild(st);
   document.body.classList.add('psp');
-  const LS=O==='landscape';ps.querySelectorAll('.psd').forEach(b=>{b.style.width=LS?'1020px':'';const h=b.offsetHeight,T=LS?700:1000;if(h>T)b.style.zoom=Math.max(T/h,.45);else{b.style.display='flex';b.style.flexDirection='column';b.style.height=T+'px'}});
+  const LS=O==='landscape';ps.querySelectorAll('.psd').forEach(b=>{b.style.width=LS?'1020px':'';const h=b.offsetHeight,T=LS?700:1000,sw=b.scrollWidth,WW=LS?1020:700;if(b.classList.contains('dmo')){b.style.width='max-content';const w2=b.offsetWidth,h2=b.offsetHeight;b.style.zoom=Math.min(2.5,WW/w2,T/h2)*.97}else if(h>T)b.style.zoom=Math.max(T/h,.45);else{b.style.display='flex';b.style.flexDirection='column';b.style.height=T+'px'}});
   const clean=()=>{document.body.classList.remove('psp');ps.innerHTML='';st.remove();removeEventListener('afterprint',clean)};
   addEventListener('afterprint',clean);print()}
 function renderAll(){sortStaff();fillSel();renderDay();renderMonth();renderStaff();renderCount();renderEdit();renderQR()}
@@ -410,18 +411,20 @@ function renderDlg(){
   const t=$('dNote');if(t)t.value=M.note||'';
 }
 let DSPLIT=0,DBRK=[];try{DSPLIT=+localStorage.getItem('deptDaySplit')||0;DBRK=JSON.parse(localStorage.getItem('deptDayBrk')||'[]')}catch(e){}
-function renderDayall(){const dv=$('dPick').value||ds(new Date()),ym=dv.slice(0,7);
+function renderDayall(){const dv=$('dPick').value||ds(new Date()),ym=dv.slice(0,7),n=new Date(+ym.slice(0,4),+ym.slice(5),0).getDate(),lab=k=>{const sz=Math.ceil(n/k),r=[];for(let a=1;a<=n;a+=sz)r.push(a+'–'+Math.min(n,a+sz-1));return r.join(' | ')};
   $('dbox').classList.remove('wide');
-  $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនគ្រប់ផ្នែក</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px"><button class="btn p" data-dayall="day" style="text-align:left">📅 ព្រីនតែថ្ងៃនេះ ('+fmtD(dv)+')</button><button class="btn" data-dayall="month" style="text-align:left">🗓️ ព្រីនទាំងមួយខែ · '+ym+' (១តារាង តាមថ្ងៃ)</button></div><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" data-dclose="1">បោះបង់</button></div>'}
-function printMonthAll(ym){const y=+ym.slice(0,4),m=+ym.slice(5),nd=new Date(y,m,0).getDate(),BK=blocks();
-  const cols=[];BK.forEach(b=>ucols(b).forEach(c=>{if(b.ds.some(D=>D.cols.some(x=>x.id===c.id)))cols.push([b,c])}));
-  let h='<div class="psd dmo"><div style="text-align:center;font-weight:700;font-size:16px;margin-bottom:4px">កាលវិភាគប្រចាំខែ '+MN[m-1]+' '+y+'</div><table class="pst" style="width:100%;table-layout:auto"><thead><tr><th rowspan="2" style="width:84px">ថ្ងៃ</th>';
-  BK.forEach(b=>{const n=cols.filter(x=>x[0]===b).length;h+='<th colspan="'+n+'" style="background:'+b.ds[0].color+';color:#fff">'+bName(b)+'</th>'});
-  h+='</tr><tr>'+cols.map(x=>'<th style="font-size:10px">'+esc(x[1].label)+'</th>').join('')+'</tr></thead><tbody>';
-  for(let i=1;i<=nd;i++){const d=ym+'-'+p2(i),w=new Date(y,m-1,i).getDay(),we=w===0||w===6;
-    h+='<tr'+(we?' style="background:#fdeaea"':'')+'><td style="text-align:center;font-weight:700;white-space:nowrap">'+i+' <small style="font-weight:400">'+DW[w]+'</small></td>'+
-      cols.map(x=>{const b=x[0],c=x[1];return '<td><div class="dmoc">'+b.ds.filter(D=>D.cols.some(k=>k.id===c.id)).map(D=>nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')).join('')+'</div></td>'}).join('')+'</tr>'}
-  h+='</tbody></table></div>';runPrint(h,'landscape')}
+  $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនគ្រប់ផ្នែក</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px"><button class="btn p" data-dayall="day" style="text-align:left">📅 ព្រីនតែថ្ងៃនេះ ('+fmtD(dv)+')</button><div style="font-size:12px;color:var(--sub)">🗓️ ព្រីនទាំងមួយខែ · '+ym+' (តារាងតាមថ្ងៃ)</div>'+[1,2,3].map(k=>'<button class="btn" data-dayall="month" data-cc="'+k+'" style="text-align:left">'+k+' ជួរដេក · '+lab(k)+'</button>').join('')+'</div><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" data-dclose="1">បោះបង់</button></div>'}
+function printMonthAll(ym,cc){cc=cc||1;const y=+ym.slice(0,4),m=+ym.slice(5),nd=new Date(y,m,0).getDate(),BK=blocks();
+  const sz=Math.ceil(nd/cc),tb=(a,z)=>{let h='<table class="pst mall" style="width:auto!important;min-width:0;table-layout:auto"><thead><tr><th style="width:1%"></th>';
+    for(let i=a;i<=z;i++){const w=new Date(y,m-1,i).getDay();h+='<th style="'+(w===0||w===6?'background:#f7b3b3;':'')+'font-size:11px"><b>'+i+'</b><br><small style="font-weight:400">'+DW[w]+'</small></th>'}
+    h+='</tr></thead><tbody>';
+    BK.forEach(b=>{const ic=b.ds.map(D=>D.icon).join('');ucols(b).forEach(c=>{const DS=b.ds.filter(D=>D.cols.some(k=>k.id===c.id));if(!DS.length)return;
+      h+='<tr><td style="white-space:nowrap;font-weight:700;background:'+b.ds[0].color+'22;font-size:11px;text-align:center">'+ic+'<br>'+esc(c.label)+'</td>';
+      for(let i=a;i<=z;i++){const d=ym+'-'+p2(i),w=new Date(y,m-1,i).getDay();h+='<td'+(w===0||w===6?' style="background:#fdeaea"':'')+'><div class="dmoc" style="flex-direction:column;align-items:stretch">'+DS.map(D=>nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')).join('')+'</div></td>'}
+      h+='</tr>'})});
+    return h+'</tbody></table>'};
+  let t='';for(let a=1;a<=nd;a+=sz)t+='<div style="margin-bottom:8px">'+tb(a,Math.min(nd,a+sz-1))+'</div>';
+  runPrint('<div class="psd dmo"><div style="text-align:center;font-weight:700;font-size:16px;margin-bottom:4px">កាលវិភាគប្រចាំខែ '+MN[m-1]+' '+y+'</div><div style="width:max-content;min-width:100%">'+t+'</div></div>','landscape')}
 function renderDsplit(){const n=new Date(my,mm,0).getDate(),lab=k=>{const sz=Math.ceil(n/k),r=[];for(let a=1;a<=n;a+=sz)r.push(a+'–'+Math.min(n,a+sz-1));return r.join(' / ')};
   $('dbox').classList.remove('wide');
   $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនគ្រប់ផ្នែក · '+MN[mm-1]+' '+my+'</div><div style="font-size:13px;color:var(--sub);margin-bottom:10px">បែងចែកថ្ងៃជាប៉ុន្មានផ្នែក? (ផ្នែកនីមួយៗចេញជាបន្ទាប់គ្នា ពីលើចុះក្រោម · ក្រដាស A4 ផ្ដេក ១ទំព័រ)</div><div style="display:flex;flex-direction:column;gap:8px">'+
@@ -464,7 +467,7 @@ $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   if(t===$('dlg')||t.dataset.dclose){closeDlg();return}
   if(t.dataset.dprint){const v=M.v,wc=t.dataset.dprint==='cols';closeDlg();if(t.dataset.dprint==='allplain')printAllPlain(v.slice(0,v.indexOf('|')));else printSheet(v,wc);return}
   if(t.dataset.dgp){closeDlg();printMonthView();return}
-  if(t.dataset.dayall){const dv=$('dPick').value||ds(new Date());closeDlg();if(t.dataset.dayall==='month')printMonthAll(dv.slice(0,7));else doPrint('all',1);return}
+  if(t.dataset.dayall){const dv=$('dPick').value||ds(new Date());closeDlg();if(t.dataset.dayall==='month')printMonthAll(dv.slice(0,7),+t.dataset.cc||1);else doPrint('all',1);return}
   if(t.dataset.dbrkgo){const v=($('dbrk').value||'').split(/[,\s]+/).map(x=>+x).filter(x=>x>=1&&x<=30);if(!v.length){toast('សូមវាយថ្ងៃ ឧ. 10,20');return}DBRK=v;DSPLIT=-1;try{localStorage.setItem('deptDayBrk',JSON.stringify(v));localStorage.setItem('deptDaySplit','-1')}catch(x){}closeDlg();printMonthView();return}
   if(t.dataset.dsp!==undefined){DSPLIT=+t.dataset.dsp;try{localStorage.setItem('deptDaySplit',DSPLIT)}catch(x){}closeDlg();printMonthView();return}
   if(t.dataset.dok){applyDlg();return}
@@ -477,6 +480,14 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>eqPillsD()
 function eqPills(){const ps=[...document.querySelectorAll('#mWrap .dt .pp')];if(!ps.length)return;
   ps.forEach(p=>p.style.width='');let m=0;ps.forEach(p=>{m=Math.max(m,p.offsetWidth)});if(m>0)ps.forEach(p=>p.style.width=m+'px')}
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(mview==='day')eqPills()});
+function bandBuild(a,z,L){return L.map(b=>{const UC=ucols(b),g=b.ds.length>1,D0=b.ds[0];
+      let h='<div class="mdept" data-id="'+b.key+'" style="margin-bottom:6px"><div class="dh" style="background:'+D0.color+'"><span>'+bName(b)+'</span></div><table class="mt dt tr90"><thead><tr><th class="nmc"></th>';
+      for(let i=a;i<=z;i++){const w=new Date(my,mm-1,i).getDay();h+='<th'+(w==0||w==6?' class="we"':'')+'>'+i+'<small style="display:block;font-weight:400">'+DW[w]+'</small></th>'}
+      h+='</tr></thead><tbody>';
+      UC.forEach(c=>{const DS=b.ds.filter(D=>D.cols.some(x=>x.id===c.id));if(!DS.length)return;h+='<tr><td class="nmc">'+esc(c.label)+'</td>';
+        for(let i=a;i<=z;i++){const d=my+'-'+p2(mm)+'-'+p2(i),w=new Date(my,mm-1,i).getDay();h+='<td'+(w==0||w==6?' class="we" style="background:#fdeaea"':'')+'><div class="ppl">'+DS.map(D=>nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')).join('')+'</div></td>'}
+        h+='</tr>'});
+      return h+'</tbody></table></div>'}).join('')}
 function renderMonthDay(){
   const n=new Date(my,mm,0).getDate(),t=noToday?'':ds(new Date()),nw=new Date(),started=my*12+mm<=nw.getFullYear()*12+nw.getMonth()+1,canEdit=!started||bEdit;
   if(dayDept!=='all'&&!dept(dayDept))dayDept='all';
@@ -509,6 +520,7 @@ function renderMonth(){
   if(mview==='staff'&&pName&&pDept){try{const q=JSON.parse(localStorage.getItem('deptPLast')||'{}');q[pDept]=pName;localStorage.setItem('deptPLast',JSON.stringify(q))}catch(e){}}
   $('mVBar').appendChild($('mViews'));
   const r=mview==='grid'?renderMonthGrid():mview==='staff'?renderMonthStaff():renderMonthDay();
+  if(mview==='day'&&ORI==='landscape'&&!bEdit){const BKs=blocks().filter(b=>dayDept==='all'||inBlock(b,dayDept));if(BKs.length){const ds0=[...$('mWrap').querySelectorAll('.mdept')];if(ds0.length){const nd=new Date(my,mm,0).getDate(),box=document.createElement('div');box.className='bandscr';box.style.cssText='overflow-x:auto;max-width:100%';box.innerHTML=bandBuild(1,nd,BKs);ds0[0].before(box);ds0.forEach(e=>e.remove());box.classList.add('meas');{let mw=0;box.querySelectorAll('.pp').forEach(p=>{mw=Math.max(mw,p.getBoundingClientRect().width)});box.classList.remove('meas');box.style.setProperty('--cw',Math.ceil(mw+10)+'px')}}}}
   if(mview==='staff')$('mWrap').insertAdjacentHTML('afterbegin','<div class="chips no-p stk" id="pChips" style="position:sticky;top:var(--b,0px);z-index:5;background:#fff">'+chips(pDept)+'</div>');
   {const ch=[...$('mWrap').children].find(e=>e.classList&&e.classList.contains('chips')&&e.classList.contains('no-p'));if(ch)ch.appendChild($('mViews'));$('mVBar').style.display=$('mVBar').contains($('mViews'))?'':'none'}
   fixSt();requestAnimationFrame(fixSt);setTimeout(fixSt,400);
