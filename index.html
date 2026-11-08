@@ -67,6 +67,7 @@ select.rs{font-family:inherit;padding:2px 4px;border-radius:6px;border:1px solid
 .nb2{cursor:pointer;opacity:.4;font-size:12px}.nb2.has{opacity:1;background:#fff3b0;border-radius:6px;padding:1px 6px;font-weight:700;font-size:11.5px}.nb2:hover{opacity:1}.pp[data-pk]{cursor:pointer}.gpk{cursor:pointer;text-decoration:underline dotted;padding:0 2px}
 .xg{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}.xf{display:flex;flex-direction:column;font-size:12px;color:var(--sub);gap:4px;min-width:160px;margin-bottom:6px}
 .xf select,.xf input,.xf textarea{padding:8px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
+#psheet .dmoc{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}#psheet .dmoc .pp{display:inline-block!important;width:auto!important;min-width:0!important;white-space:nowrap!important;padding:1px 6px!important;font-size:11px!important;border-radius:5px!important}#psheet .dmo td,#psheet .dmo th{padding:2px 3px}
 #psheet{display:none}body.psp #app,body.psp .toast,body.psp .dlg{display:none!important}body.psp #psheet{display:block}
 .psd{width:700px;margin:0 auto;color:#000;background:#fff}.psd h2{font-size:21px;margin:0 0 8px;text-align:center}
 .pst{width:100%;border-collapse:collapse;font-size:11px}.pst th,.pst td{border:1px solid #333;padding:3px 4px;height:22px}
@@ -215,7 +216,8 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{scrollKey='';eDep=eS
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.pn').forEach(x=>x.classList.remove('on'));
   t.classList.add('on');$('p-'+t.dataset.p).classList.add('on');renderAll()});
 function fillSel(){document.querySelectorAll('.psel').forEach(x=>{const v=x.value||'all',bs=blocks();x.innerHTML='<option value="all">ព្រីនទាំងអស់</option>'+bs.map(b=>'<option value="'+b.key+'">'+b.ds.map(D=>D.icon+' '+D.name).map(esc).join(' + ')+'</option>').join('');x.value=bs.some(b=>b.key===v)?v:'all'})}
-function doPrint(v){
+function doPrint(v,skip){
+  if(!skip&&v==='all'&&!$('p-month').classList.contains('on')&&$('p-day')&&$('p-day').classList.contains('on')){openDlg({mode:'dayall'});return}
   if($('p-month').classList.contains('on')){
     if(mview==='grid'){openDlg({mode:'gprint'});return}
     if(mview==='day'&&$('mWrap').querySelectorAll('.mdept').length>1){openDlg({mode:'dsplit'});return}
@@ -376,7 +378,7 @@ let M=null;
 function openDlg(m){M=m;$('dlg').style.display='flex';renderDlg()}
 function closeDlg(){M=null;$('dlg').style.display='none'}
 function renderDlg(){
-  if(!M)return;$('dbox').classList.remove('wide');if(M.mode==='gprint'){renderGprint();return}if(M.mode==='dsplit'){renderDsplit();return}const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
+  if(!M)return;$('dbox').classList.remove('wide');if(M.mode==='gprint'){renderGprint();return}if(M.mode==='dsplit'){renderDsplit();return}if(M.mode==='dayall'){renderDayall();return}const D=dept(M.dp);if(!D){closeDlg();return}const B=$('dbox');
   const foot=ok=>'<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn" data-dclose="1">បិទ</button><button class="btn p" data-dok="1">'+ok+'</button></div>';
   if(M.mode==='print'){const nm=M.v.slice(M.v.indexOf('|')+1),sh=D.cols.map(c=>c.label).join(' / '),wk=workCount(D,nm),wt=wk.tot+' វេន ('+D.cols.map(c=>c.label+' '+wk.per[c.id]).join(' · ')+')';
     B.innerHTML='<div class="dt1">🖨️ ព្រីនប្រចាំខែ · '+esc(nm)+' · '+MN[mm-1]+' '+my+'</div><div style="margin:4px 0 14px;line-height:1.7">ចង់ព្រីនបន្ថែមជួរកាឡោន <b>'+esc(sh)+'</b> (ដាក់ ✓ ត្រង់វេនដែលគាត់យាម) ដែរឬទេ?</div><div style="margin:-6px 0 12px;font-weight:600">ចំនួនធ្វើការ៖ '+esc(wt)+'</div><div style="margin:-6px 0 12px;font-weight:600">'+esc('សរុប '+wk.tot+' វេន · '+hrsSum(wk.tot,wk.done,D.id,nm,'',null,0))+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" data-dclose="1">បោះបង់</button><button class="btn" data-dprint="plain">ព្រីនធម្មតា</button><button class="btn" data-dprint="allplain">ព្រីនធម្មតា · គ្រប់បុគ្គលិកក្នុងផ្នែកនេះ</button><button class="btn p" data-dprint="cols">ព្រីន + ជួរ '+esc(sh)+' + ចំនួនធ្វើការ</button></div>';return}
@@ -401,6 +403,18 @@ function renderDlg(){
   const t=$('dNote');if(t)t.value=M.note||'';
 }
 let DSPLIT=0;try{DSPLIT=+localStorage.getItem('deptDaySplit')||0}catch(e){}
+function renderDayall(){const dv=$('dPick').value||ds(new Date()),ym=dv.slice(0,7);
+  $('dbox').classList.remove('wide');
+  $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនគ្រប់ផ្នែក</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:8px"><button class="btn p" data-dayall="day" style="text-align:left">📅 ព្រីនតែថ្ងៃនេះ ('+fmtD(dv)+')</button><button class="btn" data-dayall="month" style="text-align:left">🗓️ ព្រីនទាំងមួយខែ · '+ym+' (១តារាង តាមថ្ងៃ)</button></div><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" data-dclose="1">បោះបង់</button></div>'}
+function printMonthAll(ym){const y=+ym.slice(0,4),m=+ym.slice(5),nd=new Date(y,m,0).getDate(),BK=blocks();
+  const cols=[];BK.forEach(b=>ucols(b).forEach(c=>{if(b.ds.some(D=>D.cols.some(x=>x.id===c.id)))cols.push([b,c])}));
+  let h='<div class="psd dmo"><div style="text-align:center;font-weight:700;font-size:16px;margin-bottom:4px">កាលវិភាគប្រចាំខែ '+MN[m-1]+' '+y+'</div><table class="pst" style="width:100%;table-layout:auto"><thead><tr><th rowspan="2" style="width:84px">ថ្ងៃ</th>';
+  BK.forEach(b=>{const n=cols.filter(x=>x[0]===b).length;h+='<th colspan="'+n+'" style="background:'+b.ds[0].color+';color:#fff">'+bName(b)+'</th>'});
+  h+='</tr><tr>'+cols.map(x=>'<th style="font-size:10px">'+esc(x[1].label)+'</th>').join('')+'</tr></thead><tbody>';
+  for(let i=1;i<=nd;i++){const d=ym+'-'+p2(i),w=new Date(y,m-1,i).getDay(),we=w===0||w===6;
+    h+='<tr'+(we?' style="background:#fdeaea"':'')+'><td style="text-align:center;font-weight:700;white-space:nowrap">'+i+' <small style="font-weight:400">'+DW[w]+'</small></td>'+
+      cols.map(x=>{const b=x[0],c=x[1];return '<td><div class="dmoc">'+b.ds.filter(D=>D.cols.some(k=>k.id===c.id)).map(D=>nsort(get(d,D.id,c.id)).map(nm=>pill(D,nm,'','')).join('')).join('')+'</div></td>'}).join('')+'</tr>'}
+  h+='</tbody></table></div>';runPrint(h,'landscape')}
 function renderDsplit(){const n=new Date(my,mm,0).getDate(),lab=k=>{const sz=Math.ceil(n/k),r=[];for(let a=1;a<=n;a+=sz)r.push(a+'–'+Math.min(n,a+sz-1));return r.join(' / ')};
   $('dbox').classList.remove('wide');
   $('dbox').innerHTML='<div class="dt1">🖨️ ព្រីនគ្រប់ផ្នែក · '+MN[mm-1]+' '+my+'</div><div style="font-size:13px;color:var(--sub);margin-bottom:10px">បែងចែកថ្ងៃជាប៉ុន្មានផ្នែក? (ផ្នែកនីមួយៗចេញជាបន្ទាប់គ្នា ពីលើចុះក្រោម · ក្រដាស A4 ផ្ដេក ១ទំព័រ)</div><div style="display:flex;flex-direction:column;gap:8px">'+
@@ -443,6 +457,7 @@ $('dlg').addEventListener('click',e=>{const t=e.target;if(!M)return;
   if(t===$('dlg')||t.dataset.dclose){closeDlg();return}
   if(t.dataset.dprint){const v=M.v,wc=t.dataset.dprint==='cols';closeDlg();if(t.dataset.dprint==='allplain')printAllPlain(v.slice(0,v.indexOf('|')));else printSheet(v,wc);return}
   if(t.dataset.dgp){closeDlg();printMonthView();return}
+  if(t.dataset.dayall){const dv=$('dPick').value||ds(new Date());closeDlg();if(t.dataset.dayall==='month')printMonthAll(dv.slice(0,7));else doPrint('all',1);return}
   if(t.dataset.dsp!==undefined){DSPLIT=+t.dataset.dsp;try{localStorage.setItem('deptDaySplit',DSPLIT)}catch(x){}closeDlg();printMonthView();return}
   if(t.dataset.dok){applyDlg();return}
   const a=t.closest('[data-dact]');if(a){const n=$('dNote');M.note=n?n.value:'';M.act=a.dataset.dact;renderDlg();return}
